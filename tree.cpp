@@ -20,6 +20,9 @@ class bst {
   node<T>* avail;
   node_pointer add_node(T key)
   {
+    if (!avail)
+      return 0; // The tree has exhausted its capacity.
+
     node_pointer q = avail;
     avail = avail->llink;
     q->key = key;
@@ -49,10 +52,6 @@ class bst {
       root->key = key;
       return root;
     }
-    // The tree is non empty. Lets check whether we have enough space.
-    if (!avail) // This shall be moved into the function add_node (it is a bug to place it here)
-      return 0; // The tree has exhausted its capacity.
-
     // We have enough space lets insert the element.
     node_pointer p = root;
     for (;;) {
@@ -94,3 +93,4 @@ int main()
   iter = t.insert(10);
   return 0;
 }
+
