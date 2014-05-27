@@ -31,4 +31,3 @@ bool dist_counting_sort(Iter begin)
   std::copy(&out[0], &out[0] + N, &begin[0]);
 }
 
-
