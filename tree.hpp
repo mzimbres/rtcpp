@@ -97,9 +97,7 @@ class bst {
   node_pointer insert(T key)
   {
     if (!root) { // the tree is empty
-      root = avail;
-      avail = avail->llink;
-      root->key = key;
+      root = add_node(key);
       return root;
     }
     // We have enough space lets insert the element.

@@ -27,11 +27,11 @@ int main()
       p = p->llink;
       continue;
     }
+    if (s.size() == 0)
+      break;
     p = s.top();
     s.pop();
     arr[i++] = p->key;
-    if (s.size() == 0)
-      break;
     p = p->rlink;
   }
 
