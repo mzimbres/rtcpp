@@ -1,11 +1,60 @@
 #include <iostream>
+#include <iterator>
+
+#include "stack.hpp"
 
 template <typename T>
 struct node {
-  T key;
+  typedef T key_type;
+  key_type key;
   node* llink;
   node* rlink;
 };
+
+//template <typename T, std::size_t N>
+//class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
+//  public:
+//  typedef typename std::iterator<std::forward_iterator_tag, T>::pointer pointer;
+//  typedef typename std::iterator<std::forward_iterator_tag, T>::value_type value_type;
+//  typedef typename T::key_type key_type;
+//  private:
+//  stack<pointer, N> s;
+//  pointer p;
+//  public:
+//  inorder_iterator(pointer node)
+//  { 
+//    p = node;
+//    while (p) {
+//      s.push(p);
+//      p = p->llink;
+//    }
+//    p = s.top();
+//    s.pop();
+//  };
+//  inorder_iterator& operator++()
+//  {
+//    if (p) {
+//      s.push(p);
+//      p = p->llink;
+//      return *this;
+//    }
+//
+//    if (s.size() == 0)
+//      return *this;
+//
+//    p = s.top();
+//    s.pop();
+//    p = p->rlink;
+//    return *this;
+//  }
+//  inorder_iterator operator++(int)
+//  {
+//    inorder_iterator tmp(*this);
+//    operator++();
+//    return tmp;
+//  }
+//  key_type operator*() const {return p->key;}
+//};
 
 template <typename T, std::size_t N>
 class bst {
@@ -16,8 +65,8 @@ class bst {
   typedef node_type* node_pointer;
   private:
   node_type pool[N];
-  node<T>* root;
-  node<T>* avail;
+  node_pointer root;
+  node_pointer avail;
   node_pointer add_node(T key)
   {
     if (!avail)
@@ -31,6 +80,7 @@ class bst {
     return q;
   }
   public:
+  node_pointer get_root() const {return root;}
   bst()
   : root(0)
   , avail(0)

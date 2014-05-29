@@ -11,25 +11,17 @@ int main()
   for (int i = 0; i < size; ++i)
     s.push(i);
 
-  s.pop();
-  s.pop();
-  s.pop();
-  s.pop();
+  stack<int, size> ss(s);
 
-  s.push(20);
-  s.push(30);
-  s.push(40);
-  s.push(50);
-
-  std::cout << s.in_use() << std::endl;
+  std::cout << ss.size() << std::endl;
   std::cout << std::endl;
   for (int i = 0; i < size; ++i) {
-    if (s.in_use() != 0) {
-      std::cout << s.top() << std::endl;
-      s.pop();
+    if (ss.size() != 0) {
+      std::cout << ss.top() << std::endl;
+      ss.pop();
     }
   }
   std::cout << std::endl;
-  std::cout << s.in_use() << std::endl;
+  std::cout << ss.size() << std::endl;
 }
 

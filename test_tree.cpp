@@ -1,4 +1,6 @@
 #include <iostream>
+#include <iterator>
+#include <array>
 
 #include "tree.hpp"
 
@@ -6,17 +8,36 @@ int main()
 {
   bst<int, 10> t;
   typedef bst<int, 10>::node_pointer node_pointer; 
-  node_pointer iter = t.insert(5);
-  iter = t.insert(4);
-  iter = t.insert(6);
-  iter = t.insert(3);
-  iter = t.insert(7);
-  iter = t.insert(2);
-  iter = t.insert(8);
-  iter = t.insert(1);
-  iter = t.insert(9);
-  iter = t.insert(10);
-  iter = t.insert(10);
+  for (int i = 0; i < 20; ++i) {
+    node_pointer iter = t.insert(i);
+    if (!iter)
+      break;
+  }
+  node_pointer p = t.get_root();
+  if (!p) {
+    return 1;
+  }
+
+  std::array<int, 10> arr;
+  stack<node_pointer, 10> s;
+  int i = 0;
+  for (;;) {
+    if (p) {
+      s.push(p);
+      p = p->llink;
+      continue;
+    }
+    p = s.top();
+    s.pop();
+    arr[i++] = p->key;
+    if (s.size() == 0)
+      break;
+    p = p->rlink;
+  }
+
+  std::copy(std::begin(arr), std::end(arr), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
+    
   return 0;
 }
 
