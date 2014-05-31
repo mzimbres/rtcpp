@@ -23,7 +23,6 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
   std::stack<node_pointer> s;
   node_pointer p;
   node_pointer tmp;
-  bool eq;
 
   public:
   //inorder_iterator(const inorder_iterator<T>& rhs)
@@ -40,10 +39,8 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
   inorder_iterator()
   : p(0)
   , tmp(0)
-  , eq(false)
   {}
   inorder_iterator(node_pointer root)
-  : eq(true)
   { 
     p = root;
     while (p) {
@@ -62,8 +59,11 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
       s.push(p);
       p = p->llink;
     }
-    if (s.size() == 0)
+    if (s.size() == 0) {
+      p = 0;
+      tmp = 0;
       return *this;
+    }
 
     p = s.top();
     tmp = p;
@@ -82,7 +82,7 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
   T operator*() const {return tmp->key;}
   bool operator==(const inorder_iterator<T>& rhs) const
   {
-    return p == rhs.p && tmp == rhs.tmp && s.size() == rhs.s.size() && eq && rhs.eq;
+    return p == rhs.p && tmp == rhs.tmp && s.size() == rhs.s.size();
   }
   bool operator!=(const inorder_iterator<T>& rhs) const { return !(*this == rhs); }
 };

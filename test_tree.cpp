@@ -44,11 +44,9 @@ int main()
   }
 
   typedef bst<int>::iterator iterator;
-  for (iterator iter = t.begin(); iter != t.end(); ++iter)
-    std::cout << *iter << std::endl;
-
-  //std::copy(std::begin(arr), std::end(arr), std::ostream_iterator<int>(std::cout, " "));
-  //std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
+  std::copy(std::begin(arr), std::end(arr), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
+  std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
   //std::copy(t.begin(), t.end(), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
     
