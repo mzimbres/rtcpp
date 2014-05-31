@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iterator>
+#include <vector>
 
 #include "stack.hpp"
 
@@ -56,15 +57,14 @@ struct node {
 //  key_type operator*() const {return p->key;}
 //};
 
-template <typename T, std::size_t N>
+template <typename T>
 class bst {
-  static_assert(N > 0, "list: size not allowed.");
   public:
   typedef std::size_t size_type;
   typedef node<T> node_type;
   typedef node_type* node_pointer;
   private:
-  node_type pool[N];
+  std::vector<node_type> pool;
   node_pointer root;
   node_pointer avail;
   node_pointer add_node(T key)
@@ -81,18 +81,19 @@ class bst {
   }
   public:
   node_pointer get_root() const {return root;}
-  bst()
-  : root(0)
+  bst(std::size_t size)
+  : pool(size)
+  , root(0)
   , avail(0)
   {
     // Let us link the avail stack.
     pool[0].llink = 0;
     pool[0].rlink = 0;
-    for (size_type i = 1; i < N; ++i) {
+    for (size_type i = 1; i < pool.size(); ++i) {
       pool[i].llink = &pool[i - 1];
       pool[i].rlink = 0;
     }
-    avail = &pool[N - 1];
+    avail = &pool.back();
   }
   node_pointer insert(T key)
   {

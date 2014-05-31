@@ -1,26 +1,35 @@
 #include <iostream>
 #include <iterator>
-#include <array>
+#include <vector>
+#include <stack>
+#include <random>
 
 #include "tree.hpp"
 
 int main()
 {
-  bst<int, 10> t;
-  typedef bst<int, 10>::node_pointer node_pointer; 
-  for (int i = 0; i < 20; ++i) {
-    node_pointer iter = t.insert(i);
+  const int size = 1000;
+  const int a = 1;
+  const int b = 2000;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(a, b);
+
+  bst<int> t(size);
+  typedef bst<int>::node_pointer node_pointer; 
+  for (int i = 0; i < 2 * size; ++i) {
+    node_pointer iter = t.insert(dis(gen));
     if (!iter)
       break;
   }
   node_pointer p = t.get_root();
   if (!p) {
+    std::cout << "Error." << std::endl;
     return 1;
   }
 
-  std::array<int, 10> arr;
-  stack<node_pointer, 10> s;
-  int i = 0;
+  std::vector<int> arr;
+  std::stack<node_pointer> s;
   for (;;) {
     if (p) {
       s.push(p);
@@ -31,7 +40,7 @@ int main()
       break;
     p = s.top();
     s.pop();
-    arr[i++] = p->key;
+    arr.push_back(p->key);
     p = p->rlink;
   }
 
