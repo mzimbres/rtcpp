@@ -12,50 +12,80 @@ struct node {
   node* rlink;
 };
 
-//template <typename T, std::size_t N>
-//class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
-//  public:
-//  typedef typename std::iterator<std::forward_iterator_tag, T>::pointer pointer;
-//  typedef typename std::iterator<std::forward_iterator_tag, T>::value_type value_type;
-//  typedef typename T::key_type key_type;
-//  private:
-//  stack<pointer, N> s;
-//  pointer p;
-//  public:
-//  inorder_iterator(pointer node)
-//  { 
-//    p = node;
-//    while (p) {
-//      s.push(p);
-//      p = p->llink;
-//    }
-//    p = s.top();
-//    s.pop();
-//  };
-//  inorder_iterator& operator++()
-//  {
-//    if (p) {
-//      s.push(p);
-//      p = p->llink;
-//      return *this;
-//    }
-//
-//    if (s.size() == 0)
-//      return *this;
-//
-//    p = s.top();
-//    s.pop();
-//    p = p->rlink;
-//    return *this;
-//  }
-//  inorder_iterator operator++(int)
-//  {
-//    inorder_iterator tmp(*this);
-//    operator++();
-//    return tmp;
-//  }
-//  key_type operator*() const {return p->key;}
-//};
+template <typename T>
+class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
+  public:
+  typedef typename std::iterator<std::forward_iterator_tag, T>::pointer pointer;
+  typedef typename std::iterator<std::forward_iterator_tag, T>::value_type value_type;
+  typedef node<T> node_type;
+  typedef node_type* node_pointer;
+  private:
+  std::stack<node_pointer> s;
+  node_pointer p;
+  node_pointer tmp;
+  bool eq;
+
+  public:
+  //inorder_iterator(const inorder_iterator<T>& rhs)
+  //{
+  //  p = rhs.p;
+  //}
+  //const inorder_iterator<T>& operator=(const inorder_iterator<T>& rhs)
+  //{
+  //  if (this != &rhs)
+  //    p = rhs.p;
+
+  //  return *this;
+  //}
+  inorder_iterator()
+  : p(0)
+  , tmp(0)
+  , eq(false)
+  {}
+  inorder_iterator(node_pointer root)
+  : eq(true)
+  { 
+    p = root;
+    while (p) {
+      s.push(p);
+      p = p->llink;
+    }
+    p = s.top();
+    s.pop();
+    tmp = p;
+    p = p->rlink;
+  }
+
+  inorder_iterator& operator++()
+  {
+    while (p) {
+      s.push(p);
+      p = p->llink;
+    }
+    if (s.size() == 0)
+      return *this;
+
+    p = s.top();
+    tmp = p;
+    s.pop();
+    tmp = p;
+    p = p->rlink;
+
+    return *this;
+  }
+  inorder_iterator operator++(int)
+  {
+    inorder_iterator tmp(*this);
+    operator++();
+    return tmp;
+  }
+  T operator*() const {return tmp->key;}
+  bool operator==(const inorder_iterator<T>& rhs) const
+  {
+    return p == rhs.p && tmp == rhs.tmp && s.size() == rhs.s.size() && eq && rhs.eq;
+  }
+  bool operator!=(const inorder_iterator<T>& rhs) const { return !(*this == rhs); }
+};
 
 template <typename T>
 class bst {
@@ -63,6 +93,7 @@ class bst {
   typedef std::size_t size_type;
   typedef node<T> node_type;
   typedef node_type* node_pointer;
+  typedef inorder_iterator<T> iterator;
   private:
   std::vector<node_type> pool;
   node_pointer root;
@@ -123,5 +154,7 @@ class bst {
       }
     }
   }
+  iterator begin() const {return inorder_iterator<T>(root);}
+  iterator end() const {return inorder_iterator<T>();}
 };
 

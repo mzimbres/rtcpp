@@ -8,7 +8,7 @@
 
 int main()
 {
-  const int size = 1000;
+  const int size = 10;
   const int a = 1;
   const int b = 2000;
   std::random_device rd;
@@ -17,7 +17,7 @@ int main()
 
   bst<int> t(size);
   typedef bst<int>::node_pointer node_pointer; 
-  for (int i = 0; i < 2 * size; ++i) {
+  for (int i = 0; i < size; ++i) {
     node_pointer iter = t.insert(dis(gen));
     if (!iter)
       break;
@@ -31,10 +31,9 @@ int main()
   std::vector<int> arr;
   std::stack<node_pointer> s;
   for (;;) {
-    if (p) {
+    while (p) {
       s.push(p);
       p = p->llink;
-      continue;
     }
     if (s.size() == 0)
       break;
@@ -44,7 +43,13 @@ int main()
     p = p->rlink;
   }
 
-  std::copy(std::begin(arr), std::end(arr), std::ostream_iterator<int>(std::cout, " "));
+  typedef bst<int>::iterator iterator;
+  for (iterator iter = t.begin(); iter != t.end(); ++iter)
+    std::cout << *iter << std::endl;
+
+  //std::copy(std::begin(arr), std::end(arr), std::ostream_iterator<int>(std::cout, " "));
+  //std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
+  //std::copy(t.begin(), t.end(), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
     
   return 0;
