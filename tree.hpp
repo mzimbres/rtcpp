@@ -23,19 +23,7 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
   std::stack<node_pointer> s;
   node_pointer p;
   node_pointer tmp;
-
   public:
-  //inorder_iterator(const inorder_iterator<T>& rhs)
-  //{
-  //  p = rhs.p;
-  //}
-  //const inorder_iterator<T>& operator=(const inorder_iterator<T>& rhs)
-  //{
-  //  if (this != &rhs)
-  //    p = rhs.p;
-
-  //  return *this;
-  //}
   inorder_iterator()
   : p(0)
   , tmp(0)
