@@ -6,8 +6,7 @@
 
 template <typename T>
 struct node {
-  typedef T key_type;
-  key_type key;
+  T key;
   node* llink;
   node* rlink;
 };
