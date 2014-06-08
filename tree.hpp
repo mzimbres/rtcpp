@@ -1,8 +1,9 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
+#include <stack>
 
-#include "stack.hpp"
+#include "inorder_iterator.hpp"
 
 template <typename T>
 struct node {
@@ -12,75 +13,11 @@ struct node {
 };
 
 template <typename T>
-class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
-  public:
-  typedef typename std::iterator<std::forward_iterator_tag, T>::pointer pointer;
-  typedef typename std::iterator<std::forward_iterator_tag, T>::value_type value_type;
-  typedef node<T> node_type;
-  typedef node_type* node_pointer;
-  private:
-  std::stack<node_pointer> s;
-  node_pointer p;
-  node_pointer tmp;
-  public:
-  inorder_iterator()
-  : p(0)
-  , tmp(0)
-  {}
-  inorder_iterator(node_pointer root)
-  { 
-    p = root;
-    while (p) {
-      s.push(p);
-      p = p->llink;
-    }
-    p = s.top();
-    s.pop();
-    tmp = p;
-    p = p->rlink;
-  }
-
-  inorder_iterator& operator++()
-  {
-    while (p) {
-      s.push(p);
-      p = p->llink;
-    }
-    if (s.size() == 0) {
-      p = 0;
-      tmp = 0;
-      return *this;
-    }
-
-    p = s.top();
-    tmp = p;
-    s.pop();
-    tmp = p;
-    p = p->rlink;
-
-    return *this;
-  }
-  inorder_iterator operator++(int)
-  {
-    inorder_iterator tmp(*this);
-    operator++();
-    return tmp;
-  }
-  T operator*() const {return tmp->key;}
-  bool operator==(const inorder_iterator<T>& rhs) const
-  {
-    return p == rhs.p && tmp == rhs.tmp && s.size() == rhs.s.size();
-  }
-  bool operator!=(const inorder_iterator<T>& rhs) const { return !(*this == rhs); }
-};
-
-template <typename T>
 class bst {
   public:
-  typedef std::size_t size_type;
   typedef node<T> node_type;
   typedef node_type* node_pointer;
-  typedef inorder_iterator<T> iterator;
+  typedef inorder_iterator<T, node > iterator;
   private:
   std::vector<node_type> pool;
   node_pointer root;
@@ -107,7 +44,7 @@ class bst {
     // Let us link the avail stack.
     pool[0].llink = 0;
     pool[0].rlink = 0;
-    for (size_type i = 1; i < pool.size(); ++i) {
+    for (std::size_t i = 1; i < pool.size(); ++i) {
       pool[i].llink = &pool[i - 1];
       pool[i].rlink = 0;
     }
@@ -141,7 +78,7 @@ class bst {
       }
     }
   }
-  iterator begin() const {return inorder_iterator<T>(root);}
-  iterator end() const {return inorder_iterator<T>();}
+  iterator begin() const {return iterator(root);}
+  iterator end() const {return iterator();}
 };
 
