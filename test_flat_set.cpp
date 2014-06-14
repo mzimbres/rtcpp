@@ -8,7 +8,6 @@
 
 #include <boost/container/flat_set.hpp>
 
-#include "tree.hpp"
 #include "to_number.hpp"
 
 int main(int argc, char* argv[])
@@ -36,7 +35,6 @@ int main(int argc, char* argv[])
       ++n;
   }
 
-  //typedef bst<int>::iterator iterator;
   //std::copy(std::begin(s), std::end(s), std::ostream_iterator<int>(std::cout, " "));
   //std::cout << std::endl;
     

@@ -48,7 +48,6 @@ int main(int argc, char* argv[])
       break;
   }
 
-  //typedef bst<int>::iterator iterator;
   //std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
   //std::cout << std::endl;
     
