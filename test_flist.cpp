@@ -84,6 +84,23 @@ class flist {
     tail = q;
     return true;
   }
+  void remove_if(T value)
+  {
+    node_pointer* p1 = &head;
+    node_pointer p2 = head->llink;
+    while (p2) {
+      if (p2->info == value) {
+        node_pointer tmp = p2->llink;
+        p2->llink = avail;
+        avail = p2;
+        p2 = tmp;
+        *p1 = p2;
+        continue;
+      }
+      p1 = &p2->llink;
+      p2 = p2->llink;
+    }
+  }
 };
 
 int main()
@@ -92,6 +109,11 @@ int main()
   for (int i = 0; i < 10; ++i)
     if (!l.push_back(i))
       break;
+  l.remove_if(4);
+  l.remove_if(9);
+  l.push_back(100);
+  l.push_back(200);
+  l.push_back(300);
   std::copy(std::begin(l), std::end(l), std::ostream_iterator<int>(std::cout, ","));
   std::cout << std::endl;
   return 0;
