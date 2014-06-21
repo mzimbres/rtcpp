@@ -8,7 +8,7 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
   typedef typename std::iterator<std::forward_iterator_tag, T>::pointer pointer;
   typedef typename std::iterator<std::forward_iterator_tag, T>::value_type value_type;
   typedef Node<T> node_type;
-  typedef node_type* node_pointer;
+  typedef const node_type* node_pointer;
   private:
   std::stack<node_pointer> s;
   node_pointer p;

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iterator>
 #include <vector>
 #include <stack>
 
@@ -17,7 +16,7 @@ class bst {
   public:
   typedef node<T> node_type;
   typedef node_type* node_pointer;
-  typedef inorder_iterator<T, node > iterator;
+  typedef inorder_iterator<T, node > const_iterator;
   private:
   std::vector<node_type> pool;
   node_pointer root;
@@ -29,8 +28,8 @@ class bst {
   node_pointer get_root() const {return root;}
   bst(std::size_t size);
   node_pointer insert(T key);
-  iterator begin() const {return iterator(root);}
-  iterator end() const {return iterator();}
+  const_iterator begin() const {return const_iterator(root);}
+  const_iterator end() const {return const_iterator();}
 };
 
 template <typename T>
