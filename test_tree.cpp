@@ -4,6 +4,7 @@
 #include <stack>
 #include <random>
 #include <limits>
+#include <functional>
 
 #include "tree.hpp"
 #include "to_number.hpp"
