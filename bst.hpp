@@ -2,21 +2,8 @@
 #include <vector>
 #include <stack>
 
+#include "bst_node.hpp"
 #include "inorder_iterator.hpp"
-
-template <typename T>
-struct node {
-  T key;
-  node* llink;
-  node* rlink;
-  char tag;
-
-  node()
-  : llink(0)
-  , rlink(0)
-  , tag(0)
-  {}
-};
 
 template <typename T>
 class bst {
@@ -37,15 +24,22 @@ class bst {
   node_pointer inorder_predecessor(node_pointer p) const;
   const bst& operator=(const bst& rhs); // To be implemented
   public:
-  node_pointer get_root() const {return head;}
   bst(std::size_t reserve_n);
   node_pointer insert(T key);
-  const_iterator begin() const {return const_iterator(head);}
-  const_iterator end() const {return const_iterator();}
+  const_iterator begin() const;
+  const_iterator end() const {return const_iterator(head);}
 };
 
 template <typename T>
-node_pointer inorder_successor<T>(node_pointer p) const
+bst<T>::const_iterator bst<T>::begin() const
+{
+  node_pointer q = head->llink;
+  while (q->tag & 1)
+    q = q->llink;
+}
+
+template <typename T>
+node_pointer bst<T>::inorder_successor(node_pointer p) const
 {
   if (p->tag & 1)
     return p->rlink;
@@ -58,7 +52,7 @@ node_pointer inorder_successor<T>(node_pointer p) const
 }
 
 template <typename T>
-node_pointer inorder_predecessor<T>(node_pointer p) const
+node_pointer bst<T>::inorder_predecessor(node_pointer p) const
 {
   if (p->tag & 2)
     return p->llink;
