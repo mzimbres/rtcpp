@@ -6,7 +6,7 @@
 #include <limits>
 #include <functional>
 
-#include "tree.hpp"
+#include "bst.hpp"
 #include "to_number.hpp"
 
 //template <typename OutputIterator>
@@ -36,21 +36,23 @@ int main(int argc, char* argv[])
   
   const int size = to_number<int>(argv[1]);
   const int a = 1;
-  const int b = std::numeric_limits<int>::max();
+  //const int b = std::numeric_limits<int>::max();
+  const int b = 10;
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(a, b);
 
   bst<int> t(size);
-  typedef bst<int>::node_pointer node_pointer; 
-  for (;;) {
-    node_pointer iter = t.insert(dis(gen));
-    if (!iter)
-      break;
-  }
+  auto pair = t.insert(4);
+  pair = t.insert(1);
+  pair = t.insert(3);
+  pair = t.insert(10);
+  pair = t.insert(7);
 
-  //std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
-  //std::cout << std::endl;
+  auto begin = std::begin(t);
+  auto end = std::end(t);
+  std::copy(begin, end, std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
     
   return 0;
 }

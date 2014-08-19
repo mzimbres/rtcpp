@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <utility>
 
 #include "bst_node.hpp"
 #include "inorder_iterator.hpp"
@@ -8,38 +9,43 @@
 template <typename T>
 class bst {
   public:
+  typedef T key_type;
   typedef node<T> node_type;
   typedef node_type* node_pointer;
-  typedef inorder_iterator<T, node > const_iterator;
+  typedef inorder_iterator<T> const_iterator;
+  typedef const_iterator iterator;
   private:
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
   std::vector<node_type> pool;
   node_type head;
   node_pointer avail;
-  node_pointer insert_node_right(T key);
-  node_pointer insert_node_left(T key);
+  std::pair<iterator, bool> insert_node_right(node_pointer p, T key);
+  std::pair<iterator, bool> insert_node_left(node_pointer p, T key);
   bst(const bst& rhs); // To be implemented
   node_pointer inorder_successor(node_pointer p) const;
   node_pointer inorder_predecessor(node_pointer p) const;
   const bst& operator=(const bst& rhs); // To be implemented
   public:
   bst(std::size_t reserve_n);
-  node_pointer insert(T key);
+  std::pair<iterator, bool> insert(T key);
   const_iterator begin() const;
-  const_iterator end() const {return const_iterator(head);}
+  const_iterator end() const {return const_iterator(&head);}
 };
 
 template <typename T>
-bst<T>::const_iterator bst<T>::begin() const
+typename bst<T>::const_iterator bst<T>::begin() const
 {
-  node_pointer q = head->llink;
-  while (q->tag & 1)
+  typedef typename bst<T>::const_iterator const_iter;
+  node_pointer q = head.llink;
+  while (!(q->tag & 2))
     q = q->llink;
+
+  return const_iter(q);
 }
 
 template <typename T>
-node_pointer bst<T>::inorder_successor(node_pointer p) const
+typename bst<T>::node_pointer bst<T>::inorder_successor(node_pointer p) const
 {
   if (p->tag & 1)
     return p->rlink;
@@ -52,7 +58,7 @@ node_pointer bst<T>::inorder_successor(node_pointer p) const
 }
 
 template <typename T>
-node_pointer bst<T>::inorder_predecessor(node_pointer p) const
+typename bst<T>::node_pointer bst<T>::inorder_predecessor(node_pointer p) const
 {
   if (p->tag & 2)
     return p->llink;
@@ -67,12 +73,11 @@ node_pointer bst<T>::inorder_predecessor(node_pointer p) const
 template <typename T>
 bst<T>::bst(std::size_t reserve_n)
 : pool(reserve_n == 0 ? 1 : reserve_n)
-, avail(0)
 {
-  head->llink = head;
-  head->rlink = head;
-  head->tag = 0;
-  head->tag = head->tag | 2;
+  head.llink = &head;
+  head.rlink = &head;
+  head.tag = 0;
+  head.tag = head.tag | 2;
 
   const size_type pool_size = pool.size();
   // Let us link the avail stack.
@@ -86,10 +91,11 @@ bst<T>::bst(std::size_t reserve_n)
 }
 
 template <typename T>
-typename bst<T>::node_pointer bst<T>::insert_node_right(T key)
+std::pair<typename bst<T>::iterator, bool> bst<T>::insert_node_right(node_pointer p, T key)
 {
+  typedef std::pair<typename bst<T>::iterator, bool> pair_type;
   if (!avail)
-    return 0; // The tree has exhausted its capacity.
+    return std::make_pair(&head, false); // The tree has exhausted its capacity.
 
   node_pointer q = avail;
   avail = avail->llink;
@@ -106,14 +112,14 @@ typename bst<T>::node_pointer bst<T>::insert_node_right(T key)
     qs->llink = q;
   }
 
-  return q;
+  return std::make_pair(q, true);
 }
 
 template <typename T>
-typename bst<T>::node_pointer bst<T>::insert_node_left(T key)
+std::pair<typename bst<T>::iterator, bool> bst<T>::insert_node_left(node_pointer p, T key)
 {
   if (!avail)
-    return 0; // The tree has exhausted its capacity.
+    return std::make_pair(&head, false); // The tree has exhausted its capacity.
 
   node_pointer q = avail;
   avail = avail->llink;
@@ -130,35 +136,31 @@ typename bst<T>::node_pointer bst<T>::insert_node_left(T key)
     qs->rlink = q;
   }
 
-  return q;
+  return std::make_pair(q, true);
 }
 
 template <typename T>
-typename bst<T>::node_pointer bst<T>::insert(T key)
+std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
 {
-  if (!head->tag) { // the tree is empty
-    head->llink = insert_node_left(key);
-    return head->llink;
-  }
+  if (head.tag & 2) // The tree is empty
+    return insert_node_left(&head, key);
 
-  node_pointer p = head->llink;
+  node_pointer p = head.llink;
   for (;;) {
     if (key < p->key) {
-      if (p->llink) {
+      if (!(p->tag & 2)) {
         p = p->llink;
         continue;
       }
-      p->llink = insert_node_left(key);
-      return p->llink;
+      return insert_node_left(p, key);
     } else if (key > p->key) {
-      if (p->rlink) {
+      if (!(p->tag & 1)) {
         p = p->rlink;
         continue;
       }
-      p->rlink = insert_node_right(key);
-      return p->rlink;
+      return insert_node_right(p, key);
     } else {
-      return p;
+      return std::make_pair(p, false);
     }
   }
 }

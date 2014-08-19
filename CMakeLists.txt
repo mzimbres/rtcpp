@@ -13,7 +13,7 @@ include_directories(${Boost_INCLUDE_DIR})
 
 add_executable(test_std_set test_std_set.cpp)
 add_executable(test_flat_set test_flat_set.cpp)
-add_executable(test_bst test_tree.cpp)
+add_executable(test_bst test_bst.cpp)
 add_executable(test_flist test_flist.cpp)
 add_executable(test_sort sort.cpp)
 

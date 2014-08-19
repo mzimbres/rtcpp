@@ -6,7 +6,6 @@
 #include <random>
 #include <limits>
 
-#include "tree.hpp"
 #include "to_number.hpp"
 
 int main(int argc, char* argv[])

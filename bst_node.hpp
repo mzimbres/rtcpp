@@ -8,7 +8,8 @@ struct node {
   char tag;
 
   node()
-  : llink(0)
+  : key(0)
+  , llink(0)
   , rlink(0)
   , tag(0)
   {}

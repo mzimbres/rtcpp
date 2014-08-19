@@ -10,36 +10,35 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
   typedef node<T> node_type;
   typedef const node_type* node_pointer;
   private:
-  node_pointer p;
-  node_pointer q;
+  node_pointer m_p;
   public:
-  inorder_iterator()
-  : p(0)
-  , q()
-  {}
-  inorder_iterator(node_pointer root)
-  : p(root)
-  , q(0)
-  {}
+  inorder_iterator() : m_p(0) {}
+  inorder_iterator(node_pointer root) : m_p(root) {}
 
   inorder_iterator& operator++()
   {
-    p = p->rlink;
+    node_pointer q = m_p->rlink;
+    if (m_p->tag & 1) {
+      m_p = q;
+      return *this;
+    }
 
-    while (!(p->tag & 2))
-      p = p->llink;
+    while (!(q->tag & 2))
+      q = q->llink;
 
-    q = p;
+    m_p = q;
     return *this;
   }
+
   inorder_iterator operator++(int)
   {
     inorder_iterator tmp(*this);
     operator++();
     return tmp;
   }
-  T operator*() const {return q->key;}
-  bool operator==(const inorder_iterator& rhs) const { return p == rhs.p; }
+
+  T operator*() const {return m_p->key;}
+  bool operator==(const inorder_iterator& rhs) const { return m_p == rhs.m_p; }
   bool operator!=(const inorder_iterator& rhs) const { return !(*this == rhs); }
 };
 
