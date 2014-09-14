@@ -1,7 +1,6 @@
-#include <iostream>
 #include <vector>
-#include <stack>
 #include <utility>
+#include <iterator>
 
 #include "bst_node.hpp"
 #include "inorder_iterator.hpp"
@@ -31,6 +30,8 @@ class bst {
   std::pair<iterator, bool> insert(T key);
   const_iterator begin() const;
   const_iterator end() const {return const_iterator(&head);}
+  const_iterator rbegin() const;
+  const_iterator rend() const {return const_iterator(&head);}
 };
 
 template <typename T>
@@ -42,6 +43,17 @@ typename bst<T>::const_iterator bst<T>::begin() const
     q = q->llink;
 
   return const_iter(q);
+}
+
+template <typename T>
+typename bst<T>::const_iterator bst<T>::rbegin() const
+{
+  typedef typename bst<T>::const_iterator const_iter;
+  node_pointer q = head.llink;
+  while (!(q->tag & 1))
+    q = q->rlink;
+
+  return const_iter(const_iter(q));
 }
 
 template <typename T>

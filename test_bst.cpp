@@ -49,10 +49,11 @@ int main(int argc, char* argv[])
   pair = t.insert(10);
   pair = t.insert(7);
 
-  auto begin = std::begin(t);
-  auto end = std::end(t);
-  std::copy(begin, end, std::ostream_iterator<int>(std::cout, " "));
+  std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
+  auto rbegin = t.rbegin();
+  auto rend = t.rend();
+  //std::copy(rbegin, t.rend(), std::ostream_iterator<int>(std::cout, " "));
     
   return 0;
 }

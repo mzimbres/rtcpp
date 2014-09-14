@@ -3,7 +3,7 @@
 #include "bst_node.hpp"
 
 template <typename T>
-class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
+class inorder_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
   public:
   typedef typename std::iterator<std::forward_iterator_tag, T>::pointer pointer;
   typedef typename std::iterator<std::forward_iterator_tag, T>::value_type value_type;
@@ -34,6 +34,28 @@ class inorder_iterator : public std::iterator<std::forward_iterator_tag, T> {
   {
     inorder_iterator tmp(*this);
     operator++();
+    return tmp;
+  }
+
+  inorder_iterator& operator--()
+  {
+    node_pointer q = m_p->llink;
+    if (m_p->tag & 2) {
+      m_p = q;
+      return *this;
+    }
+
+    while (!(q->tag & 1))
+      q = q->rlink;
+
+    m_p = q;
+    return *this;
+  }
+
+  inorder_iterator operator--(int)
+  {
+    inorder_iterator tmp(*this);
+    operator--();
     return tmp;
   }
 
