@@ -5,8 +5,9 @@
 template <typename T>
 class inorder_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
   public:
-  typedef typename std::iterator<std::forward_iterator_tag, T>::pointer pointer;
-  typedef typename std::iterator<std::forward_iterator_tag, T>::value_type value_type;
+  typedef typename std::iterator<std::bidirectional_iterator_tag, T> iter_base;
+  typedef typename iter_base::pointer pointer;
+  typedef typename iter_base::value_type value_type;
   typedef node<T> node_type;
   typedef const node_type* node_pointer;
   private:
