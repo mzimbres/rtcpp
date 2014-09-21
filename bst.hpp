@@ -2,8 +2,8 @@
 #include <utility>
 #include <iterator>
 
-#include "bst_node.hpp"
 #include "inorder_iterator.hpp"
+#include "node_pool.hpp"
 
 template <typename T>
 class bst {
@@ -17,9 +17,8 @@ class bst {
   private:
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
-  std::vector<node_type> pool;
+  node_pool<T> pool;
   node_type head;
-  node_pointer avail;
   std::pair<iterator, bool> insert_node_right(node_pointer p, T key);
   std::pair<iterator, bool> insert_node_left(node_pointer p, T key);
   bst(const bst& rhs); // To be implemented
@@ -74,33 +73,21 @@ typename bst<T>::node_pointer bst<T>::inorder_predecessor(node_pointer p) const
 
 template <typename T>
 bst<T>::bst(std::size_t reserve_n)
-: pool(reserve_n == 0 ? 1 : reserve_n)
+: pool(reserve_n)
 {
   head.llink = &head;
   head.rlink = &head;
   head.tag = 0;
   head.tag = head.tag | 2;
-
-  const size_type pool_size = pool.size();
-  // Let us link the avail stack.
-  pool[0].llink = 0;
-  pool[0].rlink = 0;
-  for (std::size_t i = 1; i < pool_size; ++i) {
-    pool[i].llink = &pool[i - 1];
-    pool[i].rlink = 0;
-  }
-  avail = &pool.back();
 }
 
 template <typename T>
 std::pair<typename bst<T>::iterator, bool> bst<T>::insert_node_right(node_pointer p, T key)
 {
-  typedef std::pair<typename bst<T>::iterator, bool> pair_type;
-  if (!avail)
+  node_pointer q = pool.allocate();
+  if (!q)
     return std::make_pair(&head, false); // The tree has exhausted its capacity.
 
-  node_pointer q = avail;
-  avail = avail->llink;
   q->key = key;
   q->rlink = p->rlink;
   q->tag = (q->tag & 2) | p->tag & 1;
@@ -120,11 +107,10 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert_node_right(node_pointe
 template <typename T>
 std::pair<typename bst<T>::iterator, bool> bst<T>::insert_node_left(node_pointer p, T key)
 {
-  if (!avail)
+  node_pointer q = pool.allocate();
+  if (!q)
     return std::make_pair(&head, false); // The tree has exhausted its capacity.
 
-  node_pointer q = avail;
-  avail = avail->llink;
   q->key = key;
   q->llink = p->llink;
   q->tag = (q->tag & 1) | p->tag & 2;
