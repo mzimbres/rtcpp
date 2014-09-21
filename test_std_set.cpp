@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "to_number.hpp"
+#include "bst.hpp"
 
 int main(int argc, char* argv[])
 {

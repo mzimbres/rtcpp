@@ -1,7 +1,12 @@
-cpp_trainning
+RTCPP
 =============
 
-Implementation of known algorithms and data structures in c++
+To compile:  cmake  ~/build_dir -DBOOST_ROOT=path -DCMAKE_CXX_FLAGS="-std=c++0x"
 
-To compile run:  cmake  ~/build_dir -DBOOST_ROOT=path -DCMAKE_CXX_FLAGS="-std=c++0x"
+Description:
+=============
+
+The idea of this project is to implement realtime data structures and algorithms
+in C++.
+
 
