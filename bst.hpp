@@ -13,6 +13,7 @@ class bst {
   typedef node_type* node_pointer;
   typedef inorder_iterator<T> const_iterator;
   typedef const_iterator iterator;
+  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
@@ -30,8 +31,8 @@ class bst {
   std::pair<iterator, bool> insert(T key);
   const_iterator begin() const;
   const_iterator end() const {return const_iterator(&head);}
-  const_iterator rbegin() const;
-  const_iterator rend() const {return const_iterator(&head);}
+  const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
+  const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
 };
 
 template <typename T>
@@ -43,17 +44,6 @@ typename bst<T>::const_iterator bst<T>::begin() const
     q = q->llink;
 
   return const_iter(q);
-}
-
-template <typename T>
-typename bst<T>::const_iterator bst<T>::rbegin() const
-{
-  typedef typename bst<T>::const_iterator const_iter;
-  node_pointer q = head.llink;
-  while (!(q->tag & 1))
-    q = q->rlink;
-
-  return const_iter(const_iter(q));
 }
 
 template <typename T>

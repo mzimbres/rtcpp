@@ -51,9 +51,8 @@ int main(int argc, char* argv[])
 
   std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
-  auto rbegin = t.rbegin();
-  auto rend = t.rend();
-  //std::copy(rbegin, t.rend(), std::ostream_iterator<int>(std::cout, " "));
+  std::copy(t.rbegin(), t.rend(), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
     
   return 0;
 }
