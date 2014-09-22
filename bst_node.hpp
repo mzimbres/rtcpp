@@ -5,7 +5,7 @@ struct node {
   T key;
   node* llink;
   node* rlink;
-  char tag;
+  int tag;
 
   node()
   : key(0)

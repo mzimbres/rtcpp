@@ -24,18 +24,21 @@ int main(int argc, char* argv[])
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(a, b);
 
-  bst<int> t(size);
+  bst<int> t1(size);
+  bst<int> t2(size);
 
   int n = 0;
   while (n != size) {
-    auto pair = t.insert(dis(gen));
+    auto pair = t1.insert(dis(gen));
     if (pair.second)
       ++n;
   }
 
-  std::copy(std::begin(t), std::end(t), std::ostream_iterator<int>(std::cout, " "));
+  //t1.copy(t2);
+
+  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
-  std::copy(t.rbegin(), t.rend(), std::ostream_iterator<int>(std::cout, " "));
+  std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
     
   return 0;
