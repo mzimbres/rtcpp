@@ -126,7 +126,7 @@ bst<T>::bst(std::size_t reserve_n)
 {
   head.llink = &head;
   head.rlink = &head;
-  head.tag = lbit | rbit;
+  head.tag = lbit;
 }
 
 template <typename T>
