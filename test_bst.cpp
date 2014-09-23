@@ -33,10 +33,14 @@ int main(int argc, char* argv[])
     if (pair.second)
       ++n;
   }
+  //auto pair = t1.insert(1);
+  //pair = t1.insert(3);
+  //pair = t1.insert(1);
 
-  //t1.copy(t2);
+  t1.copy(t2);
 
-  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
+  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
+  std::copy(std::begin(t2), std::end(t2), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
   std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;

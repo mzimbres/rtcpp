@@ -35,7 +35,8 @@ template <typename T>
 typename node_pool<T>::node_pointer node_pool<T>::allocate()
 {
   node_pointer q = avail;
-  avail = avail->llink;
+  if (avail)
+    avail = avail->llink;
   return q;
 }
 

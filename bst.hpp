@@ -113,7 +113,7 @@ typename bst<T>::node_pointer bst<T>::preorder_successor(node_pointer p) const
     return p->llink;
 
   if (!(p->tag & rbit))
-    return p->llink;
+    return p->rlink;
 
   // This is a leaf node.
   return p->rlink->rlink;
