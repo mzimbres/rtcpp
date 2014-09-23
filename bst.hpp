@@ -116,7 +116,11 @@ typename bst<T>::node_pointer bst<T>::preorder_successor(node_pointer p) const
     return p->rlink;
 
   // This is a leaf node.
-  return p->rlink->rlink;
+  node_pointer q = p->rlink;
+  while (q->tag & rbit)
+    q = q->rlink;
+
+  return q->rlink;
 }
 
 template <typename T>

@@ -29,13 +29,19 @@ int main(int argc, char* argv[])
 
   int n = 0;
   while (n != size) {
-    auto pair = t1.insert(dis(gen));
+    auto a = dis(gen);
+    std::cout << a << " ";
+    auto pair = t1.insert(a);
     if (pair.second)
       ++n;
   }
-  //auto pair = t1.insert(1);
+
+  //std::cout << std::endl;
+
+  //auto pair = t1.insert(4);
   //pair = t1.insert(3);
-  //pair = t1.insert(1);
+  //pair = t1.insert(7);
+  //pair = t1.insert(2);
 
   t1.copy(t2);
 
