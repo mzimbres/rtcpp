@@ -36,12 +36,8 @@ int main(int argc, char* argv[])
 
   //t1.copy(t2);
 
-  for (auto iter = t1.rbegin(); iter != t1.rend(); ++iter)
-    std::cout << *iter << " ";
+  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
-
-  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
-  //std::cout << std::endl;
   std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
     

@@ -138,7 +138,7 @@ std::pair<typename bst<T>::node_pointer, bool> bst<T>::insert_node_right(node_po
 
   q->key = key;
   q->rlink = p->rlink;
-  q->tag = (q->tag & lbit) | p->tag & rbit;
+  q->tag = (q->tag & lbit) | (p->tag & rbit);
   p->rlink = q;
   p->tag = p->tag & lbit;
   q->llink = p;
@@ -161,7 +161,7 @@ std::pair<typename bst<T>::node_pointer, bool> bst<T>::insert_node_left(node_poi
 
   q->key = key;
   q->llink = p->llink;
-  q->tag = (q->tag & rbit) | p->tag & lbit;
+  q->tag = (q->tag & rbit) | (p->tag & lbit);
   p->llink = q;
   p->tag = p->tag & rbit;
   q->rlink = p;
