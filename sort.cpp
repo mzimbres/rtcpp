@@ -9,7 +9,7 @@
 #include "comp_counting_sort.hpp"
 #include "dist_counting_sort.hpp"
 
-int main(int argc, char* argv[])
+int main()
 {
   const int size = 50000;
   const int a = 1;

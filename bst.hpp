@@ -21,8 +21,8 @@ class bst {
   typedef typename pool_type::size_type size_type;
   node_pool<T> pool;
   node_type head;
-  std::pair<node_pointer, bool> insert_node_right(node_pointer p, T key);
-  std::pair<node_pointer, bool> insert_node_left(node_pointer p, T key);
+  node_pointer attach_node_right(node_pointer p);
+  node_pointer attach_node_left(node_pointer p);
   bst(const bst& rhs); // To be implemented
   node_pointer inorder_successor(node_pointer p) const;
   node_pointer inorder_predecessor(node_pointer p) const;
@@ -48,8 +48,8 @@ void bst<T>::copy(bst<T>& rhs)
 
   for (;;) {
     if (!(p->tag & lbit)) {
-      auto pair = rhs.insert_node_left(q, 0);
-      if (!pair.second)
+      node_pointer pair = rhs.attach_node_left(q);
+      if (!pair)
         break;
     }
 
@@ -60,13 +60,12 @@ void bst<T>::copy(bst<T>& rhs)
       break;
 
     if (!(p->tag & rbit)) {
-      auto pair = rhs.insert_node_right(q, 0);
-      if (!pair.second)
+      node_pointer pair = rhs.attach_node_right(q);
+      if (!pair)
         break;
     }
 
     q->key = p->key;
-    q->tag = p->tag;
   }
 }
 
@@ -95,19 +94,6 @@ typename bst<T>::node_pointer bst<T>::inorder_successor(node_pointer p) const
 }
 
 template <typename T>
-typename bst<T>::node_pointer bst<T>::preorder_successor(node_pointer p) const
-{
-  if (!(p->tag & lbit))
-    return p->llink;
-
-  if (!(p->tag & rbit))
-    return p->llink;
-
-  // This is a leaf node.
-  return p->rlink->rlink;
-}
-
-template <typename T>
 typename bst<T>::node_pointer bst<T>::inorder_predecessor(node_pointer p) const
 {
   if (p->tag & lbit)
@@ -121,6 +107,19 @@ typename bst<T>::node_pointer bst<T>::inorder_predecessor(node_pointer p) const
 }
 
 template <typename T>
+typename bst<T>::node_pointer bst<T>::preorder_successor(node_pointer p) const
+{
+  if (!(p->tag & lbit))
+    return p->llink;
+
+  if (!(p->tag & rbit))
+    return p->llink;
+
+  // This is a leaf node.
+  return p->rlink->rlink;
+}
+
+template <typename T>
 bst<T>::bst(std::size_t reserve_n)
 : pool(reserve_n)
 {
@@ -130,13 +129,12 @@ bst<T>::bst(std::size_t reserve_n)
 }
 
 template <typename T>
-std::pair<typename bst<T>::node_pointer, bool> bst<T>::insert_node_right(node_pointer p, T key)
+typename bst<T>::node_pointer bst<T>::attach_node_right(node_pointer p)
 {
   node_pointer q = pool.allocate();
   if (!q)
-    return std::make_pair(&head, false); // The tree has exhausted its capacity.
+    return 0; // The tree has exhausted its capacity.
 
-  q->key = key;
   q->rlink = p->rlink;
   q->tag = (q->tag & lbit) | (p->tag & rbit);
   p->rlink = q;
@@ -149,17 +147,16 @@ std::pair<typename bst<T>::node_pointer, bool> bst<T>::insert_node_right(node_po
     qs->llink = q;
   }
 
-  return std::make_pair(q, true);
+  return q;
 }
 
 template <typename T>
-std::pair<typename bst<T>::node_pointer, bool> bst<T>::insert_node_left(node_pointer p, T key)
+typename bst<T>::node_pointer bst<T>::attach_node_left(node_pointer p)
 {
   node_pointer q = pool.allocate();
   if (!q)
-    return std::make_pair(&head, false); // The tree has exhausted its capacity.
+    return 0; // The tree has exhausted its capacity.
 
-  q->key = key;
   q->llink = p->llink;
   q->tag = (q->tag & rbit) | (p->tag & lbit);
   p->llink = q;
@@ -172,15 +169,17 @@ std::pair<typename bst<T>::node_pointer, bool> bst<T>::insert_node_left(node_poi
     qs->rlink = q;
   }
 
-  return std::make_pair(q, true);
+  return q;
 }
 
 template <typename T>
 std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
 {
   if (head.tag & lbit) { // The tree is empty
-    const auto p = insert_node_left(&head, key);
-    return std::make_pair(p.first, p.second);
+    node_pointer p = attach_node_left(&head);
+    if (p)
+      p->key = key;
+    return std::make_pair(const_iterator(p), static_cast<bool>(p));
   }
 
   node_pointer p = head.llink;
@@ -190,15 +189,19 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
         p = p->llink;
         continue;
       }
-      const auto pair = insert_node_left(p, key);
-      return std::make_pair(pair.first, pair.second);
+      node_pointer pair = attach_node_left(p);
+      if (pair)
+        pair->key = key;
+      return std::make_pair(pair, static_cast<bool>(pair));
     } else if (key > p->key) {
       if (!(p->tag & rbit)) {
         p = p->rlink;
         continue;
       }
-      const auto pair = insert_node_right(p, key);
-      return std::make_pair(pair.first, pair.second);
+      node_pointer q = attach_node_right(p);
+      if (q)
+        q->key = key;
+      return std::make_pair(const_iterator(q), static_cast<bool>(q));
     } else {
       return std::make_pair(p, false);
     }

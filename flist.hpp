@@ -23,6 +23,7 @@ class flist_iterator : public std::iterator<std::forward_iterator_tag, T> {
   flist_iterator& operator++()
   {
     head = head->llink;
+    return *this;
   }
   flist_iterator operator++(int)
   {

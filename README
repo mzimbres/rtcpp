@@ -1,7 +1,8 @@
 RTCPP
 =============
 
-To compile:  cmake  ~/build_dir -DBOOST_ROOT=path -DCMAKE_CXX_FLAGS="-std=c++0x"
+To compile: cmake  ~/rtcpp-dir -DBOOST_ROOT=path -DCMAKE_BUILD_TYPE=Debug
+-DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS="-std=c++0x -Wall -Wextra -Werror
 
 Description:
 =============
