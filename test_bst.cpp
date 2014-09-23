@@ -30,23 +30,16 @@ int main(int argc, char* argv[])
   int n = 0;
   while (n != size) {
     auto a = dis(gen);
-    std::cout << a << " ";
     auto pair = t1.insert(a);
     if (pair.second)
       ++n;
   }
 
-  //std::cout << std::endl;
-
-  //auto pair = t1.insert(4);
-  //pair = t1.insert(3);
-  //pair = t1.insert(7);
-  //pair = t1.insert(2);
-
   t1.copy(t2);
 
-  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   std::copy(std::begin(t2), std::end(t2), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
+  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
   std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
