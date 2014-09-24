@@ -2,7 +2,7 @@
 #include <utility>
 #include <iterator>
 
-#include "inorder_iterator.hpp"
+#include "bst_iterator.hpp"
 #include "node_pool.hpp"
 
 template <typename T>
@@ -11,7 +11,7 @@ class bst {
   typedef T key_type;
   typedef node<T> node_type;
   typedef node_type* node_pointer;
-  typedef inorder_iterator<T> const_iterator;
+  typedef bst_iterator<T> const_iterator;
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
