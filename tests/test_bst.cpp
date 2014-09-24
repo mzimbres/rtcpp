@@ -8,7 +8,7 @@
 
 #include <trees/bst.hpp>
 
-#include "to_number.hpp"
+#include <utility/to_number.hpp>
 
 int main(int argc, char* argv[])
 {
