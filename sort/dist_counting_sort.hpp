@@ -7,15 +7,15 @@
 
 #include "comp_counting_sort.hpp"
 
-template <int A, int B, unsigned N, typename Iter>
-bool dist_counting_sort(Iter begin)
+template <int A, int B, std::size_t N, typename Iter>
+void dist_counting_sort(Iter begin)
 {
   typedef typename std::iterator_traits<Iter>::difference_type diff_type;
   typedef typename std::iterator_traits<Iter>::value_type value_type;
 
-  const unsigned count_size = B - A + 1;
-  unsigned count[count_size] = {0};
-  for (unsigned i = 0; i < N; ++i)
+  const std::size_t count_size = B - A + 1;
+  std::size_t count[count_size] = {0};
+  for (std::size_t i = 0; i < N; ++i)
     count[begin[i] - A] += 1;
 
   std::partial_sum(&count[0], &count[0] + count_size, &count[0]);
@@ -29,6 +29,5 @@ bool dist_counting_sort(Iter begin)
   }
 
   std::copy(&out[0], &out[0] + N, &begin[0]);
-  return true;
 }
 

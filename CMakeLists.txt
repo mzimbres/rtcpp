@@ -11,11 +11,15 @@ include(CPack)
 include_directories(.)
 include_directories(${Boost_INCLUDE_DIR})
 
-add_executable(test_std_set test_std_set.cpp)
-add_executable(test_flat_set test_flat_set.cpp)
-add_executable(test_bst test_bst.cpp)
-add_executable(test_flist test_flist.cpp)
-add_executable(test_sort sort.cpp)
+add_executable(test_std_set tests/test_std_set.cpp)
+add_executable(test_bst tests/test_bst.cpp)
+add_executable(test_flist tests/test_flist.cpp)
+add_executable(test_sort tests/sort.cpp)
+add_executable(test_comp_count_sort tests/test_comp_count_sort.cpp)
 
-#target_link_libraries(test_nmea ${Boost_LIBRARIES})
+if (Boost_FOUND)
+  add_executable(test_flat_set tests/test_flat_set.cpp)
+endif()
+
+add_test(NAME test_comp_count_sort COMMAND test_comp_count_sort)
 
