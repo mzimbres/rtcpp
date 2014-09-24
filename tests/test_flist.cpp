@@ -1,34 +1,32 @@
 #include <iostream>
+#include <vector>
+#include <random>
+#include <algorithm>
+#include <functional>
 
 #include <utility/flist.hpp>
 
 int main()
 {
-  flist<int> l(10);
-  for (int i = 0; i < 4; ++i)
-    if (!l.push_back(i))
-      break;
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.remove_if(100);
-  //l.remove_if(5);
-  //l.remove_if(6);
-  //l.remove_if(9);
-  //l.remove_if(8);
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.push_back(100);
-  l.remove_if(100);
-  //l.push_back(200);
-  //l.push_back(300);
-  std::copy(std::begin(l), std::end(l), std::ostream_iterator<int>(std::cout, ","));
+  const std::size_t size = 40;
+  flist<int> l(size);
+
+  // Random number range.
+  const int a = 1;
+  const int b = 4;
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::generate_n(std::back_inserter(l), size, std::bind(std::uniform_int_distribution<>(a, b), gen));
+
+  std::copy(std::begin(l), std::end(l), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
+  l.remove_if(1);
+  l.remove_if(2);
+  std::copy(std::begin(l), std::end(l), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl;
+  l.remove_if(4);
+  std::copy(std::begin(l), std::end(l), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
   return 0;
 }

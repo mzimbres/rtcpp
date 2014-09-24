@@ -42,6 +42,7 @@ class flist {
   typedef flist_node<T> node_type;
   typedef node_type* node_pointer;
   typedef flist_iterator<T> iterator;
+  typedef T value_type;
   private:
   std::vector<flist_node<T>> pool;
   node_pointer avail;
