@@ -1,23 +1,17 @@
 #include <iostream>
 #include <iterator>
-#include <vector>
-#include <stack>
 #include <random>
 #include <limits>
 #include <functional>
+#include <algorithm>
 
 #include <trees/bst.hpp>
 
 #include <utility/to_number.hpp>
 
-int main(int argc, char* argv[])
+int main()
 {
-  if (argc != 2) {
-    std::cerr << "Usage: ./a.out N" << std::endl;
-    return 1;
-  }
-  
-  const int size = to_number<int>(argv[1]);
+  const int size = 40;
   const int a = 1;
   //const int b = std::numeric_limits<int>::max();
   const int b = size;
@@ -26,7 +20,6 @@ int main(int argc, char* argv[])
   std::uniform_int_distribution<> dis(a, b);
 
   bst<int> t1(size);
-  bst<int> t2(size);
 
   int n = 0;
   while (n != size) {
@@ -36,14 +29,27 @@ int main(int argc, char* argv[])
       ++n;
   }
 
+  if (std::distance(std::begin(t1), std::end(t1)) != size)
+    return 1;
+
+  if (!std::is_sorted(std::begin(t1), std::end(t1)))
+    return 1;
+
+  bst<int> t2(size);
   t1.copy(t2);
 
-  std::copy(std::begin(t2), std::end(t2), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
+  if (!std::equal(std::begin(t1), std::end(t1), std::begin(t2)))
+    return 1; // This is not enough to ensure equality between t1 and t2.
+
+  if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
+    return 1; // No duplicates allowed.
+
+  //std::copy(std::begin(t2), std::end(t2), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
+  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
+  //std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
     
   return 0;
 }

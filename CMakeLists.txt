@@ -22,4 +22,5 @@ if (Boost_FOUND)
 endif()
 
 add_test(NAME test_comp_count_sort COMMAND test_comp_count_sort)
+add_test(NAME test_bst COMMAND test_bst)
 
