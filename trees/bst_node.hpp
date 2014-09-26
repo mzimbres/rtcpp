@@ -1,5 +1,36 @@
 #pragma once
 
+namespace rtcpp {
+
+namespace detail {
+static const int rbit = 1;
+static const int lbit = 2;
+}
+
+inline
+int set_lbit(int tag)
+{
+  return tag | detail::lbit;
+}
+
+inline
+int set_rbit(int tag)
+{
+  return tag | detail::rbit;
+}
+
+inline
+int has_null_llink(int tag)
+{
+  return tag & detail::lbit;
+}
+
+inline
+int has_null_rlink(int tag)
+{
+  return tag & detail::rbit;
+}
+
 template <typename T>
 struct node {
   T key;
@@ -14,4 +45,6 @@ struct node {
   , tag(0)
   {}
 };
+
+}
 

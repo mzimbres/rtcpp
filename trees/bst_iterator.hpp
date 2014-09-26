@@ -2,6 +2,8 @@
 
 #include "bst_node.hpp"
 
+namespace rtcpp {
+
 template <typename T>
 class bst_iterator {
   public:
@@ -66,4 +68,6 @@ class bst_iterator {
   bool operator==(const bst_iterator& rhs) const { return m_p == rhs.m_p; }
   bool operator!=(const bst_iterator& rhs) const { return !(*this == rhs); }
 };
+
+}
 

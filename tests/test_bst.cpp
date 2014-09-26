@@ -11,7 +11,7 @@
 
 int main()
 {
-  const int size = 40;
+  const int size = 400000;
   const int a = 1;
   //const int b = std::numeric_limits<int>::max();
   const int b = size;
@@ -19,7 +19,7 @@ int main()
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(a, b);
 
-  bst<int> t1(size);
+  rtcpp::bst<int> t1(size);
 
   int n = 0;
   while (n != size) {
@@ -35,7 +35,7 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  bst<int> t2(size);
+  rtcpp::bst<int> t2(size);
   t1.copy(t2);
 
   if (!std::equal(std::begin(t1), std::end(t1), std::begin(t2)))

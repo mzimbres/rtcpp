@@ -2,6 +2,8 @@
 
 #include "bst_node.hpp"
 
+namespace rtcpp {
+
 template <typename T>
 class node_pool {
   private:
@@ -38,5 +40,7 @@ typename node_pool<T>::node_pointer node_pool<T>::allocate()
   if (avail)
     avail = avail->llink;
   return q;
+}
+
 }
 

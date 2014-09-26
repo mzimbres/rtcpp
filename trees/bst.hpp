@@ -5,6 +5,8 @@
 #include "bst_iterator.hpp"
 #include "node_pool.hpp"
 
+namespace rtcpp {
+
 template <typename T>
 class bst {
   public:
@@ -15,8 +17,8 @@ class bst {
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
-  static const int rbit = 1;
-  static const int lbit = 2;
+  static const int rbit = detail::rbit;
+  static const int lbit = detail::lbit;
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
   node_pool<T> pool;
@@ -74,7 +76,7 @@ typename bst<T>::const_iterator bst<T>::begin() const
 {
   typedef typename bst<T>::const_iterator const_iter;
   node_pointer q = head.llink;
-  while (!(q->tag & lbit))
+  while (!has_null_llink(q->tag))
     q = q->llink;
 
   return const_iter(q);
@@ -83,11 +85,11 @@ typename bst<T>::const_iterator bst<T>::begin() const
 template <typename T>
 typename bst<T>::node_pointer bst<T>::inorder_successor(node_pointer p) const
 {
-  if (p->tag & rbit)
+  if (has_null_rlink(p->tag))
     return p->rlink;
 
   node_pointer q = p->rlink;
-  while (!(q->tag & lbit))
+  while (!has_null_llink(q->tag))
     q = q->llink;
 
   return q;
@@ -100,7 +102,7 @@ typename bst<T>::node_pointer bst<T>::inorder_predecessor(node_pointer p) const
     return p->llink;
 
   node_pointer q = p->llink;
-  while (!(q->tag & rbit))
+  while (!has_null_rlink(q->tag))
     q = q->rlink;
 
   return q;
@@ -109,15 +111,15 @@ typename bst<T>::node_pointer bst<T>::inorder_predecessor(node_pointer p) const
 template <typename T>
 typename bst<T>::node_pointer bst<T>::preorder_successor(node_pointer p) const
 {
-  if (!(p->tag & lbit))
+  if (!has_null_llink(p->tag))
     return p->llink;
 
-  if (!(p->tag & rbit))
+  if (!has_null_rlink(p->tag))
     return p->rlink;
 
   // This is a leaf node.
   node_pointer q = p->rlink;
-  while (q->tag & rbit)
+  while (has_null_rlink(q->tag))
     q = q->rlink;
 
   return q->rlink;
@@ -140,13 +142,13 @@ typename bst<T>::node_pointer bst<T>::attach_node_right(node_pointer p)
     return 0; // The tree has exhausted its capacity.
 
   q->rlink = p->rlink;
-  q->tag = (q->tag & lbit) | (p->tag & rbit);
+  q->tag = has_null_llink(q->tag) | has_null_rlink(p->tag);
   p->rlink = q;
-  p->tag = p->tag & lbit;
+  p->tag = has_null_llink(p->tag);
   q->llink = p;
-  q->tag = q->tag | lbit;
+  q->tag = set_lbit(q->tag);
 
-  if (!(q->tag & rbit)) {
+  if (!has_null_rlink(q->tag)) {
     node_pointer qs = inorder_successor(q);
     qs->llink = q;
   }
@@ -162,13 +164,13 @@ typename bst<T>::node_pointer bst<T>::attach_node_left(node_pointer p)
     return 0; // The tree has exhausted its capacity.
 
   q->llink = p->llink;
-  q->tag = (q->tag & rbit) | (p->tag & lbit);
+  q->tag = has_null_rlink(q->tag) | has_null_llink(p->tag);
   p->llink = q;
-  p->tag = p->tag & rbit;
+  p->tag = has_null_rlink(p->tag);
   q->rlink = p;
-  q->tag = q->tag | rbit;
+  q->tag = set_rbit(q->tag);
 
-  if (!(q->tag & lbit)) {
+  if (!has_null_llink(q->tag)) {
     node_pointer qs = inorder_predecessor(q);
     qs->rlink = q;
   }
@@ -179,7 +181,7 @@ typename bst<T>::node_pointer bst<T>::attach_node_left(node_pointer p)
 template <typename T>
 std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
 {
-  if (head.tag & lbit) { // The tree is empty
+  if (has_null_llink(head.tag)) { // The tree is empty
     node_pointer p = attach_node_left(&head);
     if (p)
       p->key = key;
@@ -189,7 +191,7 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
   node_pointer p = head.llink;
   for (;;) {
     if (key < p->key) {
-      if (!(p->tag & lbit)) {
+      if (!has_null_llink(p->tag)) {
         p = p->llink;
         continue;
       }
@@ -198,7 +200,7 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
         pair->key = key;
       return std::make_pair(pair, static_cast<bool>(pair));
     } else if (key > p->key) {
-      if (!(p->tag & rbit)) {
+      if (!has_null_rlink(p->tag)) {
         p = p->rlink;
         continue;
       }
@@ -210,5 +212,7 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
       return std::make_pair(p, false);
     }
   }
+}
+
 }
 
