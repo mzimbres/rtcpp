@@ -1,13 +1,59 @@
 RTCPP
+============
+
+  The idea of this project is to implement realtime data structures and algorithms
+  in C++. Most of what is implemented here was taken from the book "The Art of Computer
+  programming Vol. 1 and 3".
+
+Node based
 =============
 
-To compile: cmake  ~/rtcpp-dir -DBOOST_ROOT=path -DCMAKE_BUILD_TYPE=Debug
--DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS="-std=c++0x -Wall -Wextra -Werror
+  Node based containers were my main motivation to begin this project. The bad
+  thing about standard containers in C++ is the way they handle memory. There are
+  some things that make me regret using them:
 
-Description:
+  1) If you are using the default allocator you are probabilly using malloc for
+     each new item inserted in your container, malloc in turn makes use of
+     system calls to make room for the new inserted item. Imagine yourself
+     using new to allocate space for an int as would be the case for
+     std::set<int> for example.  To avoid this one has to stick to custom
+     allocators, however this does no solve all the problems.
+
+  2) Dynamic allocations on the heap on systems that demand 7 - 24 availability
+     are dangerous as you can end up with a very fragmented heap affecting 
+     program performace.
+
+  3) Even though one can use memory pools with allocators, they are more suitable
+     for situations where the container size must increase on demand and one
+     cannot place an upper bound on the maximum container size. In my job I
+     often know in advance how big the container can increase. That means I
+     am paying for what I do not need.
+
+  These are some problems allocators cannot handle properly.
+
+  a) It is difficult or maybe impossible to write an allocator with constant
+     allocation time. With "contant" I mean something that does no depend on
+     the container size or on how fragmented the heap may be. I do not mean
+     "amortized" constant time. This fact is due mainly to the fact the
+     container must abtain their value_type from allocators. If on the other
+     hand they could get the node_type, contant time could be easily achieved
+     as is this case, the the node_type links can be used to link the nodes
+     toguether forming an avail stack. That way nodes can be allocated by 
+
+                    node_pointer q = avail;
+                    if (avail)
+                      avail = avail->llink;
+                    return q;
+
+     We see that just a couple of instructions are used, which makes allocation
+     realtime.
+
+Compilation
 =============
 
-The idea of this project is to implement realtime data structures and algorithms
-in C++.
+  To compile you will need a C++11 compiler and CMake. Boost libraries are optional.
 
+  cmake  ~/rtcpp-dir -DBOOST_ROOT=path -DCMAKE_BUILD_TYPE=Debug
+  -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS="-std=c++0x -Wall -Wextra -Werror"
+  -DCMAKE_INSTALL_PREFIX="~/local"
 
