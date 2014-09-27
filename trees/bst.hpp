@@ -17,8 +17,6 @@ class bst {
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
-  static const int rbit = detail::rbit;
-  static const int lbit = detail::lbit;
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
   node_pool<T> pool;
@@ -26,18 +24,28 @@ class bst {
   node_pointer attach_node_right(node_pointer p);
   node_pointer attach_node_left(node_pointer p);
   bst(const bst& rhs); // To be implemented
-  node_pointer inorder_successor(node_pointer p) const;
-  node_pointer inorder_predecessor(node_pointer p) const;
-  node_pointer preorder_successor(node_pointer p) const;
   public:
   void copy(bst& rhs); // Copies this to rhs.
   bst(std::size_t reserve_n);
+  ~bst();
+  void clear();
   std::pair<iterator, bool> insert(T key);
   const_iterator begin() const;
   const_iterator end() const {return const_iterator(&head);}
   const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
   const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
 };
+
+template <typename T>
+void bst<T>::clear()
+{
+}
+
+template <typename T>
+bst<T>::~bst<T>()
+{
+  clear();
+}
 
 template <typename T>
 void bst<T>::copy(bst<T>& rhs)
@@ -49,19 +57,19 @@ void bst<T>::copy(bst<T>& rhs)
   node_pointer q = &rhs.head;
 
   for (;;) {
-    if (!(p->tag & lbit)) {
+    if (!has_null_llink(p->tag)) {
       node_pointer pair = rhs.attach_node_left(q);
       if (!pair)
         break;
     }
 
     p = preorder_successor(p);
-    q = rhs.preorder_successor(q);
+    q = preorder_successor(q);
 
     if (p == &head)
       break;
 
-    if (!(p->tag & rbit)) {
+    if (!has_null_rlink(p->tag)) {
       node_pointer pair = rhs.attach_node_right(q);
       if (!pair)
         break;
@@ -83,55 +91,12 @@ typename bst<T>::const_iterator bst<T>::begin() const
 }
 
 template <typename T>
-typename bst<T>::node_pointer bst<T>::inorder_successor(node_pointer p) const
-{
-  if (has_null_rlink(p->tag))
-    return p->rlink;
-
-  node_pointer q = p->rlink;
-  while (!has_null_llink(q->tag))
-    q = q->llink;
-
-  return q;
-}
-
-template <typename T>
-typename bst<T>::node_pointer bst<T>::inorder_predecessor(node_pointer p) const
-{
-  if (p->tag & lbit)
-    return p->llink;
-
-  node_pointer q = p->llink;
-  while (!has_null_rlink(q->tag))
-    q = q->rlink;
-
-  return q;
-}
-
-template <typename T>
-typename bst<T>::node_pointer bst<T>::preorder_successor(node_pointer p) const
-{
-  if (!has_null_llink(p->tag))
-    return p->llink;
-
-  if (!has_null_rlink(p->tag))
-    return p->rlink;
-
-  // This is a leaf node.
-  node_pointer q = p->rlink;
-  while (has_null_rlink(q->tag))
-    q = q->rlink;
-
-  return q->rlink;
-}
-
-template <typename T>
 bst<T>::bst(std::size_t reserve_n)
 : pool(reserve_n)
 {
   head.llink = &head;
   head.rlink = &head;
-  head.tag = lbit;
+  head.tag = detail::lbit;
 }
 
 template <typename T>

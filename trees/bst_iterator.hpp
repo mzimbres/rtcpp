@@ -22,16 +22,7 @@ class bst_iterator {
 
   bst_iterator& operator++()
   {
-    node_pointer q = m_p->rlink;
-    if (m_p->tag & 1) {
-      m_p = q;
-      return *this;
-    }
-
-    while (!(q->tag & 2))
-      q = q->llink;
-
-    m_p = q;
+    m_p = inorder_successor(m_p);
     return *this;
   }
 
@@ -44,16 +35,7 @@ class bst_iterator {
 
   bst_iterator& operator--()
   {
-    node_pointer q = m_p->llink;
-    if (m_p->tag & 2) {
-      m_p = q;
-      return *this;
-    }
-
-    while (!(q->tag & 1))
-      q = q->rlink;
-
-    m_p = q;
+    m_p = inorder_predecessor(m_p);
     return *this;
   }
 

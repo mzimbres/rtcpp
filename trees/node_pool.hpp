@@ -8,14 +8,15 @@ template <typename T>
 class node_pool {
   private:
   typedef node<T> node_type;
-  typedef node_type* node_pointer;
+  typedef node_type* pointer;
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
   std::vector<node_type> pool;
-  node_pointer avail;
+  pointer avail;
   public:
   node_pool(std::size_t reserve_n);
   node_type* allocate();
+  void deallocate(pointer* p);
 };
 
 template <typename T>
@@ -34,12 +35,23 @@ node_pool<T>::node_pool(std::size_t reserve_n)
 }
 
 template <typename T>
-typename node_pool<T>::node_pointer node_pool<T>::allocate()
+typename node_pool<T>::pointer node_pool<T>::allocate()
 {
-  node_pointer q = avail;
+  pointer q = avail;
   if (avail)
     avail = avail->llink;
   return q;
+}
+
+template <typename T>
+void node_pool<T>::deallocate(typename node_pool<T>::pointer* p)
+{
+  if (!p)
+    return;
+
+  p->rlink = 0;
+  p->llink = avail;
+  avail = p;
 }
 
 }

@@ -2,6 +2,21 @@
 
 namespace rtcpp {
 
+template <typename T>
+struct node {
+  T key;
+  node* llink;
+  node* rlink;
+  int tag;
+
+  node()
+  : key(0)
+  , llink(0)
+  , rlink(0)
+  , tag(0)
+  {}
+};
+
 namespace detail {
 static const int rbit = 1;
 static const int lbit = 2;
@@ -31,20 +46,48 @@ int has_null_rlink(int tag)
   return tag & detail::rbit;
 }
 
-template <typename T>
-struct node {
-  T key;
-  node* llink;
-  node* rlink;
-  int tag;
+template <typename Node>
+Node* inorder_successor(Node* p)
+{
+  if (has_null_rlink(p->tag))
+    return p->rlink;
 
-  node()
-  : key(0)
-  , llink(0)
-  , rlink(0)
-  , tag(0)
-  {}
-};
+  Node* q = p->rlink;
+  while (!has_null_llink(q->tag))
+    q = q->llink;
+
+  return q;
+}
+
+template <typename Node>
+Node* inorder_predecessor(Node* p)
+{
+  if (has_null_llink(p->tag))
+    return p->llink;
+
+  Node* q = p->llink;
+  while (!has_null_rlink(q->tag))
+    q = q->rlink;
+
+  return q;
+}
+
+template <typename Node>
+Node* preorder_successor(Node* p)
+{
+  if (!has_null_llink(p->tag))
+    return p->llink;
+
+  if (!has_null_rlink(p->tag))
+    return p->rlink;
+
+  // This is a leaf node.
+  Node* q = p->rlink;
+  while (has_null_rlink(q->tag))
+    q = q->rlink;
+
+  return q->rlink;
+}
 
 }
 
