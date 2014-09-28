@@ -22,7 +22,6 @@ class bst {
   node_pool<T> pool;
   node_type head;
   node_pointer attach_node_right(node_pointer p);
-  node_pointer attach_node_left(node_pointer p);
   bst(const bst& rhs); // To be implemented
   public:
   void copy(bst& rhs); // Copies this to rhs.
@@ -58,9 +57,11 @@ void bst<T>::copy(bst<T>& rhs)
 
   for (;;) {
     if (!has_null_llink(p->tag)) {
-      node_pointer pair = rhs.attach_node_left(q);
-      if (!pair)
-        break;
+      node_pointer tmp = rhs.pool.allocate();
+      if (!tmp)
+        break; // The tree has exhausted its capacity.
+
+      attach_node_left(q, tmp);
     }
 
     p = preorder_successor(p);
@@ -111,35 +112,17 @@ typename bst<T>::node_pointer bst<T>::attach_node_right(node_pointer p)
 }
 
 template <typename T>
-typename bst<T>::node_pointer bst<T>::attach_node_left(node_pointer p)
-{
-  node_pointer q = pool.allocate();
-  if (!q)
-    return 0; // The tree has exhausted its capacity.
-
-  q->llink = p->llink;
-  q->tag = has_null_rlink(q->tag) | has_null_llink(p->tag);
-  p->llink = q;
-  p->tag = has_null_rlink(p->tag);
-  q->rlink = p;
-  q->tag = set_rbit(q->tag);
-
-  if (!has_null_llink(q->tag)) {
-    node_pointer qs = inorder_predecessor(q);
-    qs->rlink = q;
-  }
-
-  return q;
-}
-
-template <typename T>
 std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
 {
+  typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty
-    node_pointer p = attach_node_left(&head);
-    if (p)
-      p->key = key;
-    return std::make_pair(const_iterator(p), static_cast<bool>(p));
+    node_pointer q = pool.allocate();
+    if (!q)
+      return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
+
+    attach_node_left(&head, q);
+    q->key = key;
+    return std::make_pair(const_iterator(q), true);
   }
 
   node_pointer p = head.llink;
@@ -149,10 +132,13 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
         p = p->llink;
         continue;
       }
-      node_pointer pair = attach_node_left(p);
-      if (pair)
-        pair->key = key;
-      return std::make_pair(pair, static_cast<bool>(pair));
+      node_pointer q = pool.allocate();
+      if (!q)
+        return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
+
+      attach_node_left(p, q);
+      q->key = key;
+      return std::make_pair(q, true);
     } else if (key > p->key) {
       if (!has_null_rlink(p->tag)) {
         p = p->rlink;

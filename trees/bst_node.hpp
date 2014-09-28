@@ -89,5 +89,22 @@ Node* preorder_successor(Node* p)
   return q->rlink;
 }
 
+template <typename Node>
+void attach_node_left(Node* p, Node* q)
+{
+  // Attaches node q on the left of p. Does not check if pointers are valid.
+  q->llink = p->llink;
+  q->tag = has_null_rlink(q->tag) | has_null_llink(p->tag);
+  p->llink = q;
+  p->tag = has_null_rlink(p->tag);
+  q->rlink = p;
+  q->tag = set_rbit(q->tag);
+
+  if (!has_null_llink(q->tag)) {
+    Node* qs = inorder_predecessor(q);
+    qs->rlink = q;
+  }
+}
+
 }
 
