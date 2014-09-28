@@ -11,17 +11,16 @@ template <typename T>
 class bst {
   public:
   typedef T key_type;
-  typedef node<T> node_type;
-  typedef node_type* node_pointer;
   typedef bst_iterator<T> const_iterator;
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
+  typedef node<T> node_type;
+  typedef node_type* node_pointer;
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
   node_pool<T> pool;
   node_type head;
-  node_pointer attach_node_right(node_pointer p);
   bst(const bst& rhs); // To be implemented
   public:
   void copy(bst& rhs); // Copies this to rhs.
@@ -34,6 +33,15 @@ class bst {
   const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
   const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
 };
+
+template <typename T>
+bst<T>::bst(std::size_t reserve_n)
+: pool(reserve_n)
+{
+  head.llink = &head;
+  head.rlink = &head;
+  head.tag = detail::lbit;
+}
 
 template <typename T>
 void bst<T>::clear()
@@ -71,44 +79,15 @@ void bst<T>::copy(bst<T>& rhs)
       break;
 
     if (!has_null_rlink(p->tag)) {
-      node_pointer pair = rhs.attach_node_right(q);
-      if (!pair)
-        break;
+      node_pointer tmp = rhs.pool.allocate();
+      if (!tmp)
+        break; // The tree has exhausted its capacity.
+
+      attach_node_right(q, tmp);
     }
 
     q->key = p->key;
   }
-}
-
-template <typename T>
-bst<T>::bst(std::size_t reserve_n)
-: pool(reserve_n)
-{
-  head.llink = &head;
-  head.rlink = &head;
-  head.tag = detail::lbit;
-}
-
-template <typename T>
-typename bst<T>::node_pointer bst<T>::attach_node_right(node_pointer p)
-{
-  node_pointer q = pool.allocate();
-  if (!q)
-    return 0; // The tree has exhausted its capacity.
-
-  q->rlink = p->rlink;
-  q->tag = has_null_llink(q->tag) | has_null_rlink(p->tag);
-  p->rlink = q;
-  p->tag = has_null_llink(p->tag);
-  q->llink = p;
-  q->tag = set_lbit(q->tag);
-
-  if (!has_null_rlink(q->tag)) {
-    node_pointer qs = inorder_successor(q);
-    qs->llink = q;
-  }
-
-  return q;
 }
 
 template <typename T>
@@ -144,10 +123,13 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
         p = p->rlink;
         continue;
       }
-      node_pointer q = attach_node_right(p);
-      if (q)
-        q->key = key;
-      return std::make_pair(const_iterator(q), static_cast<bool>(q));
+      node_pointer q = pool.allocate();
+      if (!q)
+        return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
+
+      attach_node_right(p, q);
+      q->key = key;
+      return std::make_pair(q, true);
     } else {
       return std::make_pair(p, false);
     }

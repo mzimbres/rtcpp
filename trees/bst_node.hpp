@@ -5,15 +5,15 @@ namespace rtcpp {
 template <typename T>
 struct node {
   T key;
+  int tag;
   node* llink;
   node* rlink;
-  int tag;
 
   node()
   : key(0)
+  , tag(0)
   , llink(0)
   , rlink(0)
-  , tag(0)
   {}
 };
 
@@ -103,6 +103,23 @@ void attach_node_left(Node* p, Node* q)
   if (!has_null_llink(q->tag)) {
     Node* qs = inorder_predecessor(q);
     qs->rlink = q;
+  }
+}
+
+template <typename Node>
+void attach_node_right(Node* p, Node* q)
+{
+  // Attaches node q on the left of p. Does not check if pointers are valid.
+  q->rlink = p->rlink;
+  q->tag = has_null_llink(q->tag) | has_null_rlink(p->tag);
+  p->rlink = q;
+  p->tag = has_null_llink(p->tag);
+  q->llink = p;
+  q->tag = set_lbit(q->tag);
+
+  if (!has_null_rlink(q->tag)) {
+    Node* qs = inorder_successor(q);
+    qs->llink = q;
   }
 }
 
