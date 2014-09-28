@@ -1,13 +1,14 @@
 #include <vector>
 #include <utility>
 #include <iterator>
+#include <functional>
 
 #include "bst_iterator.hpp"
 #include "node_pool.hpp"
 
 namespace rtcpp {
 
-template <typename T>
+template <typename T, typename Compare = std::less<T>>
 class bst {
   public:
   typedef T key_type;
@@ -22,6 +23,7 @@ class bst {
   typedef typename pool_type::size_type size_type;
   node_pool<T> pool;
   node_type head;
+  Compare comp;
   bst(const bst& rhs); // To be implemented
   public:
   void copy(bst& rhs) const; // Copies this to rhs.
@@ -35,8 +37,8 @@ class bst {
   const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
 };
 
-template <typename T>
-bst<T>::bst(std::size_t reserve_n)
+template <typename T, typename Compare>
+bst<T, Compare>::bst(std::size_t reserve_n)
 : pool(reserve_n)
 {
   head.llink = &head;
@@ -44,19 +46,19 @@ bst<T>::bst(std::size_t reserve_n)
   head.tag = detail::lbit;
 }
 
-template <typename T>
-void bst<T>::clear()
+template <typename T, typename Compare>
+void bst<T, Compare>::clear()
 {
 }
 
-template <typename T>
-bst<T>::~bst<T>()
+template <typename T, typename Compare>
+bst<T, Compare>::~bst()
 {
   clear();
 }
 
-template <typename T>
-void bst<T>::copy(bst<T>& rhs) const
+template <typename T, typename Compare>
+void bst<T, Compare>::copy(bst<T, Compare>& rhs) const
 {
   if (this == &rhs)
     return;
@@ -91,8 +93,8 @@ void bst<T>::copy(bst<T>& rhs) const
   }
 }
 
-template <typename T>
-std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
+template <typename T, typename Compare>
+std::pair<typename bst<T, Compare>::iterator, bool> bst<T, Compare>::insert(T key)
 {
   typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty
@@ -107,7 +109,7 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
 
   node_pointer p = head.llink;
   for (;;) {
-    if (key < p->key) {
+    if (comp(key, p->key)) {
       if (!has_null_llink(p->tag)) {
         p = p->llink;
         continue;
@@ -119,7 +121,7 @@ std::pair<typename bst<T>::iterator, bool> bst<T>::insert(T key)
       attach_node_left(p, q);
       q->key = key;
       return std::make_pair(q, true);
-    } else if (key > p->key) {
+    } else if (comp(p->key, key)) {
       if (!has_null_rlink(p->tag)) {
         p = p->rlink;
         continue;
