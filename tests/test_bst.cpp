@@ -11,7 +11,7 @@
 
 int main()
 {
-  const int size = 400000;
+  const int size = 4000;
   const int a = 1;
   //const int b = std::numeric_limits<int>::max();
   const int b = size;

@@ -30,7 +30,7 @@ class bst {
   ~bst();
   void clear();
   std::pair<iterator, bool> insert(T key);
-  const_iterator begin() const;
+  const_iterator begin() const {return const_iterator(inorder_successor(&head));}
   const_iterator end() const {return const_iterator(&head);}
   const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
   const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
@@ -77,17 +77,6 @@ void bst<T>::copy(bst<T>& rhs)
 
     q->key = p->key;
   }
-}
-
-template <typename T>
-typename bst<T>::const_iterator bst<T>::begin() const
-{
-  typedef typename bst<T>::const_iterator const_iter;
-  node_pointer q = head.llink;
-  while (!has_null_llink(q->tag))
-    q = q->llink;
-
-  return const_iter(q);
 }
 
 template <typename T>
