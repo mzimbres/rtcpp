@@ -17,13 +17,14 @@ class bst {
   private:
   typedef node<T> node_type;
   typedef node_type* node_pointer;
+  typedef const node_type* const_node_pointer;
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
   node_pool<T> pool;
   node_type head;
   bst(const bst& rhs); // To be implemented
   public:
-  void copy(bst& rhs); // Copies this to rhs.
+  void copy(bst& rhs) const; // Copies this to rhs.
   bst(std::size_t reserve_n);
   ~bst();
   void clear();
@@ -55,12 +56,12 @@ bst<T>::~bst<T>()
 }
 
 template <typename T>
-void bst<T>::copy(bst<T>& rhs)
+void bst<T>::copy(bst<T>& rhs) const
 {
   if (this == &rhs)
     return;
 
-  node_pointer p = &head;
+  const_node_pointer p = &head;
   node_pointer q = &rhs.head;
 
   for (;;) {
