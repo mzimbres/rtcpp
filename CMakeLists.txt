@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-project(cpp_trainning)
+project(rtcpp)
 
-find_package(Boost "1.55.0" COMPONENTS program_options OPTIONAL)
+find_package(Boost "1.55.0" COMPONENTS timer system program_options REQUIRED)
 
 enable_testing()
 include(CTest)
@@ -19,6 +19,8 @@ add_executable(test_comp_count_sort tests/test_comp_count_sort.cpp)
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
   add_executable(test_flat_set tests/test_flat_set.cpp)
+  add_executable(bench_bst benchmarks/bench_bst.cpp)
+  target_link_libraries(bench_bst ${Boost_LIBRARIES})
 endif()
 
 add_test(NAME test_comp_count_sort COMMAND test_comp_count_sort)
