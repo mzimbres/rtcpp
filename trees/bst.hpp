@@ -22,12 +22,12 @@ class bst { // Unbalanced binary search tree
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
   typedef std::vector<node_type> pool_type;
-  typedef typename pool_type::size_type size_type;
   Allocator pool;
   node_type head;
   Compare comp;
   bst(const bst& rhs); // To be implemented
   public:
+  typedef typename pool_type::size_type size_type;
   bst(std::size_t n);
   ~bst();
   void copy(bst& rhs) const; // Copies this to rhs.

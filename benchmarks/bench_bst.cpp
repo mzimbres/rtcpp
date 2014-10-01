@@ -50,6 +50,19 @@ options parse_options(int argc, char* argv[])
   return op;
 }
 
+template <typename Set, typename C>
+void fill_set_n(Set& set, C c, typename Set::size_type size)
+{
+  typedef typename Set::size_type size_type;
+  size_type n = 0;
+  while (n != size) {
+    auto a = c();
+    auto pair = set.insert(a);
+    if (pair.second)
+      ++n;
+  }
+}
+
 int main(int argc, char* argv[])
 {
   try {
@@ -67,32 +80,26 @@ int main(int argc, char* argv[])
 
 
     {
+      rtcpp::bst<int> t1(size);
       std::cerr << "Time to fill a bst:       ";
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.repeat; ++i) {
-        rtcpp::bst<int> t1(size);
-        int n = 0;
-        while (n != size) {
-          auto a = dis(gen);
-          auto pair = t1.insert(a);
-          if (pair.second)
-            ++n;
-        }
+        fill_set_n( t1
+                  , [&](){ return dis(gen);}
+                  , size);
+        t1.clear();
       }
     }
 
     {
+      std::set<int> t1;
       std::cerr << "Time to fill an std::set: ";
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.repeat; ++i) {
-        std::set<int> t1;
-        int n = 0;
-        while (n != size) {
-          auto a = dis(gen);
-          auto pair = t1.insert(a);
-          if (pair.second)
-            ++n;
-        }
+        fill_set_n( t1
+                  , [&](){ return dis(gen);}
+                  , size);
+        t1.clear();
       }
     }
   } catch (...) {
