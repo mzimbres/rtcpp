@@ -8,8 +8,10 @@
 
 namespace rtcpp {
 
-template <typename T, typename Compare = std::less<T>>
-class bst {
+template < typename T
+         , typename Compare = std::less<T>
+         , typename Allocator = node_pool<T>>
+class bst { // Unbalanced binary search tree
   public:
   typedef T key_type;
   typedef bst_iterator<T> const_iterator;
@@ -21,14 +23,14 @@ class bst {
   typedef const node_type* const_node_pointer;
   typedef std::vector<node_type> pool_type;
   typedef typename pool_type::size_type size_type;
-  node_pool<T> pool;
+  Allocator pool;
   node_type head;
   Compare comp;
   bst(const bst& rhs); // To be implemented
   public:
-  void copy(bst& rhs) const; // Copies this to rhs.
-  bst(std::size_t reserve_n);
+  bst(std::size_t n);
   ~bst();
+  void copy(bst& rhs) const; // Copies this to rhs.
   void clear();
   std::pair<iterator, bool> insert(T key);
   const_iterator begin() const {return const_iterator(inorder_successor(&head));}
@@ -37,28 +39,28 @@ class bst {
   const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
 };
 
-template <typename T, typename Compare>
-bst<T, Compare>::bst(std::size_t reserve_n)
-: pool(reserve_n)
+template <typename T, typename Compare, typename Allocator>
+bst<T, Compare, Allocator>::bst(std::size_t n)
+: pool(n)
 {
   head.llink = &head;
   head.rlink = &head;
   head.tag = detail::lbit;
 }
 
-template <typename T, typename Compare>
-void bst<T, Compare>::clear()
+template <typename T, typename Compare, typename Allocator>
+void bst<T, Compare, Allocator>::clear()
 {
 }
 
-template <typename T, typename Compare>
-bst<T, Compare>::~bst()
+template <typename T, typename Compare, typename Allocator>
+bst<T, Compare, Allocator>::~bst()
 {
   clear();
 }
 
-template <typename T, typename Compare>
-void bst<T, Compare>::copy(bst<T, Compare>& rhs) const
+template <typename T, typename Compare, typename Allocator>
+void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const
 {
   if (this == &rhs)
     return;
@@ -93,8 +95,9 @@ void bst<T, Compare>::copy(bst<T, Compare>& rhs) const
   }
 }
 
-template <typename T, typename Compare>
-std::pair<typename bst<T, Compare>::iterator, bool> bst<T, Compare>::insert(T key)
+template <typename T, typename Compare, typename Allocator>
+std::pair<typename bst<T, Compare, Allocator>::iterator, bool>
+bst<T, Compare, Allocator>::insert(T key)
 {
   typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty
