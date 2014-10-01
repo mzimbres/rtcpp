@@ -51,6 +51,18 @@ bst<T, Compare, Allocator>::bst(std::size_t n)
 template <typename T, typename Compare, typename Allocator>
 void bst<T, Compare, Allocator>::clear()
 {
+  node_pointer p = &head;
+  for (;;) {
+    node_pointer q = inorder_successor(p);
+    if (p != &head)
+      pool.deallocate(p);
+    if (q == &head)
+      break;
+    p = q;
+  }
+  head.llink = &head;
+  head.rlink = &head;
+  head.tag = detail::lbit;
 }
 
 template <typename T, typename Compare, typename Allocator>

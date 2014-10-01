@@ -10,18 +10,22 @@ class node_pool {
   typedef node<T> node_type;
   typedef node_type* pointer;
   typedef std::vector<node_type> pool_type;
-  typedef typename pool_type::size_type size_type;
   std::vector<node_type> pool;
   pointer avail;
+  std::size_t counter;
   public:
-  node_pool(std::size_t reserve_n);
+  typedef typename pool_type::size_type size_type;
+  node_pool(size_type n);
   node_type* allocate();
-  void deallocate(pointer* p);
+  void deallocate(pointer p);
+  size_type size() const {return pool.size();}
+  size_type available() const {return counter;}
 };
 
 template <typename T>
-node_pool<T>::node_pool(std::size_t reserve_n)
-: pool(reserve_n == 0 ? 10 : reserve_n)
+node_pool<T>::node_pool(size_type n)
+: pool(n == 0 ? 10 : n)
+, counter(n)
 {
   const size_type pool_size = pool.size();
   // Let us link the avail stack.
@@ -40,11 +44,12 @@ typename node_pool<T>::pointer node_pool<T>::allocate()
   pointer q = avail;
   if (avail)
     avail = avail->llink;
+  --counter;
   return q;
 }
 
 template <typename T>
-void node_pool<T>::deallocate(typename node_pool<T>::pointer* p)
+void node_pool<T>::deallocate(typename node_pool<T>::pointer p)
 {
   if (!p)
     return;
@@ -52,6 +57,7 @@ void node_pool<T>::deallocate(typename node_pool<T>::pointer* p)
   p->rlink = 0;
   p->llink = avail;
   avail = p;
+  ++counter;
 }
 
 }
