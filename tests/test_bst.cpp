@@ -19,7 +19,8 @@ int main()
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(a, b);
 
-  rtcpp::bst<int> t1(size);
+  rtcpp::node_pool<int> pool(2 * size);
+  rtcpp::bst<int> t1(&pool);
 
   int n = 0;
   while (n != size) {
@@ -35,7 +36,7 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  rtcpp::bst<int> t2(size);
+  rtcpp::bst<int> t2(&pool);
   t1.copy(t2);
 
   if (!std::equal(std::begin(t1), std::end(t1), std::begin(t2)))

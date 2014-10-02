@@ -10,6 +10,7 @@
 #include <boost/program_options.hpp>
 
 #include <trees/bst.hpp>
+#include <trees/node_pool.hpp>
 
 #include <utility/to_number.hpp>
 
@@ -79,8 +80,9 @@ int main(int argc, char* argv[])
     std::uniform_int_distribution<> dis(a, b);
 
 
+    rtcpp::node_pool<int> pool(size);
     {
-      rtcpp::bst<int> t1(size);
+      rtcpp::bst<int> t1(&pool);
       std::cerr << "Time to fill a bst:       ";
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.repeat; ++i) {
