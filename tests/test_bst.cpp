@@ -1,42 +1,37 @@
 #include <iostream>
 #include <iterator>
 #include <random>
-#include <limits>
 #include <functional>
 #include <algorithm>
+#include <iterator>
+#include <limits>
 
 #include <trees/bst.hpp>
+#include <utility/make_rand_data.hpp>
 
-#include <utility/to_number.hpp>
+  //std::copy(std::begin(tmp), std::end(tmp), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
 
 int main()
 {
-  const int size = 4;
+  using namespace rtcpp;
+
+  const int size = 40;
   const int a = 1;
   //const int b = std::numeric_limits<int>::max();
   const int b = size;
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(a, b);
 
-  rtcpp::node_pool<int> pool(4 * size);
-  rtcpp::bst<int> t1(pool);
+  std::vector<int> tmp = make_rand_data(size, a, b);
+  node_pool<int> pool(4 * size);
+  bst<int> t1(std::begin(tmp), std::end(tmp), pool);
 
-  int n = 0;
-  while (n != size) {
-    auto a = dis(gen);
-    auto pair = t1.insert(a);
-    if (pair.second)
-      ++n;
-  }
-
-  if (std::distance(std::begin(t1), std::end(t1)) != size)
+  if (std::distance(std::begin(t1), std::end(t1)) != std::distance(std::begin(tmp), std::end(tmp)))
     return 1;
 
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  rtcpp::bst<int> t2(pool);
+  bst<int> t2(pool);
   t1.copy(t2);
 
   rtcpp::bst<int> t3(t2);
@@ -52,23 +47,16 @@ int main()
     return 1;
 
   if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
-    return 1; // No duplicates allowed.
+    return 1; // No duplicates allowed. (this must be improved)
+
+  std::sort(std::begin(tmp), std::end(tmp));
+
+  if (!std::equal(t1.rbegin(), t1.rend(), tmp.rbegin()))
+    return 1;
 
   std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
   std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(std::begin(t2), std::end(t2), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(t2.rbegin(), t2.rend(), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(std::begin(t3), std::end(t3), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(t3.rbegin(), t3.rend(), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(std::begin(t4), std::end(t4), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(t4.rbegin(), t4.rend(), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
     
   return 0;

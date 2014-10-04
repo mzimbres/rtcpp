@@ -2,6 +2,7 @@
 #include <utility>
 #include <iterator>
 #include <functional>
+#include <algorithm>
 
 #include "bst_iterator.hpp"
 #include "node_pool.hpp"
@@ -30,6 +31,8 @@ class bst { // Unbalanced binary search tree
   bst(Allocator& alloc);
   bst(const bst& rhs);
   bst& operator=(const bst& rhs);
+  template <typename InputIt>
+  bst(InputIt begin, InputIt end, Allocator& alloc);
   ~bst();
   void copy(bst& rhs) const;
   void clear();
@@ -66,6 +69,22 @@ bst<T, Compare, Allocator>::bst(Allocator& alloc)
   head.llink = &head;
   head.rlink = &head;
   head.tag = detail::lbit;
+}
+
+template <typename T, typename Compare, typename Allocator>
+template <typename InputIt>
+bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, Allocator& alloc)
+: pool(&alloc)
+{
+  head.llink = &head;
+  head.rlink = &head;
+  head.tag = detail::lbit;
+  auto func = [this](const T& tmp) -> void {
+    auto pair = this->insert(tmp);
+    if (pair.second)
+      return;
+  };
+  std::for_each(begin, end, func);
 }
 
 template <typename T, typename Compare, typename Allocator>
