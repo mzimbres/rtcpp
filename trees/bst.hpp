@@ -25,12 +25,12 @@ class bst { // Unbalanced binary search tree
   Allocator* pool;
   node_type head;
   Compare comp;
-  bst(const bst& rhs); // To be implemented
   public:
   typedef typename pool_type::size_type size_type;
   bst(Allocator& alloc);
+  bst(const bst& rhs);
   ~bst();
-  void copy(bst& rhs) const; // Copies this to rhs.
+  void copy(bst& rhs) const;
   void clear();
   std::pair<iterator, bool> insert(T key);
   const_iterator begin() const {return const_iterator(inorder_successor(&head));}
@@ -38,6 +38,17 @@ class bst { // Unbalanced binary search tree
   const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
   const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
 };
+
+template <typename T, typename Compare, typename Allocator>
+bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs)
+{
+  // This ctor can fail if the allocator runs out of memory.
+  head.llink = &head;
+  head.rlink = &head;
+  head.tag = detail::lbit;
+  rhs.copy(*this);
+}
+
 
 template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>::bst(Allocator& alloc)
@@ -76,6 +87,9 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const
 {
   if (this == &rhs)
     return;
+
+  rhs.clear();
+  rhs.pool = pool;
 
   const_node_pointer p = &head;
   node_pointer q = &rhs.head;

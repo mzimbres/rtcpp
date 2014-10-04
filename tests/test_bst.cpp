@@ -19,7 +19,7 @@ int main()
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(a, b);
 
-  rtcpp::node_pool<int> pool(2 * size);
+  rtcpp::node_pool<int> pool(3 * size);
   rtcpp::bst<int> t1(pool);
 
   int n = 0;
@@ -39,7 +39,12 @@ int main()
   rtcpp::bst<int> t2(pool);
   t1.copy(t2);
 
+  rtcpp::bst<int> t3(t2);
+
   if (!std::equal(std::begin(t1), std::end(t1), std::begin(t2)))
+    return 1; // This is not enough to ensure equality between t1 and t2.
+
+  if (!std::equal(std::begin(t1), std::end(t1), std::begin(t3)))
     return 1; // This is not enough to ensure equality between t1 and t2.
 
   if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
