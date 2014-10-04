@@ -29,6 +29,7 @@ class bst { // Unbalanced binary search tree
   typedef typename pool_type::size_type size_type;
   bst(Allocator& alloc);
   bst(const bst& rhs);
+  bst& operator=(const bst& rhs);
   ~bst();
   void copy(bst& rhs) const;
   void clear();
@@ -38,6 +39,14 @@ class bst { // Unbalanced binary search tree
   const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
   const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
 };
+
+template <typename T, typename Compare, typename Allocator>
+bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, Compare, Allocator>& rhs)
+{
+  // This ctor can fail if the allocator runs out of memory.
+  rhs.copy(*this);
+  return *this;
+}
 
 template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs)
