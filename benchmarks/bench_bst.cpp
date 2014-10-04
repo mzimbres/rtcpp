@@ -13,6 +13,7 @@
 #include <trees/node_pool.hpp>
 
 #include <utility/to_number.hpp>
+#include <utility/make_rand_data.hpp>
 
 struct options {
   bool   help;
@@ -51,44 +52,39 @@ options parse_options(int argc, char* argv[])
   return op;
 }
 
-template <typename Set, typename C>
-void fill_set_n(Set& set, C c, typename Set::size_type size)
+template <typename Set, typename InputIt>
+void fill_set(Set& set, InputIt begin, InputIt end)
 {
-  typedef typename Set::size_type size_type;
-  size_type n = 0;
-  while (n != size) {
-    auto a = c();
-    auto pair = set.insert(a);
-    if (pair.second)
-      ++n;
+  for (InputIt iter = begin; iter != end; ++iter) {
+    auto pair = set.insert(*iter);
+    if (!pair.second)
+       continue;
   }
 }
 
 int main(int argc, char* argv[])
 {
+  using namespace rtcpp;
+
   try {
     options op = parse_options(argc, argv);
 
     if (op.help) 
       return 0;
+
     const int size = op.size;
     const int a = 1;
     const int b = std::numeric_limits<int>::max();
     //const int b = size;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(a, b);
+    std::vector<int> data = make_rand_data(size, a, b);
 
-
-    rtcpp::node_pool<int> pool(size);
+    node_pool<int> pool(data.size());
     {
-      rtcpp::bst<int> t1(pool);
       std::cerr << "Time to fill a bst:       ";
+      bst<int> t1(pool);
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.repeat; ++i) {
-        fill_set_n( t1
-                  , [&](){ return dis(gen);}
-                  , size);
+        fill_set(t1, std::begin(data), std::end(data));
         t1.clear();
       }
     }
@@ -98,9 +94,7 @@ int main(int argc, char* argv[])
       std::cerr << "Time to fill an std::set: ";
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.repeat; ++i) {
-        fill_set_n( t1
-                  , [&](){ return dis(gen);}
-                  , size);
+        fill_set(t1, std::begin(data), std::end(data));
         t1.clear();
       }
     }
