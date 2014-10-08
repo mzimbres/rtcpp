@@ -8,6 +8,7 @@
 
 #include <boost/timer/timer.hpp>
 #include <boost/program_options.hpp>
+#include <boost/container/flat_set.hpp>
 
 #include <trees/bst.hpp>
 #include <trees/node_pool.hpp>
@@ -17,13 +18,17 @@
 
 struct options {
   bool   help;
-  int size;
-  int repeat;
+  int insertion_size;
+  int insertion_repeat;
+  int lookup_size;
+  int lookup_repeat;
 
   options()
   : help(false)
-  , size(20)
-  , repeat(20)
+  , insertion_size(20)
+  , insertion_repeat(100)
+  , lookup_size(200)
+  , lookup_repeat(100)
   {}
 };
 
@@ -36,8 +41,10 @@ options parse_options(int argc, char* argv[])
   po::options_description desc( "Benchmarks bst and std::set.");
   desc.add_options()
     ("help,h", "Available options.")
-    ("size,s", po::value<int>(&op.size)->default_value(20), "Data size.")
-    ("repeat,r", po::value<int>(&op.repeat)->default_value(20), "Number of times to repeat.")
+    ("insertion-size,i", po::value<int>(&op.insertion_size)->default_value(20), "Size of random data to be inserted in the set.")
+    ("insertion-repeat,r", po::value<int>(&op.insertion_repeat)->default_value(200), "How many times insertion should be repeated.")
+    ("lookup-size,l", po::value<int>(&op.lookup_size)->default_value(20), "Size of random data to be searched in the set.")
+    ("lookup-repeat,e", po::value<int>(&op.lookup_repeat)->default_value(200), "How many times search should be repeated.")
   ;
 
   po::variables_map vm;        
@@ -72,31 +79,60 @@ int main(int argc, char* argv[])
     if (op.help) 
       return 0;
 
-    const int size = op.size;
     const int a = 1;
     const int b = std::numeric_limits<int>::max();
     //const int b = size;
-    std::vector<int> data = make_rand_data(size, a, b);
+    std::vector<int> insertion_data = make_rand_data(op.insertion_size, a, b);
+    std::vector<int> lookup_data = make_rand_data(op.lookup_size, a, b);
 
-    node_pool<int> pool(data.size());
+    node_pool<int> insertion_pool(insertion_data.size());
+    node_pool<int> lookup_pool(lookup_data.size());
+
     {
-      std::cerr << "Time to fill a bst:       ";
-      bst<int> t1(pool);
+      std::cerr << "1) bst insertion:       ";
+      bst<int> t1(insertion_pool);
       boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.repeat; ++i) {
-        fill_set(t1, std::begin(data), std::end(data));
+      for (int i = 0; i < op.insertion_repeat; ++i) {
+        fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
         t1.clear();
       }
     }
 
     {
       std::set<int> t1;
-      std::cerr << "Time to fill an std::set: ";
+      std::cerr << "1) std::set insertion:  ";
       boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.repeat; ++i) {
-        fill_set(t1, std::begin(data), std::end(data));
+      for (int i = 0; i < op.insertion_repeat; ++i) {
+        fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
         t1.clear();
       }
+    }
+
+    {
+      std::cerr << "2) bst lookup:          ";
+      bst<int> t1(lookup_pool);
+      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+      boost::timer::auto_cpu_timer timer;
+      for (int i = 0; i < op.lookup_repeat; ++i)
+        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+    }
+
+    {
+      std::cerr << "2) std::set lookup:     ";
+      std::set<int> t1;
+      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+      boost::timer::auto_cpu_timer timer;
+      for (int i = 0; i < op.lookup_repeat; ++i)
+        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+    }
+
+    {
+      std::cerr << "2) flat_set lookup:     ";
+      boost::container::flat_set<int> t1;
+      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+      boost::timer::auto_cpu_timer timer;
+      for (int i = 0; i < op.lookup_repeat; ++i)
+        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
     }
   } catch (...) {
     return 1;

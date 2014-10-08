@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(rtcpp)
 
-find_package(Boost "1.55.0" COMPONENTS timer system program_options OPTIONAL)
+find_package(Boost "1.55.0" COMPONENTS timer system program_options REQUIRED)
 
 enable_testing()
 include(CTest)
