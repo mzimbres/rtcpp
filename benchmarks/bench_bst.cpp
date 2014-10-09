@@ -85,12 +85,18 @@ int main(int argc, char* argv[])
     std::vector<int> insertion_data = make_rand_data(op.insertion_size, a, b);
     std::vector<int> lookup_data = make_rand_data(op.lookup_size, a, b);
 
+    typedef node_pool<int> pool_type;
+    typedef pool_wrap<pool_type> wrap_type;
+    typedef bst<int, std::less<int>, wrap_type> set_type;
+
     node_pool<int> insertion_pool(insertion_data.size());
     node_pool<int> lookup_pool(lookup_data.size());
+    wrap_type w1(&insertion_pool);
+    wrap_type w2(&lookup_pool);
 
     {
       std::cerr << "1) bst insertion:       ";
-      bst<int> t1(insertion_pool);
+      set_type t1(w1);
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.insertion_repeat; ++i) {
         fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
@@ -110,7 +116,7 @@ int main(int argc, char* argv[])
 
     {
       std::cerr << "2) bst lookup:          ";
-      bst<int> t1(lookup_pool);
+      set_type t1(w2);
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.lookup_repeat; ++i)

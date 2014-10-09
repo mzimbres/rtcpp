@@ -11,7 +11,7 @@ namespace rtcpp {
 
 template < typename T
          , typename Compare = std::less<T>
-         , typename Allocator = node_pool<T>>
+         , typename Allocator = allocator<T>>
 class bst { // Unbalanced binary search tree
   public:
   typedef T key_type;
@@ -23,16 +23,16 @@ class bst { // Unbalanced binary search tree
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
   typedef std::vector<node_type> pool_type;
-  Allocator* pool;
+  Allocator pool;
   node_type head;
   Compare comp;
   public:
   typedef typename pool_type::size_type size_type;
-  bst(Allocator& alloc);
+  bst(const Allocator& alloc);
   bst(const bst& rhs);
   bst& operator=(const bst& rhs);
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, Allocator& alloc);
+  bst(InputIt begin, InputIt end, const Allocator& alloc);
   ~bst();
   void copy(bst& rhs) const;
   void clear();
@@ -63,8 +63,8 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs)
 
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(Allocator& alloc)
-: pool(&alloc)
+bst<T, Compare, Allocator>::bst(const Allocator& alloc)
+: pool(alloc)
 {
   head.llink = &head;
   head.rlink = &head;
@@ -73,8 +73,8 @@ bst<T, Compare, Allocator>::bst(Allocator& alloc)
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, Allocator& alloc)
-: pool(&alloc)
+bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Allocator& alloc)
+: pool(alloc)
 {
   head.llink = &head;
   head.rlink = &head;
@@ -94,7 +94,7 @@ void bst<T, Compare, Allocator>::clear()
   for (;;) {
     node_pointer q = inorder_successor(p);
     if (p != &head)
-      pool->deallocate(p);
+      pool.deallocate(p);
     if (q == &head)
       break;
     p = q;
@@ -124,7 +124,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const
 
   for (;;) {
     if (!has_null_llink(p->tag)) {
-      node_pointer tmp = rhs.pool->allocate();
+      node_pointer tmp = rhs.pool.allocate();
       if (!tmp)
         break; // The tree has exhausted its capacity.
 
@@ -138,7 +138,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const
       break;
 
     if (!has_null_rlink(p->tag)) {
-      node_pointer tmp = rhs.pool->allocate();
+      node_pointer tmp = rhs.pool.allocate();
       if (!tmp)
         break; // The tree has exhausted its capacity.
 
@@ -155,7 +155,7 @@ bst<T, Compare, Allocator>::insert(T key)
 {
   typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty
-    node_pointer q = pool->allocate();
+    node_pointer q = pool.allocate();
     if (!q)
       return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
@@ -171,7 +171,7 @@ bst<T, Compare, Allocator>::insert(T key)
         p = p->llink;
         continue;
       }
-      node_pointer q = pool->allocate();
+      node_pointer q = pool.allocate();
       if (!q)
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
@@ -183,7 +183,7 @@ bst<T, Compare, Allocator>::insert(T key)
         p = p->rlink;
         continue;
       }
-      node_pointer q = pool->allocate();
+      node_pointer q = pool.allocate();
       if (!q)
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 

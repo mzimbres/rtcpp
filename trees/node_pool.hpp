@@ -5,10 +5,33 @@
 namespace rtcpp {
 
 template <typename T>
-class node_pool {
+class allocator {
   private:
   typedef node<T> node_type;
   typedef node_type* pointer;
+  public:
+  node_type* allocate() {return new node_type;}
+  void deallocate(pointer p) {delete p;};
+};
+
+template <typename Pool>
+class pool_wrap {
+  Pool* pool;
+  public:
+  typedef typename Pool::node_type node_type;
+  typedef typename Pool::pointer pointer;
+  pool_wrap(Pool* p) : pool(p) {}
+  pool_wrap() : pool(0) {}
+  node_type* allocate() {return pool->allocate();}
+  void deallocate(pointer p) {pool->deallocate(p);};
+};
+
+template <typename T>
+class node_pool {
+  public:
+  typedef node<T> node_type;
+  typedef node_type* pointer;
+  private:
   typedef std::vector<node_type> pool_type;
   std::vector<node_type> pool;
   pointer avail;
