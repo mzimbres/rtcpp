@@ -89,14 +89,11 @@ int main(int argc, char* argv[])
     typedef pool_wrap<pool_type> wrap_type;
     typedef bst<int, std::less<int>, wrap_type> set_type;
 
-    node_pool<int> insertion_pool(insertion_data.size());
-    node_pool<int> lookup_pool(lookup_data.size());
-    wrap_type w1(&insertion_pool);
-    wrap_type w2(&lookup_pool);
-
     {
-      std::cerr << "1) bst2 insertion:      ";
-      bst<int> t1;
+      std::cerr << "1) bst insertion:       ";
+      node_pool<int> insertion_pool(insertion_data.size());
+      wrap_type w1(&insertion_pool);
+      set_type t1(w1);
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.insertion_repeat; ++i) {
         fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
@@ -105,8 +102,8 @@ int main(int argc, char* argv[])
     }
 
     {
-      std::cerr << "1) bst insertion:       ";
-      set_type t1(w1);
+      std::cerr << "1) bst2 insertion:      ";
+      bst<int> t1;
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.insertion_repeat; ++i) {
         fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
@@ -126,7 +123,18 @@ int main(int argc, char* argv[])
 
     {
       std::cerr << "2) bst lookup:          ";
+      node_pool<int> lookup_pool(lookup_data.size());
+      wrap_type w2(&lookup_pool);
       set_type t1(w2);
+      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+      boost::timer::auto_cpu_timer timer;
+      for (int i = 0; i < op.lookup_repeat; ++i)
+        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+    }
+
+    {
+      std::cerr << "2) bst2 lookup:         ";
+      bst<int> t1;
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.lookup_repeat; ++i)

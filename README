@@ -37,7 +37,7 @@ Node based
      "amortized" constant time. This fact is due mainly to the fact the
      container must abtain their value_type from allocators. If on the other
      hand they could get the node_type, contant time could be easily achieved
-     as is this case, the the node_type links can be used to link the nodes
+     as is this case, the node_type links can be used to link the nodes
      toguether forming an avail stack. That way nodes can be allocated by 
 
                     node_pointer q = avail;
@@ -45,8 +45,15 @@ Node based
                       avail = avail->llink;
                     return q;
 
+     Deallocation of a node pointed by p is as simple as
+
+                    if (!p) return;
+                    p->rlink = 0;
+                    p->llink = avail;
+                    avail = p;
+
      We see that just a couple of instructions are used, which makes allocation
-     realtime.
+     and deallocation constant time.
 
 Compilation
 =============
