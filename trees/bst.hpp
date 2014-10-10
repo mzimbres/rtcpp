@@ -28,11 +28,11 @@ class bst { // Unbalanced binary search tree
   Compare comp;
   public:
   typedef typename pool_type::size_type size_type;
-  bst(const Allocator& alloc);
+  bst(const Allocator& alloc = allocator<T>());
   bst(const bst& rhs);
   bst& operator=(const bst& rhs);
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Allocator& alloc);
+  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<int>());
   ~bst();
   void copy(bst& rhs) const;
   void clear();

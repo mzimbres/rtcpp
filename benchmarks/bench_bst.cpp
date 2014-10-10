@@ -95,6 +95,16 @@ int main(int argc, char* argv[])
     wrap_type w2(&lookup_pool);
 
     {
+      std::cerr << "1) bst2 insertion:      ";
+      bst<int> t1;
+      boost::timer::auto_cpu_timer timer;
+      for (int i = 0; i < op.insertion_repeat; ++i) {
+        fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
+        t1.clear();
+      }
+    }
+
+    {
       std::cerr << "1) bst insertion:       ";
       set_type t1(w1);
       boost::timer::auto_cpu_timer timer;
