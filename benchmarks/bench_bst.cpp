@@ -12,6 +12,7 @@
 
 #include <trees/bst.hpp>
 #include <trees/node_pool.hpp>
+#include <trees/pool_allocator.hpp>
 
 #include <utility/to_number.hpp>
 #include <utility/make_rand_data.hpp>
@@ -86,7 +87,7 @@ int main(int argc, char* argv[])
     std::vector<int> lookup_data = make_rand_data(op.lookup_size, a, b);
 
     typedef node_pool<int> pool_type;
-    typedef pool_wrap<pool_type> wrap_type;
+    typedef pool_allocator<pool_type> wrap_type;
     typedef bst<int, std::less<int>, wrap_type> set_type;
 
     {

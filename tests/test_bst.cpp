@@ -7,6 +7,7 @@
 #include <limits>
 #include <array>
 
+#include <trees/node_pool.hpp>
 #include <trees/bst.hpp>
 #include <utility/make_rand_data.hpp>
 
@@ -23,7 +24,7 @@ int main()
   const int b = size;
 
   typedef node_pool<int> pool_type;
-  typedef pool_wrap<pool_type> wrap_type;
+  typedef pool_allocator<pool_type> wrap_type;
   typedef bst<int, std::less<int>, wrap_type> set_type;
 
   std::vector<int> tmp = make_rand_data(size, a, b);
@@ -60,7 +61,7 @@ int main()
   if (!std::equal(t1.rbegin(), t1.rend(), tmp.rbegin()))
     return 1;
 
-  const std::array<int, 5> arr{{5,4,3,2,1}};
+  const std::array<int, 5> arr{{5, 4, 3, 2, 1}};
   set_type t5(arr.begin(), arr.end(), w);
   if (!std::equal(t5.rbegin(), t5.rend(), arr.rbegin()))
     return 1;

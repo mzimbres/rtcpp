@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "bst_iterator.hpp"
-#include "node_pool.hpp"
+#include "allocator.hpp"
 
 namespace rtcpp {
 
