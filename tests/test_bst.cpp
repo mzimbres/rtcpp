@@ -7,6 +7,7 @@
 #include <limits>
 #include <array>
 
+#include <trees/pool_allocator.hpp>
 #include <trees/node_pool.hpp>
 #include <trees/bst.hpp>
 #include <utility/make_rand_data.hpp>

@@ -7,18 +7,20 @@ namespace rtcpp {
 template <typename T>
 class node_pool {
   public:
+  typedef T* pointer;
+  typedef const T* const_pointer;
   typedef node<T> node_type;
-  typedef node_type* pointer;
+  typedef node_type* node_pointer;
   private:
   typedef std::vector<node_type> pool_type;
   std::vector<node_type> pool;
-  pointer avail;
+  node_pointer avail;
   std::size_t counter;
   public:
   typedef typename pool_type::size_type size_type;
   node_pool(size_type n);
-  node_type* allocate();
-  void deallocate(pointer p);
+  node_pointer allocate();
+  void deallocate(node_pointer p);
   size_type size() const {return pool.size();}
   size_type available() const {return counter;}
 };
@@ -40,9 +42,9 @@ node_pool<T>::node_pool(size_type n)
 }
 
 template <typename T>
-typename node_pool<T>::pointer node_pool<T>::allocate()
+typename node_pool<T>::node_pointer node_pool<T>::allocate()
 {
-  pointer q = avail;
+  node_pointer q = avail;
   if (avail)
     avail = avail->llink;
   --counter;
@@ -50,7 +52,7 @@ typename node_pool<T>::pointer node_pool<T>::allocate()
 }
 
 template <typename T>
-void node_pool<T>::deallocate(typename node_pool<T>::pointer p)
+void node_pool<T>::deallocate(typename node_pool<T>::node_pointer p)
 {
   if (!p)
     return;

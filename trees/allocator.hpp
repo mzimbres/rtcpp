@@ -6,12 +6,13 @@ namespace rtcpp {
 
 template <typename T>
 class allocator {
-  private:
-  typedef node<T> node_type;
-  typedef node_type* pointer;
   public:
-  node_type* allocate() {return new node_type;}
-  void deallocate(pointer p) {delete p;};
+  typedef T* pointer;
+  typedef T* const_pointer;
+  typedef node<T> node_type;
+  typedef node_type* node_pointer;
+  node_pointer allocate() {return new node_type;}
+  void deallocate(node_pointer p) {delete p;};
 };
 
 }

@@ -15,6 +15,16 @@ template < typename T
 class bst { // Unbalanced binary search tree
   public:
   typedef T key_type;
+  typedef T value_type;
+  typedef std::size_t size_type;
+  typedef Compare key_compare;
+  typedef Compare value_compare;
+  typedef Allocator allocator_type;
+  typedef value_type& reference;
+  typedef const value_type& const_reference;
+  typedef typename Allocator::pointer& pointer;
+  typedef typename Allocator::const_pointer& const_pointer;
+  typedef std::ptrdiff_t difference_type;
   typedef bst_iterator<T> const_iterator;
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
@@ -22,12 +32,10 @@ class bst { // Unbalanced binary search tree
   typedef node<T> node_type;
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
-  typedef std::vector<node_type> pool_type;
   Allocator pool;
   node_type head;
   Compare comp;
   public:
-  typedef typename pool_type::size_type size_type;
   bst(const Allocator& alloc = allocator<T>());
   bst(const bst& rhs);
   bst& operator=(const bst& rhs);
