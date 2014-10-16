@@ -62,11 +62,6 @@ int main()
   if (!std::equal(t1.rbegin(), t1.rend(), tmp.rbegin()))
     return 1;
 
-  const std::array<int, 5> arr{{5, 4, 3, 2, 1}};
-  set_type t5(arr.begin(), arr.end(), w);
-  if (!std::equal(t5.rbegin(), t5.rend(), arr.rbegin()))
-    return 1;
-
   std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   std::cout << std::endl;
   std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
