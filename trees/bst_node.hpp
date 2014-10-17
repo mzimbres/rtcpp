@@ -9,7 +9,7 @@ struct node {
   node* llink;
   node* rlink;
 
-  node()
+  node() noexcept
   : key(0)
   , tag(0)
   , llink(0)
@@ -23,31 +23,31 @@ static const int lbit = 2;
 }
 
 inline
-int set_lbit(int tag)
+int set_lbit(int tag) noexcept
 {
   return tag | detail::lbit;
 }
 
 inline
-int set_rbit(int tag)
+int set_rbit(int tag) noexcept
 {
   return tag | detail::rbit;
 }
 
 inline
-int has_null_llink(int tag)
+int has_null_llink(int tag) noexcept
 {
   return tag & detail::lbit;
 }
 
 inline
-int has_null_rlink(int tag)
+int has_null_rlink(int tag) noexcept
 {
   return tag & detail::rbit;
 }
 
 template <typename Node>
-Node* inorder_successor(Node* p)
+Node* inorder_successor(Node* p) noexcept
 {
   if (has_null_rlink(p->tag))
     return p->rlink;
@@ -60,7 +60,7 @@ Node* inorder_successor(Node* p)
 }
 
 template <typename Node>
-Node* inorder_predecessor(Node* p)
+Node* inorder_predecessor(Node* p) noexcept
 {
   if (has_null_llink(p->tag))
     return p->llink;
@@ -73,7 +73,7 @@ Node* inorder_predecessor(Node* p)
 }
 
 template <typename Node>
-Node* preorder_successor(Node* p)
+Node* preorder_successor(Node* p) noexcept
 {
   if (!has_null_llink(p->tag))
     return p->llink;
@@ -90,7 +90,7 @@ Node* preorder_successor(Node* p)
 }
 
 template <typename Node>
-void attach_node_left(Node* p, Node* q)
+void attach_node_left(Node* p, Node* q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
   q->llink = p->llink;
@@ -107,7 +107,7 @@ void attach_node_left(Node* p, Node* q)
 }
 
 template <typename Node>
-void attach_node_right(Node* p, Node* q)
+void attach_node_right(Node* p, Node* q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
   q->rlink = p->rlink;

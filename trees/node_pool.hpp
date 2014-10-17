@@ -19,10 +19,10 @@ class node_pool {
   public:
   typedef typename pool_type::size_type size_type;
   node_pool(size_type n);
-  node_pointer allocate();
-  void deallocate(node_pointer p);
-  size_type size() const {return pool.size();}
-  size_type available() const {return counter;}
+  node_pointer allocate() noexcept;
+  void deallocate(node_pointer p) noexcept;
+  size_type size() const noexcept {return pool.size();}
+  size_type available() const noexcept {return counter;}
 };
 
 template <typename T>
@@ -42,7 +42,7 @@ node_pool<T>::node_pool(size_type n)
 }
 
 template <typename T>
-typename node_pool<T>::node_pointer node_pool<T>::allocate()
+typename node_pool<T>::node_pointer node_pool<T>::allocate() noexcept
 {
   node_pointer q = avail;
   if (avail)
@@ -52,7 +52,7 @@ typename node_pool<T>::node_pointer node_pool<T>::allocate()
 }
 
 template <typename T>
-void node_pool<T>::deallocate(typename node_pool<T>::node_pointer p)
+void node_pool<T>::deallocate(typename node_pool<T>::node_pointer p) noexcept
 {
   if (!p)
     return;

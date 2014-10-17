@@ -1,5 +1,7 @@
 #pragma once
 
+#include <exception>
+
 #include "bst_node.hpp"
 
 namespace rtcpp {
@@ -11,8 +13,15 @@ class allocator {
   typedef T* const_pointer;
   typedef node<T> node_type;
   typedef node_type* node_pointer;
-  node_pointer allocate() {return new node_type;}
-  void deallocate(node_pointer p) {delete p;};
+  node_pointer allocate() const noexcept
+  {
+    try {
+      return new node_type;
+    } catch (const std::bad_alloc& e) {
+      return 0;
+    }
+  }
+  void deallocate(node_pointer p) const noexcept {delete p;};
 };
 
 }
