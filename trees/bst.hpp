@@ -36,23 +36,27 @@ class bst { // Unbalanced binary search tree
   node_type head;
   Compare comp;
   public:
-  bst(const Allocator& alloc = allocator<T>());
-  bst(const bst& rhs);
-  bst& operator=(const bst& rhs);
+  bst(const Allocator& alloc = allocator<T>()) noexcept;
+  bst(const bst& rhs) noexcept;
+  bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<int>());
-  ~bst();
-  void copy(bst& rhs) const;
-  void clear();
-  std::pair<iterator, bool> insert(T key);
-  const_iterator begin() const {return const_iterator(inorder_successor(&head));}
-  const_iterator end() const {return const_iterator(&head);}
-  const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
-  const_reverse_iterator rend() const {return const_reverse_iterator(begin());}
+  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<int>()) noexcept;
+  ~bst() noexcept;
+  void copy(bst& rhs) const noexcept;
+  void clear() noexcept;
+  std::pair<iterator, bool> insert(T key) noexcept;
+  const_iterator begin() const noexcept {return const_iterator(inorder_successor(&head));}
+  const_iterator end() const noexcept {return const_iterator(&head);}
+  const_reverse_iterator rbegin() const noexcept {return const_reverse_iterator(end());}
+  const_reverse_iterator rend() const noexcept {return const_reverse_iterator(begin());}
+  key_compare key_comp() const noexcept {return comp;}
+  value_compare value_comp() const noexcept {return comp;}
+  size_type size() const noexcept {return std::distance(begin(), end());}
+  bool empty() const noexcept {return begin() == end();}
 };
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, Compare, Allocator>& rhs)
+bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, Compare, Allocator>& rhs) noexcept
 {
   // This ctor can fail if the allocator runs out of memory.
   rhs.copy(*this);
@@ -60,7 +64,7 @@ bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, C
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs)
+bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
 {
   // This ctor can fail if the allocator runs out of memory.
   head.llink = &head;
@@ -71,7 +75,7 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs)
 
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const Allocator& alloc)
+bst<T, Compare, Allocator>::bst(const Allocator& alloc) noexcept
 : pool(alloc)
 {
   head.llink = &head;
@@ -81,7 +85,7 @@ bst<T, Compare, Allocator>::bst(const Allocator& alloc)
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Allocator& alloc)
+bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Allocator& alloc) noexcept
 : pool(alloc)
 {
   head.llink = &head;
@@ -96,7 +100,7 @@ bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Allocator& all
 }
 
 template <typename T, typename Compare, typename Allocator>
-void bst<T, Compare, Allocator>::clear()
+void bst<T, Compare, Allocator>::clear() noexcept
 {
   node_pointer p = &head;
   for (;;) {
@@ -113,13 +117,13 @@ void bst<T, Compare, Allocator>::clear()
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::~bst()
+bst<T, Compare, Allocator>::~bst() noexcept
 {
   clear();
 }
 
 template <typename T, typename Compare, typename Allocator>
-void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const
+void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noexcept
 {
   if (this == &rhs)
     return;
@@ -159,7 +163,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const
 
 template <typename T, typename Compare, typename Allocator>
 std::pair<typename bst<T, Compare, Allocator>::iterator, bool>
-bst<T, Compare, Allocator>::insert(T key)
+bst<T, Compare, Allocator>::insert(T key) noexcept
 {
   typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty

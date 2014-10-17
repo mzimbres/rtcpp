@@ -12,17 +12,14 @@
 #include <trees/bst.hpp>
 #include <utility/make_rand_data.hpp>
 
-  //std::copy(std::begin(tmp), std::end(tmp), std::ostream_iterator<int>(std::cout, " "));
-  //std::cout << std::endl;
-
 int main()
 {
   using namespace rtcpp;
 
-  const int size = 40;
+  const int size = 400000;
   const int a = 1;
-  //const int b = std::numeric_limits<int>::max();
-  const int b = size;
+  const int b = std::numeric_limits<int>::max();
+  //const int b = size;
 
   typedef node_pool<int> pool_type;
   typedef pool_allocator<pool_type> wrap_type;
@@ -33,7 +30,9 @@ int main()
   wrap_type w(&pool);
   set_type t1(std::begin(tmp), std::end(tmp), w);
 
-  if (std::distance(std::begin(t1), std::end(t1)) != std::distance(std::begin(tmp), std::end(tmp)))
+  std::cout << "Data size: " << tmp.size() << std::endl;
+
+  if (t1.size() != tmp.size())
     return 1;
 
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
@@ -62,10 +61,14 @@ int main()
   if (!std::equal(t1.rbegin(), t1.rend(), tmp.rbegin()))
     return 1;
 
-  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
-  std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl;
+  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
+  //std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
+
+  t1.clear();
+  if (!t1.empty())
+    return 1;
     
   return 0;
 }
