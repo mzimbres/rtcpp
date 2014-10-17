@@ -53,6 +53,7 @@ class bst { // Unbalanced binary search tree
   value_compare value_comp() const noexcept {return comp;}
   size_type size() const noexcept {return std::distance(begin(), end());}
   bool empty() const noexcept {return begin() == end();}
+  allocator_type get_allocator() const noexcept {return pool;}
 };
 
 template <typename T, typename Compare, typename Allocator>
