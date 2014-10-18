@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     typedef bst<int, std::less<int>, allocator_type> set_type;
 
     {
-      std::cerr << "1) bst insertion:       ";
+      std::cerr << "Insertion: bst (pool): ";
       node_pool<int> insertion_pool(insertion_data.size());
       allocator_type w1(&insertion_pool);
       set_type t1(w1);
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
     }
 
     {
-      std::cerr << "1) bst2 insertion:      ";
+      std::cerr << "Insertion: bst:        ";
       bst<int> t1;
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.insertion_repeat; ++i) {
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
 
     {
       std::set<int> t1;
-      std::cerr << "1) std::set insertion:  ";
+      std::cerr << "Insertion: std::set:   ";
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.insertion_repeat; ++i) {
         fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
     }
 
     {
-      std::cerr << "2) bst lookup:          ";
+      std::cerr << "Lookup:    bst (pool): ";
       node_pool<int> lookup_pool(lookup_data.size());
       allocator_type w2(&lookup_pool);
       set_type t1(w2);
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
     }
 
     {
-      std::cerr << "2) bst2 lookup:         ";
+      std::cerr << "Lookup:    bst:        ";
       bst<int> t1;
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
       boost::timer::auto_cpu_timer timer;
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
     }
 
     {
-      std::cerr << "2) std::set lookup:     ";
+      std::cerr << "Lookup:    std::set:   ";
       std::set<int> t1;
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
       boost::timer::auto_cpu_timer timer;
@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
     }
 
     {
-      std::cerr << "2) flat_set lookup:     ";
+      std::cerr << "Lookup:    flat_set:   ";
       boost::container::flat_set<int> t1;
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
       boost::timer::auto_cpu_timer timer;

@@ -56,10 +56,11 @@ int main()
   if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
     return 1; // No duplicates allowed. (this must be improved)
 
-  std::sort(std::begin(tmp), std::end(tmp));
+  // Reverse iterators are tested in test_bst_iterator.
+  //std::sort(std::begin(tmp), std::end(tmp));
 
-  if (!std::equal(t1.rbegin(), t1.rend(), tmp.rbegin()))
-    return 1;
+  //if (!std::equal(t1.rbegin(), t1.rend(), tmp.rbegin()))
+  //  return 1;
 
   //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   //std::cout << std::endl;
