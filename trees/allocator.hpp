@@ -11,7 +11,7 @@ class allocator {
   public:
   typedef T* pointer;
   typedef T* const_pointer;
-  typedef node<T> node_type;
+  typedef bst_node<T> node_type;
   typedef node_type* node_pointer;
   node_pointer allocate() const noexcept
   {

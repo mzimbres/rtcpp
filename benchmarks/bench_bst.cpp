@@ -10,8 +10,9 @@
 #include <boost/program_options.hpp>
 #include <boost/container/flat_set.hpp>
 
+#include <trees/bst_node.hpp>
 #include <trees/bst.hpp>
-#include <trees/node_pool.hpp>
+#include <trees/node_stack.hpp>
 #include <trees/pool_allocator.hpp>
 
 #include <utility/to_number.hpp>
@@ -86,13 +87,14 @@ int main(int argc, char* argv[])
     std::vector<int> insertion_data = make_rand_data(op.insertion_size, a, b);
     std::vector<int> lookup_data = make_rand_data(op.lookup_size, a, b);
 
-    typedef node_stack<int> pool_type;
+    typedef bst_node<int> node_type;
+    typedef node_stack<node_type> pool_type;
     typedef pool_allocator<pool_type> allocator_type;
     typedef bst<int, std::less<int>, allocator_type> set_type;
 
     {
       std::cerr << "Insertion: bst (pool): ";
-      node_stack<int> insertion_pool(insertion_data.size());
+      node_stack<node_type> insertion_pool(insertion_data.size());
       allocator_type w1(&insertion_pool);
       set_type t1(w1);
       boost::timer::auto_cpu_timer timer;
@@ -124,7 +126,7 @@ int main(int argc, char* argv[])
 
     {
       std::cerr << "Lookup:    bst (pool): ";
-      node_stack<int> lookup_pool(lookup_data.size());
+      node_stack<node_type> lookup_pool(lookup_data.size());
       allocator_type w2(&lookup_pool);
       set_type t1(w2);
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));

@@ -8,7 +8,7 @@
 #include <array>
 
 #include <trees/pool_allocator.hpp>
-#include <trees/node_pool.hpp>
+#include <trees/node_stack.hpp>
 #include <trees/bst.hpp>
 #include <utility/make_rand_data.hpp>
 
@@ -16,7 +16,8 @@ int main()
 {
   using namespace rtcpp;
 
-  typedef node_stack<int> pool_type;
+  typedef bst_node<int> node_type;
+  typedef node_stack<node_type> pool_type;
   typedef pool_allocator<pool_type> allocator_type;
   typedef bst<int, std::less<int>, allocator_type> set_type;
 

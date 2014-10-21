@@ -9,7 +9,7 @@ namespace rtcpp {
 template <typename T>
 class bst_iterator : public std::iterator<std::bidirectional_iterator_tag, const T> {
   public:
-  typedef node<T> node_type;
+  typedef bst_node<T> node_type;
   typedef const node_type* node_pointer;
   private:
   node_pointer m_p;

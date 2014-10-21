@@ -4,13 +4,13 @@
 
 namespace rtcpp {
 
-template <typename T>
+template <typename Node>
 class node_stack {
   public:
-  typedef T* pointer;
-  typedef const T* const_pointer;
-  typedef node<T> node_type;
-  typedef node_type* node_pointer;
+  typedef typename Node::value_type* pointer;
+  typedef const typename Node::value_type* const_pointer;
+  typedef Node node_type;
+  typedef Node* node_pointer;
   private:
   typedef std::vector<node_type> pool_type;
   std::vector<node_type> pool;

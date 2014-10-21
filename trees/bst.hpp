@@ -29,7 +29,7 @@ class bst { // Unbalanced binary search tree
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
-  typedef node<T> node_type;
+  typedef bst_node<T> node_type;
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
   Allocator pool;
