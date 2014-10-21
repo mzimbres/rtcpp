@@ -26,10 +26,10 @@ struct options {
 
   options()
   : help(false)
-  , insertion_size(20)
-  , insertion_repeat(100)
-  , lookup_size(200)
-  , lookup_repeat(100)
+  , insertion_size(1000000)
+  , insertion_repeat(1)
+  , lookup_size(1000000)
+  , lookup_repeat(1)
   {}
 };
 
@@ -42,10 +42,10 @@ options parse_options(int argc, char* argv[])
   po::options_description desc( "Benchmarks bst and std::set.");
   desc.add_options()
     ("help,h", "Available options.")
-    ("insertion-size,i", po::value<int>(&op.insertion_size)->default_value(20), "Size of random data to be inserted in the set.")
-    ("insertion-repeat,r", po::value<int>(&op.insertion_repeat)->default_value(200), "How many times insertion should be repeated.")
-    ("lookup-size,l", po::value<int>(&op.lookup_size)->default_value(20), "Size of random data to be searched in the set.")
-    ("lookup-repeat,e", po::value<int>(&op.lookup_repeat)->default_value(200), "How many times search should be repeated.")
+    ("insertion-size,i", po::value<int>(&op.insertion_size)->default_value(1000000), "Size of random data to be inserted in the set.")
+    ("insertion-repeat,r", po::value<int>(&op.insertion_repeat)->default_value(1), "How many times insertion should be repeated.")
+    ("lookup-size,l", po::value<int>(&op.lookup_size)->default_value(1000000), "Size of random data to be searched in the set.")
+    ("lookup-repeat,e", po::value<int>(&op.lookup_repeat)->default_value(1), "How many times search should be repeated.")
   ;
 
   po::variables_map vm;        
@@ -86,13 +86,13 @@ int main(int argc, char* argv[])
     std::vector<int> insertion_data = make_rand_data(op.insertion_size, a, b);
     std::vector<int> lookup_data = make_rand_data(op.lookup_size, a, b);
 
-    typedef node_pool<int> pool_type;
+    typedef node_stack<int> pool_type;
     typedef pool_allocator<pool_type> allocator_type;
     typedef bst<int, std::less<int>, allocator_type> set_type;
 
     {
       std::cerr << "Insertion: bst (pool): ";
-      node_pool<int> insertion_pool(insertion_data.size());
+      node_stack<int> insertion_pool(insertion_data.size());
       allocator_type w1(&insertion_pool);
       set_type t1(w1);
       boost::timer::auto_cpu_timer timer;
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 
     {
       std::cerr << "Lookup:    bst (pool): ";
-      node_pool<int> lookup_pool(lookup_data.size());
+      node_stack<int> lookup_pool(lookup_data.size());
       allocator_type w2(&lookup_pool);
       set_type t1(w2);
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));

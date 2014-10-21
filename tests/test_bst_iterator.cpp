@@ -16,7 +16,7 @@ int main()
 {
   using namespace rtcpp;
 
-  typedef node_pool<int> pool_type;
+  typedef node_stack<int> pool_type;
   typedef pool_allocator<pool_type> allocator_type;
   typedef bst<int, std::less<int>, allocator_type> set_type;
 

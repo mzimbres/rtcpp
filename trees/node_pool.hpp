@@ -5,7 +5,7 @@
 namespace rtcpp {
 
 template <typename T>
-class node_pool {
+class node_stack {
   public:
   typedef T* pointer;
   typedef const T* const_pointer;
@@ -15,20 +15,17 @@ class node_pool {
   typedef std::vector<node_type> pool_type;
   std::vector<node_type> pool;
   node_pointer avail;
-  std::size_t counter;
   public:
   typedef typename pool_type::size_type size_type;
-  node_pool(size_type n);
-  node_pointer allocate() noexcept;
-  void deallocate(node_pointer p) noexcept;
-  size_type size() const noexcept {return pool.size();}
-  size_type available() const noexcept {return counter;}
+  node_stack(size_type n);
+  node_pointer pop() noexcept;
+  void push(node_pointer p) noexcept;
+  size_type capacity() const noexcept {return pool.capacity();}
 };
 
 template <typename T>
-node_pool<T>::node_pool(size_type n)
+node_stack<T>::node_stack(size_type n)
 : pool(n == 0 ? 10 : n)
-, counter(n)
 {
   const size_type pool_size = pool.size();
   // Let us link the avail stack.
@@ -42,17 +39,16 @@ node_pool<T>::node_pool(size_type n)
 }
 
 template <typename T>
-typename node_pool<T>::node_pointer node_pool<T>::allocate() noexcept
+typename node_stack<T>::node_pointer node_stack<T>::pop() noexcept
 {
   node_pointer q = avail;
   if (avail)
     avail = avail->llink;
-  --counter;
   return q;
 }
 
 template <typename T>
-void node_pool<T>::deallocate(typename node_pool<T>::node_pointer p) noexcept
+void node_stack<T>::push(typename node_stack<T>::node_pointer p) noexcept
 {
   if (!p)
     return;
@@ -60,7 +56,6 @@ void node_pool<T>::deallocate(typename node_pool<T>::node_pointer p) noexcept
   p->rlink = 0;
   p->llink = avail;
   avail = p;
-  ++counter;
 }
 
 }

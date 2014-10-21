@@ -21,7 +21,7 @@ int main()
   const int b = std::numeric_limits<int>::max();
   //const int b = size;
 
-  typedef node_pool<int> pool_type;
+  typedef node_stack<int> pool_type;
   typedef pool_allocator<pool_type> wrap_type;
   typedef bst<int, std::less<int>, wrap_type> set_type;
 
