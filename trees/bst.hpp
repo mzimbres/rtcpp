@@ -13,6 +13,8 @@ template < typename T
          , typename Compare = std::less<T>
          , typename Allocator = allocator<T>>
 class bst { // Unbalanced binary search tree
+  private:
+  typedef bst_node<T> node_type;
   public:
   typedef T key_type;
   typedef T value_type;
@@ -20,6 +22,7 @@ class bst { // Unbalanced binary search tree
   typedef Compare key_compare;
   typedef Compare value_compare;
   typedef typename std::allocator_traits<Allocator>::allocator_type allocator_type;
+  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
   typedef typename Allocator::pointer& pointer;
@@ -29,7 +32,6 @@ class bst { // Unbalanced binary search tree
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
-  typedef bst_node<T> node_type;
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
   Allocator pool;
