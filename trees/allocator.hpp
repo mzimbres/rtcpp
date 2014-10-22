@@ -13,6 +13,7 @@ class allocator {
   typedef T* const_pointer;
   typedef bst_node<T> node_type;
   typedef node_type* node_pointer;
+  typedef node_type value_type;
   node_pointer allocate() const noexcept
   {
     try {

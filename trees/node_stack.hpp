@@ -11,6 +11,7 @@ class node_stack {
   typedef const typename Node::value_type* const_pointer;
   typedef Node node_type;
   typedef Node* node_pointer;
+  typedef Node value_type;
   private:
   typedef std::vector<node_type> pool_type;
   std::vector<node_type> pool;

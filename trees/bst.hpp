@@ -1,8 +1,8 @@
-#include <vector>
 #include <utility>
 #include <iterator>
 #include <functional>
 #include <algorithm>
+#include <memory>
 
 #include "bst_iterator.hpp"
 #include "allocator.hpp"
@@ -19,7 +19,7 @@ class bst { // Unbalanced binary search tree
   typedef std::size_t size_type;
   typedef Compare key_compare;
   typedef Compare value_compare;
-  typedef Allocator allocator_type;
+  typedef typename std::allocator_traits<Allocator>::allocator_type allocator_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
   typedef typename Allocator::pointer& pointer;
