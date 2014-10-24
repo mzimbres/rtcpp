@@ -64,12 +64,12 @@ Binary Searce Trees
 Let me list some important facts about my implementation of a Binary Search Tree
 (the bst class)
 
-1) My implementation is not C++11 compliant as I still do not know how to the
-   allocator model can solve my problems.
+1) My implementation is compliant with the C++11 allocator model as I still do
+   not know if they can handle the problems I want to solve.
 
-2) The class is not exception safe if used with std::allocator as it can throw
-   std::bad_alloc. However is is guaranteed to be exception safe if used with 
-   the pool_allocator. Actually all its member functions are noexcept.
+2) The class bst is not exception safe if used with std::allocator as it can
+   throw std::bad_alloc. However is is guaranteed to be exception safe if used
+   with the pool_allocator. Actually all its member functions are noexcept.
 
 3) If it is used with pool_allocator the class is realtime. The time taken 
    to allocate a node is constant and independent of the heap state. But since
