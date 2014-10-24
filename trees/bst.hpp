@@ -5,13 +5,12 @@
 #include <memory>
 
 #include "bst_iterator.hpp"
-#include "allocator.hpp"
 
 namespace rtcpp {
 
 template < typename T
          , typename Compare = std::less<T>
-         , typename Allocator = allocator<T>>
+         , typename Allocator = std::allocator<T>>
 class bst { // Unbalanced binary search tree
   private:
   typedef bst_node<T> node_type;
@@ -38,11 +37,11 @@ class bst { // Unbalanced binary search tree
   node_type head;
   Compare comp;
   public:
-  bst(const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
+  bst(const inner_allocator_type& alloc = std::allocator<node_type>()) noexcept;
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
+  bst(InputIt begin, InputIt end, const inner_allocator_type& alloc = std::allocator<node_type>()) noexcept;
   ~bst() noexcept;
   void copy(bst& rhs) const noexcept;
   void clear() noexcept;
@@ -109,7 +108,7 @@ void bst<T, Compare, Allocator>::clear() noexcept
   for (;;) {
     node_pointer q = inorder_successor(p);
     if (p != &head)
-      pool.deallocate(p);
+      pool.deallocate(p, 1);
     if (q == &head)
       break;
     p = q;
@@ -139,7 +138,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noe
 
   for (;;) {
     if (!has_null_llink(p->tag)) {
-      node_pointer tmp = rhs.pool.allocate();
+      node_pointer tmp = rhs.pool.allocate(1);
       if (!tmp)
         break; // The tree has exhausted its capacity.
 
@@ -153,7 +152,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noe
       break;
 
     if (!has_null_rlink(p->tag)) {
-      node_pointer tmp = rhs.pool.allocate();
+      node_pointer tmp = rhs.pool.allocate(1);
       if (!tmp)
         break; // The tree has exhausted its capacity.
 
@@ -170,7 +169,7 @@ bst<T, Compare, Allocator>::insert(T key) noexcept
 {
   typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty
-    node_pointer q = pool.allocate();
+    node_pointer q = pool.allocate(1);
     if (!q)
       return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
@@ -186,7 +185,7 @@ bst<T, Compare, Allocator>::insert(T key) noexcept
         p = p->llink;
         continue;
       }
-      node_pointer q = pool.allocate();
+      node_pointer q = pool.allocate(1);
       if (!q)
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
@@ -198,7 +197,7 @@ bst<T, Compare, Allocator>::insert(T key) noexcept
         p = p->rlink;
         continue;
       }
-      node_pointer q = pool.allocate();
+      node_pointer q = pool.allocate(1);
       if (!q)
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
