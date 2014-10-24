@@ -40,11 +40,18 @@ options parse_options(int argc, char* argv[])
 {
   std::string d_file;
   options op;
-  po::options_description desc( "Benchmarks bst and std::set.");
+  po::options_description desc(
+  "\nBenchmarks my implementation of an unbalanced binary search tree against std::set\n"
+  "and boost::flat_set. Two benchmarks are made, the first one is the time taken to \n"
+  "insert the value_type's. The second one to the time taken to look each one of the \n"
+  "inserted items");
   desc.add_options()
     ("help,h", "Available options.")
-    ("insertion-size,i", po::value<int>(&op.insertion_size)->default_value(1000000), "Size of random data to be inserted in the set.")
-    ("insertion-repeat,r", po::value<int>(&op.insertion_repeat)->default_value(1), "How many times insertion should be repeated.")
+    ("insertion-size,i", po::value<int>(&op.insertion_size)->default_value(1000000),
+    "Size of random data to be inserted in the set. But note that the data is made "
+    "unique and the final size can be less than that.")
+    ("insertion-repeat,r", po::value<int>(&op.insertion_repeat)->default_value(1),
+    "How many times insertion should be repeated.")
     ("lookup-size,l", po::value<int>(&op.lookup_size)->default_value(1000000), "Size of random data to be searched in the set.")
     ("lookup-repeat,e", po::value<int>(&op.lookup_repeat)->default_value(1), "How many times search should be repeated.")
   ;
@@ -83,13 +90,24 @@ int main(int argc, char* argv[])
 
     const int a = 1;
     const int b = std::numeric_limits<int>::max();
+    // Use this limit to make the tree more likely unbalanced.
     //const int b = size;
+
     std::vector<int> insertion_data = make_rand_data(op.insertion_size, a, b);
     std::vector<int> lookup_data = make_rand_data(op.lookup_size, a, b);
 
-    typedef bst_node<int> node_type;
+    // We have to know the node_type used by the tree in order to build an avail
+    // stack.
+    typedef bst<int>::node_type node_type;
+
+    // The type of the avail stack from witch we will allocate and deallocate
+    // nodes.
     typedef node_stack<node_type> pool_type;
+
+    // The pool allocator type.
     typedef pool_allocator<node_type> allocator_type;
+
+    // The container type.
     typedef bst<int, std::less<int>, allocator_type> set_type;
 
     {
