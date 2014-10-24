@@ -12,9 +12,8 @@ template < typename T
          , typename Compare = std::less<T>
          , typename Allocator = std::allocator<T>>
 class bst { // Unbalanced binary search tree
-  private:
-  typedef bst_node<T> node_type;
   public:
+  typedef bst_node<T> node_type;
   typedef T key_type;
   typedef T value_type;
   typedef std::size_t size_type;
@@ -74,7 +73,6 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
   head.tag = detail::lbit;
   rhs.copy(*this);
 }
-
 
 template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept

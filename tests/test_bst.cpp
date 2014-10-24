@@ -20,19 +20,36 @@ int main()
   const int size = 400000;
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
+  // Use the limit below if you want the tree to be more unbalanced.
+  // That is useful for benchmarks against balanced trees i.e. avl
+  // or red-black for example.
   //const int b = size;
 
-  typedef bst_node<int> node_type;
+  // We have to know the node_type used by the tree in order to build an avail
+  // stack.
+  typedef bst<int>::node_type node_type;
+
+  // The type of the avail stack from witch we will allocate and deallocate
+  // nodes.
   typedef node_stack<node_type> pool_type;
-  typedef pool_allocator<node_type> wrap_type;
-  typedef bst<int, std::less<int>, wrap_type> set_type;
 
+  // The pool allocator type.
+  typedef pool_allocator<node_type> allocator_type;
+
+  // The container type.
+  typedef bst<int, std::less<int>, allocator_type> set_type;
+
+  // Random unique integers in the range [a,b].
   std::vector<int> tmp = make_rand_data(size, a, b);
-  pool_type pool(5 * size);
-  wrap_type w(&pool);
-  set_type t1(std::begin(tmp), std::end(tmp), w);
-
+  // The data size may be different from size as we remove repeated elements.
   std::cout << "Data size: " << tmp.size() << std::endl;
+
+  // All trees used in these test will allocate nodes from the same pool.
+  pool_type pool(5 * size);
+
+  allocator_type w(&pool); // The allocator instance.
+
+  set_type t1(std::begin(tmp), std::end(tmp), w);
 
   if (t1.size() != tmp.size())
     return 1;
@@ -58,11 +75,14 @@ int main()
   if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
     return 1; // No duplicates allowed. (this must be improved)
 
-  // Reverse iterators are tested in test_bst_iterator.
-  //std::sort(std::begin(tmp), std::end(tmp));
+  if (t2.size() != tmp.size())
+    return 1;
 
-  //if (!std::equal(t1.rbegin(), t1.rend(), tmp.rbegin()))
-  //  return 1;
+  if (t3.size() != tmp.size())
+    return 1;
+
+  if (t4.size() != tmp.size())
+    return 1;
 
   //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   //std::cout << std::endl;
