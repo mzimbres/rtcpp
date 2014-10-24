@@ -1,21 +1,51 @@
 #pragma once
 
+#include "bst_node.hpp"
+#include "node_stack.hpp"
+
 namespace rtcpp {
 
-template <typename Pool>
+template <typename T>
 class pool_allocator {
-  private:
-  Pool* pool;
   public:
-  typedef typename Pool::pointer pointer;
-  typedef typename Pool::const_pointer const_pointer;
-  typedef typename Pool::node_type node_type;
-  typedef typename Pool::node_pointer node_pointer;
-  typedef typename Pool::value_type value_type;
-  pool_allocator(Pool* p) noexcept : pool(p) {}
-  pool_allocator() noexcept : pool(0) {}
-  node_pointer allocate() noexcept {return pool->pop();}
-  void deallocate(node_pointer p) noexcept {pool->push(p);};
+  typedef T value_type;
+  typedef value_type* pointer;
+  typedef const value_type* const_pointer;
+  pointer allocate() const noexcept
+  {
+    try {
+      return new value_type;
+    } catch (const std::bad_alloc& e) {
+      return 0;
+    }
+  }
+  void deallocate(pointer p) const noexcept {delete p;};
+
+  template <typename U>
+  struct rebind {
+    typedef pool_allocator<U> other;
+  };
+};
+
+template <typename T>
+class pool_allocator<bst_node<T>> {
+  public:
+  typedef bst_node<T> node_type;
+  typedef node_type value_type;
+  typedef value_type* pointer;
+  typedef const value_type* const_pointer;
+  private:
+  node_stack<node_type>* m_pool;
+  public:
+  pool_allocator(node_stack<node_type>* p) noexcept : m_pool(p) {}
+  pool_allocator() noexcept : m_pool(0) {}
+  pointer allocate() noexcept {return m_pool->pop();}
+  void deallocate(pointer p) noexcept {m_pool->push(p);};
+
+  template <typename U>
+  struct rebind {
+    typedef pool_allocator<U> other;
+  };
 };
 
 }

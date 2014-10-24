@@ -24,7 +24,7 @@ int main()
 
   typedef bst_node<int> node_type;
   typedef node_stack<node_type> pool_type;
-  typedef pool_allocator<pool_type> wrap_type;
+  typedef pool_allocator<node_type> wrap_type;
   typedef std::scoped_allocator_adaptor<allocator<int>> alloc;
   typedef bst<int, std::less<int>, wrap_type> set_type;
 

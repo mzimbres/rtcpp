@@ -18,7 +18,7 @@ int main()
 
   typedef bst_node<int> node_type;
   typedef node_stack<node_type> pool_type;
-  typedef pool_allocator<pool_type> allocator_type;
+  typedef pool_allocator<node_type> allocator_type;
   typedef bst<int, std::less<int>, allocator_type> set_type;
 
   const int size = 5; // Space for three items.

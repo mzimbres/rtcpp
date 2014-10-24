@@ -34,15 +34,15 @@ class bst { // Unbalanced binary search tree
   private:
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
-  Allocator pool;
+  inner_allocator_type pool;
   node_type head;
   Compare comp;
   public:
-  bst(const Allocator& alloc = allocator<T>()) noexcept;
+  bst(const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<int>()) noexcept;
+  bst(InputIt begin, InputIt end, const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
   ~bst() noexcept;
   void copy(bst& rhs) const noexcept;
   void clear() noexcept;
@@ -78,7 +78,7 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
 
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const Allocator& alloc) noexcept
+bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept
 : pool(alloc)
 {
   head.llink = &head;
@@ -88,7 +88,7 @@ bst<T, Compare, Allocator>::bst(const Allocator& alloc) noexcept
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Allocator& alloc) noexcept
+bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const inner_allocator_type& alloc) noexcept
 : pool(alloc)
 {
   head.llink = &head;
