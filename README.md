@@ -12,11 +12,11 @@ Node based
   thing about standard containers in C++ is the way they handle memory. There are
   some things that make me regret using them:
 
-  1) If you are using the default allocator you are probability using malloc for
+  1) If you are using the default allocator you are probabily using malloc for
      each new item inserted in your container, malloc in turn makes use of
      system calls to make room for the new inserted item. Imagine yourself
      using new to allocate space for an int as would be the case for
-     std::set<int> for example.  To avoid that, one has to stick to custom
+     std::set<int> for example.  To avoid that, one has to use custom
      allocators, however this does no solve all the problems (Even in the
      new C++11 allocator model).
 
@@ -35,11 +35,10 @@ Node based
   a) It is difficult to write an allocator with constant allocation time.
      With "constant" I mean something that does no depend on the container size
      or on how fragmented the heap may be. I do not mean "amortized" constant
-     time. This fact is due mainly to the fact the container must abtain their
-     value_type from allocators. If on the other hand they could get the
-     node_type, contant time could be easily achieved as is this case, the
-     node_type links can be used to link the nodes toguether forming an avail
-     stack. That way nodes can be allocated by 
+     time. This fact is due mainly to the fact that the node_type used by the
+     container is not exposed to the programmer. If they were exposed, once
+     could easily achieve contant time by using node links to build an avail
+     stack. For example, assuming that node type has an llink, once can do
 
                     node_pointer q = avail;
                     if (avail)
@@ -49,14 +48,12 @@ Node based
      Deallocation of a node pointed by p is as simple as
 
                     if (!p) return;
-                    p->rlink = 0;
                     p->llink = avail;
                     avail = p;
 
      We see that just a couple of instructions are used, which makes allocation
      and deallocation constant time. See the class node_stack for how I handle
-     this. I would be very happy if I can do this in the new C++11 allocator
-     model, but I do not know yet how to do it.
+     this.
 
 Binary Searce Trees
 ===================
@@ -64,23 +61,30 @@ Binary Searce Trees
 Let me list some important facts about my implementation of a Binary Search Tree
 (the bst class)
 
-1) My implementation is compliant with the C++11 allocator model as I still do
-   not know if they can handle the problems I want to solve.
-
-2) The class bst is not exception safe if used with std::allocator as it can
+1) The class bst is not exception safe if used with std::allocator as it can
    throw std::bad_alloc. However is is guaranteed to be exception safe if used
-   with the pool_allocator. Actually all its member functions are noexcept.
+   with the allocator node_stack. Actually all its member functions are noexcept.
 
-3) If it is used with pool_allocator the class is realtime. The time taken 
-   to allocate a node is constant and independent of the heap state. But since
-   the tree is unbalanced no logarithmic time can be guaranteed and that may be 
-   undesirable in realtime applications.
+2) If used with node_stack the class is realtime. The time taken to allocate a
+   node is constant and independent of the heap state. But since the tree is
+   unbalanced no logarithmic time can be guaranteed and that may be undesirable
+   in realtime applications.
 
-4) It is very nice to compare its behaviour using std::allocator and
+3) It is very nice to compare its behaviour using std::allocator and
    rtcpp::pool_allocator as the heap fragmentation performance degradation
    becomes evident.
 
-To play with the benchmarks use the program bench_bst.
+4) Its design is not the same as std::set by its interface is prety similar.
+   The are only some missing functions.
+
+5) I think the new C++11 allocator model cannot achieve what I do here. If
+   you know how to do it, please let me know.
+
+To play with the benchmarks use the program bench_bst. Example usage:
+
+  If you want to use it with std::allocator you can simply do "bst<int> tmp;"
+  But that is unsafe. It is planned to be used with a pool allocator, for
+  example:
 
 Compilation
 =============
