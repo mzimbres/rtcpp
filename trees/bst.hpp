@@ -10,7 +10,7 @@ namespace rtcpp {
 
 template < typename T
          , typename Compare = std::less<T>
-         , typename Allocator = std::allocator<T>>
+         , typename Allocator = std::allocator<bst_node<T>>>
 class bst { // Unbalanced binary search tree
   public:
   typedef bst_node<T> node_type;
@@ -20,7 +20,6 @@ class bst { // Unbalanced binary search tree
   typedef Compare key_compare;
   typedef Compare value_compare;
   typedef typename std::allocator_traits<Allocator>::allocator_type allocator_type;
-  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
   typedef typename Allocator::pointer& pointer;
@@ -32,15 +31,15 @@ class bst { // Unbalanced binary search tree
   private:
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
-  inner_allocator_type pool;
+  allocator_type pool;
   node_type head;
   Compare comp;
   public:
-  bst(const inner_allocator_type& alloc = std::allocator<node_type>()) noexcept;
+  bst(const allocator_type& alloc = std::allocator<node_type>()) noexcept;
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const inner_allocator_type& alloc = std::allocator<node_type>()) noexcept;
+  bst(InputIt begin, InputIt end, const allocator_type& alloc = std::allocator<node_type>()) noexcept;
   ~bst() noexcept;
   void copy(bst& rhs) const noexcept;
   void clear() noexcept;
@@ -75,7 +74,7 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept
+bst<T, Compare, Allocator>::bst(const allocator_type& alloc) noexcept
 : pool(alloc)
 {
   head.llink = &head;
@@ -85,7 +84,7 @@ bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const inner_allocator_type& alloc) noexcept
+bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const allocator_type& alloc) noexcept
 : pool(alloc)
 {
   head.llink = &head;

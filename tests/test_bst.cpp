@@ -9,7 +9,6 @@
 #include <vector>
 #include <scoped_allocator>
 
-#include <trees/pool_allocator.hpp>
 #include <trees/node_stack.hpp>
 #include <trees/bst.hpp>
 #include <utility/make_rand_data.hpp>
@@ -31,7 +30,7 @@ int main()
   typedef bst<int>::node_type node_type;
 
   // The pool allocator type.
-  typedef pool_allocator<node_type> allocator_type;
+  typedef node_stack<node_type> allocator_type;
 
   // The container type.
   typedef bst<int, std::less<int>, allocator_type> set_type;
@@ -50,9 +49,7 @@ int main()
 
   node_stack<node_type> pool(avail);
 
-  allocator_type w(pool); // The allocator instance.
-
-  set_type t1(std::begin(tmp), std::end(tmp), w);
+  set_type t1(std::begin(tmp), std::end(tmp), pool);
 
   if (t1.size() != tmp.size())
     return 1;
@@ -60,7 +57,7 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  set_type t2(w);
+  set_type t2(pool);
   t1.copy(t2);
 
   set_type t3(t2);

@@ -7,7 +7,6 @@
 #include <limits>
 #include <array>
 
-#include <trees/pool_allocator.hpp>
 #include <trees/node_stack.hpp>
 #include <trees/bst.hpp>
 #include <utility/make_rand_data.hpp>
@@ -17,7 +16,7 @@ int main()
   using namespace rtcpp;
 
   typedef bst_node<int> node_type;
-  typedef pool_allocator<node_type> allocator_type;
+  typedef node_stack<node_type> allocator_type;
   typedef bst<int, std::less<int>, allocator_type> set_type;
 
   const int size = 5; // Space for three items.
@@ -25,11 +24,10 @@ int main()
   // Node buffer
   std::vector<node_type> buffer(size);
   node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
-  node_stack<node_type> pool(avail);
-  allocator_type w(pool);
+  allocator_type pool(avail);
 
   std::array<int, size> arr = {{5, 4, 3, 2, 1}};
-  set_type t1(std::begin(arr), std::end(arr), w);
+  set_type t1(std::begin(arr), std::end(arr), pool);
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.

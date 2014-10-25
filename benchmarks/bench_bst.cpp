@@ -13,7 +13,6 @@
 #include <trees/bst_node.hpp>
 #include <trees/bst.hpp>
 #include <trees/node_stack.hpp>
-#include <trees/pool_allocator.hpp>
 
 #include <utility/to_number.hpp>
 #include <utility/make_rand_data.hpp>
@@ -101,7 +100,7 @@ int main(int argc, char* argv[])
     typedef bst<int>::node_type node_type;
 
     // The pool allocator type.
-    typedef pool_allocator<node_type> allocator_type;
+    typedef node_stack<node_type> allocator_type;
 
     // The container type.
     typedef bst<int, std::less<int>, allocator_type> set_type;
@@ -110,9 +109,8 @@ int main(int argc, char* argv[])
       std::cerr << "Insertion: bst (pool): ";
       std::vector<node_type> buffer(insertion_data.size()); // Node buffer
       node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
-      node_stack<node_type> pool(avail);
-      allocator_type w(pool); // The allocator instance.
-      set_type t1(w);
+      allocator_type pool(avail);
+      set_type t1(pool);
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.insertion_repeat; ++i) {
         fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
@@ -144,9 +142,8 @@ int main(int argc, char* argv[])
       std::cerr << "Lookup:    bst (pool): ";
       std::vector<node_type> buffer(lookup_data.size()); // Node buffer
       node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
-      node_stack<node_type> pool(avail);
-      allocator_type w(pool); // The allocator instance.
-      set_type t1(w);
+      allocator_type pool(avail);
+      set_type t1(pool);
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.lookup_repeat; ++i)
