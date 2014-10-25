@@ -100,10 +100,6 @@ int main(int argc, char* argv[])
     // stack.
     typedef bst<int>::node_type node_type;
 
-    // The type of the avail stack from witch we will allocate and deallocate
-    // nodes.
-    typedef node_stack<node_type> pool_type;
-
     // The pool allocator type.
     typedef pool_allocator<node_type> allocator_type;
 
@@ -112,9 +108,11 @@ int main(int argc, char* argv[])
 
     {
       std::cerr << "Insertion: bst (pool): ";
-      node_stack<node_type> insertion_pool(insertion_data.size());
-      allocator_type w1(&insertion_pool);
-      set_type t1(w1);
+      std::vector<node_type> buffer(insertion_data.size()); // Node buffer
+      node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
+      node_stack<node_type> pool(avail);
+      allocator_type w(pool); // The allocator instance.
+      set_type t1(w);
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.insertion_repeat; ++i) {
         fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
@@ -144,9 +142,11 @@ int main(int argc, char* argv[])
 
     {
       std::cerr << "Lookup:    bst (pool): ";
-      node_stack<node_type> lookup_pool(lookup_data.size());
-      allocator_type w2(&lookup_pool);
-      set_type t1(w2);
+      std::vector<node_type> buffer(lookup_data.size()); // Node buffer
+      node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
+      node_stack<node_type> pool(avail);
+      allocator_type w(pool); // The allocator instance.
+      set_type t1(w);
       fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
       boost::timer::auto_cpu_timer timer;
       for (int i = 0; i < op.lookup_repeat; ++i)

@@ -37,12 +37,12 @@ class pool_allocator<bst_node<T>> {
   typedef const value_type* const_pointer;
   typedef std::size_t size_type;
   private:
-  node_stack<node_type>* m_pool;
+  node_stack<node_type> m_pool;
   public:
-  pool_allocator(node_stack<node_type>* p) noexcept : m_pool(p) {}
-  pool_allocator() noexcept : m_pool(0) {}
-  pointer allocate(size_type) noexcept {return m_pool->pop();}
-  void deallocate(pointer p, size_type) noexcept {m_pool->push(p);};
+  pool_allocator(node_stack<node_type> p) noexcept : m_pool(p) {}
+  pool_allocator() noexcept {}
+  pointer allocate(size_type) noexcept {return m_pool.pop();}
+  void deallocate(pointer p, size_type) noexcept {m_pool.push(p);};
 
   template <typename U>
   struct rebind {

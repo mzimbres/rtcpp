@@ -6,6 +6,7 @@
 #include <iterator>
 #include <limits>
 #include <array>
+#include <vector>
 #include <scoped_allocator>
 
 #include <trees/pool_allocator.hpp>
@@ -29,10 +30,6 @@ int main()
   // stack.
   typedef bst<int>::node_type node_type;
 
-  // The type of the avail stack from witch we will allocate and deallocate
-  // nodes.
-  typedef node_stack<node_type> pool_type;
-
   // The pool allocator type.
   typedef pool_allocator<node_type> allocator_type;
 
@@ -44,10 +41,16 @@ int main()
   // The data size may be different from size as we remove repeated elements.
   std::cout << "Data size: " << tmp.size() << std::endl;
 
-  // All trees used in these test will allocate nodes from the same pool.
-  pool_type pool(5 * size);
+  // Node buffer
+  std::vector<node_type> buffer(5 * size);
 
-  allocator_type w(&pool); // The allocator instance.
+  // A pointer to the to of the node stack. All containers shall clain nodes
+  // from this stack.
+  node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
+
+  node_stack<node_type> pool(avail);
+
+  allocator_type w(pool); // The allocator instance.
 
   set_type t1(std::begin(tmp), std::end(tmp), w);
 
