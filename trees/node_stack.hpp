@@ -1,6 +1,9 @@
 #pragma once
 
+#include <iterator>
+
 #include "bst_node.hpp"
+#include "link_stack.hpp"
 
 namespace rtcpp {
 
@@ -27,17 +30,8 @@ class node_stack {
 template <typename T>
 node_stack<T>::node_stack(size_type n)
 : pool(n == 0 ? 10 : n)
-{
-  const size_type pool_size = pool.size();
-  // Let us link the avail stack.
-  pool[0].llink = 0;
-  pool[0].rlink = 0;
-  for (std::size_t i = 1; i < pool_size; ++i) {
-    pool[i].llink = &pool[i - 1];
-    pool[i].rlink = 0;
-  }
-  avail = &pool.back();
-}
+, avail(link_stack(std::begin(pool), std::end(pool)))
+{}
 
 template <typename T>
 typename node_stack<T>::node_pointer node_stack<T>::pop() noexcept
