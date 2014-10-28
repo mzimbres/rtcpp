@@ -49,7 +49,7 @@ int main()
 
   node_stack<node_type> pool(avail);
 
-  set_type t1(std::begin(tmp), std::end(tmp), pool);
+  set_type t1(std::begin(tmp), std::end(tmp), std::ref(pool));
 
   if (t1.size() != tmp.size())
     return 1;
@@ -57,7 +57,7 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  set_type t2(pool);
+  set_type t2(std::ref(pool));
   t1.copy(t2);
 
   set_type t3(t2);

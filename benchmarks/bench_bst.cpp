@@ -19,17 +19,11 @@
 
 struct options {
   bool   help;
-  int insertion_size;
-  int insertion_repeat;
-  int lookup_size;
-  int lookup_repeat;
+  int size;
 
   options()
   : help(false)
-  , insertion_size(1000000)
-  , insertion_repeat(1)
-  , lookup_size(1000000)
-  , lookup_repeat(1)
+  , size(2000000)
   {}
 };
 
@@ -41,18 +35,14 @@ options parse_options(int argc, char* argv[])
   options op;
   po::options_description desc(
   "\nBenchmarks my implementation of an unbalanced binary search tree against std::set\n"
-  "and boost::flat_set. Two benchmarks are made, the first one is the time taken to \n"
+  "and boost::flat_set. Three benchmarks are made, the first one is the time taken to \n"
   "insert the value_type's. The second one to the time taken to look each one of the \n"
-  "inserted items");
+  "inserted items and the thrird the time to destruct the tree.");
   desc.add_options()
     ("help,h", "Available options.")
-    ("insertion-size,i", po::value<int>(&op.insertion_size)->default_value(1000000),
+    ("size,i", po::value<int>(&op.size)->default_value(5000000),
     "Size of random data to be inserted in the set. But note that the data is made "
     "unique and the final size can be less than that.")
-    ("insertion-repeat,r", po::value<int>(&op.insertion_repeat)->default_value(1),
-    "How many times insertion should be repeated.")
-    ("lookup-size,l", po::value<int>(&op.lookup_size)->default_value(1000000), "Size of random data to be searched in the set.")
-    ("lookup-repeat,e", po::value<int>(&op.lookup_repeat)->default_value(1), "How many times search should be repeated.")
   ;
 
   po::variables_map vm;        
@@ -92,8 +82,7 @@ int main(int argc, char* argv[])
     // Use this limit to make the tree more likely unbalanced.
     //const int b = size;
 
-    std::vector<int> insertion_data = make_rand_data(op.insertion_size, a, b);
-    std::vector<int> lookup_data = make_rand_data(op.lookup_size, a, b);
+    std::vector<int> data = make_rand_data(op.size, a, b);
 
     // We have to know the node_type used by the tree in order to build an avail
     // stack.
@@ -105,76 +94,72 @@ int main(int argc, char* argv[])
     // The container type.
     typedef bst<int, std::less<int>, allocator_type> set_type;
 
-    {
-      std::cerr << "Insertion: bst (pool): ";
-      std::vector<node_type> buffer(insertion_data.size()); // Node buffer
+    { // bst (pool)
+      std::vector<node_type> buffer(data.size()); // Node buffer
       node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
       allocator_type pool(avail);
       set_type t1(pool);
-      boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.insertion_repeat; ++i) {
-        fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
+      {
+        std::clog << "Insertion: bst (pool): ";
+        boost::timer::auto_cpu_timer timer;
+        fill_set(t1, std::begin(data), std::end(data));
+      }
+      {
+        std::clog << "Lookup:    bst (pool): ";
+        boost::timer::auto_cpu_timer timer;
+        fill_set(t1, std::begin(data), std::end(data));
+      }
+      {
+        std::clog << "Deletion: bst (pool):  ";
+        boost::timer::auto_cpu_timer timer;
         t1.clear();
       }
     }
 
-    {
-      std::cerr << "Insertion: bst:        ";
+    { // bst
       bst<int> t1;
-      boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.insertion_repeat; ++i) {
-        fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
+      {
+        std::clog << "Insertion: bst:        ";
+        boost::timer::auto_cpu_timer timer;
+        fill_set(t1, std::begin(data), std::end(data));
+      }
+      {
+        std::clog << "Lookup:    bst:        ";
+        boost::timer::auto_cpu_timer timer;
+        fill_set(t1, std::begin(data), std::end(data));
+      }
+      {
+        std::clog << "Deletion: bst:         ";
+        boost::timer::auto_cpu_timer timer;
         t1.clear();
       }
     }
 
-    {
+    { // Set
       std::set<int> t1;
-      std::cerr << "Insertion: std::set:   ";
-      boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.insertion_repeat; ++i) {
-        fill_set(t1, std::begin(insertion_data), std::end(insertion_data));
+      {
+        std::clog << "Insertion: std::set:   ";
+        boost::timer::auto_cpu_timer timer;
+        fill_set(t1, std::begin(data), std::end(data));
+      }
+      {
+        std::clog << "Lookup:    std::set:   ";
+        boost::timer::auto_cpu_timer timer;
+        fill_set(t1, std::begin(data), std::end(data));
+      }
+      {
+        std::clog << "Deletion: std::set:    ";
+        boost::timer::auto_cpu_timer timer;
         t1.clear();
       }
     }
 
-    {
-      std::cerr << "Lookup:    bst (pool): ";
-      std::vector<node_type> buffer(lookup_data.size()); // Node buffer
-      node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
-      allocator_type pool(avail);
-      set_type t1(pool);
-      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
-      boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.lookup_repeat; ++i)
-        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
-    }
-
-    {
-      std::cerr << "Lookup:    bst:        ";
-      bst<int> t1;
-      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
-      boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.lookup_repeat; ++i)
-        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
-    }
-
-    {
-      std::cerr << "Lookup:    std::set:   ";
-      std::set<int> t1;
-      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
-      boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.lookup_repeat; ++i)
-        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
-    }
-
-    {
-      std::cerr << "Lookup:    flat_set:   ";
+    { // Flat set.
+      std::clog << "Lookup:    flat_set:   ";
       boost::container::flat_set<int> t1;
-      fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+      fill_set(t1, std::begin(data), std::end(data));
       boost::timer::auto_cpu_timer timer;
-      for (int i = 0; i < op.lookup_repeat; ++i)
-        fill_set(t1, std::begin(lookup_data), std::end(lookup_data));
+      fill_set(t1, std::begin(data), std::end(data));
     }
   } catch (...) {
     return 1;
