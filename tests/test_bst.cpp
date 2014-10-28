@@ -25,21 +25,13 @@ int main()
   // or red-black for example.
   //const int b = size;
 
-  // We have to know the node_type used by the tree in order to build an avail
-  // stack.
-  typedef bst<int>::node_type node_type;
-
-  // The pool allocator type.
-  typedef node_stack<node_type> allocator_type;
-
-  // The container type.
-  typedef bst<int, std::less<int>, allocator_type> set_type;
-
   // Random unique integers in the range [a,b].
   std::vector<int> tmp = make_rand_data(size, a, b);
   // The data size may be different from size as we remove repeated elements.
   std::cout << "Data size: " << tmp.size() << std::endl;
-
+  // We have to know the node_type used by the tree in order to build an avail
+  // stack.
+  typedef bst<int>::node_type node_type;
   // Node buffer
   std::vector<node_type> buffer(5 * size);
 
@@ -49,7 +41,7 @@ int main()
 
   node_stack<node_type> pool(avail);
 
-  set_type t1(std::begin(tmp), std::end(tmp), std::ref(pool));
+  bst<int> t1(std::begin(tmp), std::end(tmp), std::ref(pool));
 
   if (t1.size() != tmp.size())
     return 1;
@@ -57,11 +49,11 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  set_type t2(std::ref(pool));
+  bst<int> t2(std::ref(pool));
   t1.copy(t2);
 
-  set_type t3(t2);
-  set_type t4 = t3;
+  bst<int> t3(t2);
+  bst<int> t4 = t3;
 
   if (!std::equal(std::begin(t1), std::end(t1), std::begin(t2)))
     return 1;

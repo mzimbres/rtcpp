@@ -15,24 +15,19 @@ int main()
 {
   using namespace rtcpp;
 
-  typedef bst_node<int> node_type;
-  typedef node_stack<node_type> allocator_type;
-  typedef bst<int, std::less<int>, allocator_type> set_type;
 
   const int size = 5; // Space for three items.
 
-  // Node buffer
+  typedef bst_node<int> node_type;
   std::vector<node_type> buffer(size);
-  node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
-  allocator_type pool(avail);
-
+  node_stack<node_type> pool(link_stack(std::begin(buffer), std::end(buffer)));
   std::array<int, size> arr = {{5, 4, 3, 2, 1}};
-  set_type t1(std::begin(arr), std::end(arr), pool);
+  bst<int> t1(std::begin(arr), std::end(arr), std::ref(pool));
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.
 
-  typedef std::reverse_iterator<set_type::iterator> reverse_iter;
+  typedef std::reverse_iterator<bst<int>::iterator> reverse_iter;
   reverse_iter iter(t1.end());
 
   // We should be now at the rbegin.

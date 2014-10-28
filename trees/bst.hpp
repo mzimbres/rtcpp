@@ -4,13 +4,14 @@
 #include <algorithm>
 #include <memory>
 
+#include "node_stack.hpp"
 #include "bst_iterator.hpp"
 
 namespace rtcpp {
 
 template < typename T
          , typename Compare = std::less<T>
-         , typename Allocator = std::allocator<bst_node<T>>>
+         , typename Allocator = node_stack<bst_node<T>>>
 class bst { // Unbalanced binary search tree
   public:
   typedef bst_node<T> node_type;
@@ -35,11 +36,11 @@ class bst { // Unbalanced binary search tree
   node_type head;
   Compare comp;
   public:
-  bst(const allocator_type& alloc = std::allocator<node_type>()) noexcept;
+  bst(const allocator_type& alloc = node_stack<node_type>()) noexcept;
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const allocator_type& alloc = std::allocator<node_type>()) noexcept;
+  bst(InputIt begin, InputIt end, const allocator_type& alloc = node_stack<node_type>()) noexcept;
   ~bst() noexcept;
   void copy(bst& rhs) const noexcept;
   void clear() noexcept;

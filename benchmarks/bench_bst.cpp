@@ -5,6 +5,7 @@
 #include <functional>
 #include <algorithm>
 #include <set>
+#include <list>
 
 #include <boost/timer/timer.hpp>
 #include <boost/program_options.hpp>
@@ -84,53 +85,46 @@ int main(int argc, char* argv[])
 
     std::vector<int> data = make_rand_data(op.size, a, b);
 
-    // We have to know the node_type used by the tree in order to build an avail
-    // stack.
-    typedef bst<int>::node_type node_type;
+    typedef bst_node<int> node_type;
+    std::vector<node_type> buffer1(data.size()); // Buffer from a vector.
+    std::list<node_type> buffer2(data.size()); // Buffer from a list.
 
-    // The pool allocator type.
-    typedef node_stack<node_type> allocator_type;
-
-    // The container type.
-    typedef bst<int, std::less<int>, allocator_type> set_type;
-
-    std::vector<node_type> buffer(data.size()); // Node buffer
-    node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
-    allocator_type pool(avail);
+    node_stack<node_type> pool1(link_stack(std::begin(buffer1), std::end(buffer1)));
+    node_stack<node_type> pool2(link_stack(std::begin(buffer2), std::end(buffer2)));
 
     // The three containers we will benchmark.
-    set_type t1(pool);
-    bst<int> t2;
+    bst<int> t1(std::ref(pool1)); // Uses a vector as buffer.
+    bst<int> t2(std::ref(pool2)); // Used a list (more fragmented)
     std::set<int> t3;
 
     // Benchmarks.
     {
-      std::clog << "Insertion: bst (pool): ";
+      std::clog << "Insertion: bst (vector): ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t1, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Insertion: bst:        ";
+      std::clog << "Insertion: bst (list):   ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t2, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Insertion: std::set:   ";
+      std::clog << "Insertion: std::set:     ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t3, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Lookup:    bst (pool): ";
+      std::clog << "Lookup:    bst (vector): ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t1, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Lookup:    bst:        ";
+      std::clog << "Lookup:    bst (list)    ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t2, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Lookup:    std::set:   ";
+      std::clog << "Lookup:    std::set:     ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t3, std::begin(data), std::end(data));
     }
@@ -142,17 +136,17 @@ int main(int argc, char* argv[])
     //  fill_set(t4, std::begin(data), std::end(data));
     //}
     {
-      std::clog << "Deletion: bst (pool):  ";
+      std::clog << "Deletion: bst (vector):  ";
       boost::timer::auto_cpu_timer timer;
       t1.clear();
     }
     {
-      std::clog << "Deletion: bst:         ";
+      std::clog << "Deletion: bst (list)     ";
       boost::timer::auto_cpu_timer timer;
       t2.clear();
     }
     {
-      std::clog << "Deletion: std::set:    ";
+      std::clog << "Deletion: std::set:      ";
       boost::timer::auto_cpu_timer timer;
       t3.clear();
     }
