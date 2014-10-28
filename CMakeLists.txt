@@ -18,7 +18,6 @@ add_executable(test_comp_count_sort tests/test_comp_count_sort.cpp)
 
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
-  add_executable(test_flat_set tests/test_flat_set.cpp)
   add_executable(bench_bst benchmarks/bench_bst.cpp)
   target_link_libraries(bench_bst ${Boost_LIBRARIES})
 endif()
