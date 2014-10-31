@@ -32,15 +32,15 @@ Node based
   node_stack<node_type> stack2(avail2);
   node_stack<node_type> stack3(avail3);
 
-  // Binary search trees that allocates buffers from buffer1
+  // Binary search trees that allocates nodes from buffer1
   bst<int> a1(std::ref(stack1));
   bst<int> b1(std::ref(stack1));
 
-  // Binary search trees that allocates buffers from buffer2
+  // Binary search trees that allocates nodes from buffer2
   bst<int> a2(std::ref(stack2));
   bst<int> b2(std::ref(stack2));
 
-  // Binary search trees that allocates buffers from buffer3
+  // Binary search trees that allocates nodes from buffer3
   bst<int> a3(std::ref(stack3));
   bst<int> b3(std::ref(stack3));
   ```
