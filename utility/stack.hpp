@@ -1,6 +1,8 @@
 #include <utility>
 #include <iterator>
 
+// Just some prototyping.
+
 template <typename T, unsigned N>
 class stack {
   static const unsigned static_size = N;

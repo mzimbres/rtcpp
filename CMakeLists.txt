@@ -13,8 +13,6 @@ include_directories(.)
 add_executable(test_bst tests/test_bst.cpp)
 add_executable(test_bst_iterator tests/test_bst_iterator.cpp)
 add_executable(test_flist tests/test_flist.cpp)
-add_executable(test_sort tests/sort.cpp)
-add_executable(test_comp_count_sort tests/test_comp_count_sort.cpp)
 
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
@@ -22,7 +20,6 @@ if (Boost_FOUND)
   target_link_libraries(bench_bst ${Boost_LIBRARIES})
 endif()
 
-add_test(NAME test_comp_count_sort COMMAND test_comp_count_sort)
 add_test(NAME test_bst COMMAND test_bst)
 add_test(NAME test_bst_iterator COMMAND test_bst_iterator)
 

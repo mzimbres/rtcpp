@@ -60,7 +60,8 @@ template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, Compare, Allocator>& rhs) noexcept
 {
   // This ctor can fail if the allocator runs out of memory.
-  rhs.copy(*this);
+  if (this != &rhs)
+    rhs.copy(*this);
   return *this;
 }
 
