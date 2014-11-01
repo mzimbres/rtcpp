@@ -9,27 +9,39 @@ Node based
 =============
 
   The design for node based containers I came up with, can be though as
-  something between Boost.Intrusive (but less intrusive) and STL containers. It
-  also offers more guarantees than STL containers. As an example, let us see
-  the class bst, that has an interface very similar to std::set
+  something between Boost.Intrusive (but less intrusive) and STL containers
+  and offers more guarantees than STL containers. Some of the things that are
+  not properly addressed by STL node-based containers are:
+
+  1) Dynamic allocations (with system calls) on every insertion.  To avoid
+    that, one has to use custom allocators, however this does no solve all the
+    problems.
+
+  2) Heap fragmentation that impact performance, specially for small data types
+     like POD (plain old data).
+
+  3) More suitable when the container must grow on demand. If you do not need
+     this feature, you are paying for what you do not need.
+
+  4) Unsuitable for constant time allocations i.e. allocations that does not
+     depend on the container size and on heap fragmentation.
+  
+  To understand how I address these problems, let us see a small example of
+  the class bst, that offers almost the same interface as std::set.
 
   ```
   typedef bst<int>::node_type node_type; // Container node type.
 
   std::vector<node_type> buffer1(10); // Buffer of nodes in a vector.
   std::list<node_type> buffer2(10); // Buffer of nodes in a list.
-  std::array<node_type, 10> buffer3; // Buffer of nodes in an array.
 
-  // Since nodes have links, we can use them to form a stack. So let us link
-  // the stack.
+  // Links the nodes.
   node_type* avail1 = link_stack(std::begin(buffer1), std::end(buffer1));
   node_type* avail2 = link_stack(std::begin(buffer2), std::end(buffer2));
-  node_type* avail3 = link_stack(std::begin(buffer3), std::end(buffer3));
 
   // Now we need an allocator-like interface to the stack
   node_stack<node_type> stack1(avail1);
   node_stack<node_type> stack2(avail2);
-  node_stack<node_type> stack3(avail3);
 
   // Binary search trees that allocates nodes from buffer1
   bst<int> a1(std::ref(stack1));
@@ -38,80 +50,18 @@ Node based
   // Binary search trees that allocates nodes from buffer2
   bst<int> a2(std::ref(stack2));
   bst<int> b2(std::ref(stack2));
-
-  // Binary search trees that allocates nodes from buffer3
-  bst<int> a3(std::ref(stack3));
-  bst<int> b3(std::ref(stack3));
   ```
   As we see, one first needs the container node_type. Once we know it, we can
   declare the buffers to store the nodes. The only demand on the container is
-  that it offers forward iterators. I have used three buffers, a std::vector, a
-  std::list and a std::array. Usually the user won't want to store the buffers
-  on a list, because of memory fragmentation, however this is useful to
-  measure performance against the more cache friendly containers std::vector and
-  std::array.
+  that it offers forward iterators. Usually the user won't want to store the buffers
+  on a list, because of memory fragmentation.
 
-  Once we have the buffers of nodes, we can link them together and form an
+  Once we have a buffers of nodes, we can link them together to form an
   avail stack, so that allocation and deallocation converts on pushing and
   popping from the avail stack. The algorithm to link the stack assumes that
   each node has at least one link to another node and that it is called llink.
-  Once we have the stacks we can instantiate the bst's. In the code listing, I
-  have instantiated two bst's for each buffer but any number of bst's can
-  allocate from the same buffer.
-
-  Now that you know what the interface looks like. Let do some more deep
-  considerations.
-
-  Node based containers were my main motivation to begin this project. The bad
-  thing about STL node-based containers in C++ is the way they handle memory.
-  There are some things that make me regret using them:
-
-  1) If you are using the default allocator you are probably using malloc for
-     each new item inserted in your container, malloc in turn makes use of
-     system calls to make room for the new inserted item. Imagine yourself
-     using new to allocate space for an int as would be the case for std::set
-     for example. That is a very bad use of memory. To avoid that, one has to
-     use custom allocators, however this does no solve all the problems (Even
-     in the new C++11 allocator model).
-
-  2) Dynamic allocations on the heap on systems that demand 7 - 24 availability
-     are dangerous as you can end up with a very fragmented heap affecting 
-     program performace.
-
-  3) Even though one can use memory pools with allocators, they are more suitable
-     for situations where the container size must increase on demand and one
-     cannot place an upper bound on the maximum container size. In my job I
-     often can place an upper bound on the container size. That means I am
-     paying for what I do not need.
-
-  This is the problem that allocators cannot handle properly:
-
-  a) The allocator model is not suitable for constant time allocation for
-     node-based containers.  With "constant" I mean something that does no
-     depend on the container size or on how fragmented the heap may be. I do
-     not mean "amortized" constant time. This fact is due mainly to the fact
-     that the node_type used by the container is not exposed to the programmer.
-     If it were exposed, we could easily achieve contant time by using node
-     links to build an avail stack as I showed in the example. For example,
-     assuming that node type has an llink, we could allocate a node in the
-     following way
-
-                    node_pointer q = avail;
-                    if (avail)
-                      avail = avail->llink;
-                    return q;
-
-     Deallocation of a node pointed by p is as simple as
-
-                    if (!p) return;
-                    p->llink = avail;
-                    avail = p;
-
-     We see that just a couple of instructions are used, which makes allocation
-     and deallocation constant time. See the class node_stack for how I handle
-     this.
-
-Binary Searce Trees
+  
+Binary Search Trees
 ===================
 
 Let me list some important facts about my implementation of a Binary Search Tree
@@ -125,14 +75,13 @@ Let me list some important facts about my implementation of a Binary Search Tree
    applications. (You will have to wait a bit for my implementation of a
    balanced tree).
 
-3) It is very nice to compare its performance when using std::allocator.
-   Yes it is generic enough to be usable with std::allocator, however it is 
-   not 100% the same interface as in STL.
+3) It is generic enough to be usable with std::allocator. However it is not
+   100% the same interface as in STL.
 
 4) Its design is not the same as std::set by its interface is pretty similar.
    The are only some missing functions currently.
 
-To play with the benchmarks use the program bench_bst. Example usage:
+To play with the benchmarks use the program bench_bst.
 
 Compilation
 =============
