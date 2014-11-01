@@ -9,10 +9,9 @@ Node based
 =============
 
   The disign for node based containers I came up with, can be though as
-  something between Boost.Intrusive (but less intrusive) and STL containers. I
-  also affers more guarantees than STL containers, for example, all member
-  functions are noexcept. As an example, let us see the class bst, that is
-  equivalent to std::set:
+  something between Boost.Intrusive (but less intrusive) and STL containers. It
+  also offers more guarantees than STL containers. As an example, let us see
+  the class bst, that has an interface very similar to std::set
 
   ```
   typedef bst<int>::node_type node_type; // Container node type.
@@ -44,20 +43,36 @@ Node based
   bst<int> a3(std::ref(stack3));
   bst<int> b3(std::ref(stack3));
   ```
-  Now that I showed what the interface looks like. Let do some more deep
+  As we see, one first needs the container node_type. Once we know it, we can
+  declare the buffers to store the nodes. The only demand on the container is
+  that it offers forward iterators. I have used three buffers, a std::vector, a
+  std::list and a std::array. Usualy the user won't want to store the buffers
+  on a list, because of memory fragmentation, however this is useful to
+  measure performace agains the more cache friendly containers std::vector and
+  std::array.
+
+  Once we have the buffers of nodes, we can link them toguether and form an
+  avail stack, so that allocation and deallocation converts on pushing and
+  poping from the avail stack. The algorithm to link the stack assumes that
+  each node has at least one link to another node and that it is called llink.
+  Once we have the stacks we can instantiate the bst's. In the code listing, I
+  have instantiated two bst's for each buffer but any number of bst's can
+  allocate from the same buffer.
+
+  Now that you know what the interface looks like. Let do some more deep
   consideratons.
 
   Node based containers were my main motivation to begin this project. The bad
-  thing about standard containers in C++ is the way they handle memory. There are
-  some things that make me regret using them:
+  thing about STL node-based containers in C++ is the way they handle memory.
+  There are some things that make me regret using them:
 
   1) If you are using the default allocator you are probabily using malloc for
      each new item inserted in your container, malloc in turn makes use of
      system calls to make room for the new inserted item. Imagine yourself
-     using new to allocate space for an int as would be the case for
-     std::set<int> for example. That is a very bad use of memory. To avoid
-     that, one has to use custom allocators, however this does no solve all the
-     problems (Even in the new C++11 allocator model).
+     using new to allocate space for an int as would be the case for std::set
+     for example. That is a very bad use of memory. To avoid that, one has to
+     use custom allocators, however this does no solve all the problems (Even
+     in the new C++11 allocator model).
 
   2) Dynamic allocations on the heap on systems that demand 7 - 24 availability
      are dangerous as you can end up with a very fragmented heap affecting 
@@ -76,9 +91,10 @@ Node based
      depend on the container size or on how fragmented the heap may be. I do
      not mean "amortized" constant time. This fact is due mainly to the fact
      that the node_type used by the container is not exposed to the programmer.
-     If it were exposed, once could easily achieve contant time by using node
-     links to build an avail stack. For example, assuming that node type has an
-     llink, we could allocate a node in the following way
+     If it were exposed, we could easily achieve contant time by using node
+     links to build an avail stack as I showed in the example. For example,
+     assuming that node type has an llink, we could allocate a node in the
+     following way
 
                     node_pointer q = avail;
                     if (avail)
