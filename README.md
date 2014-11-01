@@ -1,14 +1,14 @@
 RTCPP
 ============
 
-  The idea of this project is to implement realtime data structures and algorithms
+  The idea of this project is to implement real-time data structures and algorithms
   in C++. Most of what is implemented here was taken from the book "The Art of Computer
   programming Vol. 1 and 3".
 
 Node based
 =============
 
-  The disign for node based containers I came up with, can be though as
+  The design for node based containers I came up with, can be though as
   something between Boost.Intrusive (but less intrusive) and STL containers. It
   also offers more guarantees than STL containers. As an example, let us see
   the class bst, that has an interface very similar to std::set
@@ -46,27 +46,27 @@ Node based
   As we see, one first needs the container node_type. Once we know it, we can
   declare the buffers to store the nodes. The only demand on the container is
   that it offers forward iterators. I have used three buffers, a std::vector, a
-  std::list and a std::array. Usualy the user won't want to store the buffers
+  std::list and a std::array. Usually the user won't want to store the buffers
   on a list, because of memory fragmentation, however this is useful to
-  measure performace agains the more cache friendly containers std::vector and
+  measure performance against the more cache friendly containers std::vector and
   std::array.
 
-  Once we have the buffers of nodes, we can link them toguether and form an
+  Once we have the buffers of nodes, we can link them together and form an
   avail stack, so that allocation and deallocation converts on pushing and
-  poping from the avail stack. The algorithm to link the stack assumes that
+  popping from the avail stack. The algorithm to link the stack assumes that
   each node has at least one link to another node and that it is called llink.
   Once we have the stacks we can instantiate the bst's. In the code listing, I
   have instantiated two bst's for each buffer but any number of bst's can
   allocate from the same buffer.
 
   Now that you know what the interface looks like. Let do some more deep
-  consideratons.
+  considerations.
 
   Node based containers were my main motivation to begin this project. The bad
   thing about STL node-based containers in C++ is the way they handle memory.
   There are some things that make me regret using them:
 
-  1) If you are using the default allocator you are probabily using malloc for
+  1) If you are using the default allocator you are probably using malloc for
      each new item inserted in your container, malloc in turn makes use of
      system calls to make room for the new inserted item. Imagine yourself
      using new to allocate space for an int as would be the case for std::set
@@ -119,9 +119,9 @@ Let me list some important facts about my implementation of a Binary Search Tree
 
 1) All member functions are exception safe and noexcept.
 
-2) It is realtime. The time taken to allocate a node is constant and
+2) It is real-time. The time taken to allocate a node is constant and
    independent of the heap state. But since the tree is unbalanced no
-   logarithmic time can be guaranteed and that may be undesirable in realtime
+   logarithmic time can be guaranteed and that may be undesirable in real-time
    applications. (You will have to wait a bit for my implementation of a
    balanced tree).
 
@@ -129,7 +129,7 @@ Let me list some important facts about my implementation of a Binary Search Tree
    Yes it is generic enough to be usable with std::allocator, however it is 
    not 100% the same interface as in STL.
 
-4) Its design is not the same as std::set by its interface is prety similar.
+4) Its design is not the same as std::set by its interface is pretty similar.
    The are only some missing functions currently.
 
 To play with the benchmarks use the program bench_bst. Example usage:
