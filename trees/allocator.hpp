@@ -46,11 +46,11 @@ class allocator<bst_node<T>> {
   {}
   pointer allocate(size_type, void*)
   {
-    return m_stack.allocate(1);
+    return m_stack.pop();
   }
   void deallocate(pointer p, size_type)
   {
-    m_stack.deallocate(p);
+    m_stack.push(p);
   }
 };
 

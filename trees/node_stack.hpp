@@ -22,12 +22,12 @@ class node_stack {
   public:
   node_stack(node_pointer p) noexcept : avail(p) {}
   node_stack() noexcept : avail(0) {}
-  node_pointer allocate(size_type) noexcept;
-  void deallocate(node_pointer p, size_type) noexcept;
+  node_pointer pop() noexcept;
+  void push(node_pointer p) noexcept;
 };
 
 template <typename T>
-typename node_stack<T>::node_pointer node_stack<T>::allocate(size_type) noexcept
+typename node_stack<T>::node_pointer node_stack<T>::pop() noexcept
 {
   node_pointer q = avail;
   if (avail)
@@ -36,7 +36,7 @@ typename node_stack<T>::node_pointer node_stack<T>::allocate(size_type) noexcept
 }
 
 template <typename T>
-void node_stack<T>::deallocate(typename node_stack<T>::node_pointer p, size_type) noexcept
+void node_stack<T>::push(typename node_stack<T>::node_pointer p) noexcept
 {
   if (!p)
     return;

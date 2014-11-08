@@ -93,8 +93,8 @@ int main(int argc, char* argv[])
     node_stack<node_type> pool2(link_stack(std::begin(buffer2), std::end(buffer2)));
 
     // The three containers we will benchmark.
-    bst<int> t1(std::ref(pool1)); // Uses a vector as buffer.
-    bst<int> t2(std::ref(pool2)); // Used a list (more fragmented)
+    bst<int> t1(allocator<node_type>(std::ref(pool1))); // Uses a vector as buffer.
+    bst<int> t2(allocator<node_type>(std::ref(pool2))); // Used a list (more fragmented)
     std::set<int> t3;
 
     // Benchmarks.

@@ -22,7 +22,7 @@ int main()
   std::vector<node_type> buffer(size);
   node_stack<node_type> pool(link_stack(std::begin(buffer), std::end(buffer)));
   std::array<int, size> arr = {{5, 4, 3, 2, 1}};
-  bst<int> t1(std::begin(arr), std::end(arr), std::ref(pool));
+  bst<int> t1(std::begin(arr), std::end(arr), allocator<node_type>(std::ref(pool)));
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.

@@ -41,7 +41,7 @@ int main()
 
   node_stack<node_type> pool(avail);
 
-  bst<int> t1(std::begin(tmp), std::end(tmp), std::ref(pool));
+  bst<int> t1(std::begin(tmp), std::end(tmp), allocator<node_type>(std::ref(pool)));
 
   if (t1.size() != tmp.size())
     return 1;
@@ -49,7 +49,7 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  bst<int> t2(std::ref(pool));
+  bst<int> t2(allocator<node_type>(std::ref(pool)));
   t1.copy(t2);
 
   bst<int> t3(t2);
