@@ -95,60 +95,76 @@ int main(int argc, char* argv[])
     // The three containers we will benchmark.
     bst<int> t1(allocator<node_type>(std::ref(pool1))); // Uses a vector as buffer.
     bst<int> t2(allocator<node_type>(std::ref(pool2))); // Used a list (more fragmented)
-    std::set<int> t3;
+    bst<int, std::less<int>, std::allocator<int>> t3((std::allocator<int>())); // Uses an allocator (more fragmented)
+    std::set<int> t4;
 
     // Benchmarks.
     {
-      std::clog << "Insertion: bst (vector): ";
+      std::clog << "Insertion: bst (vector):        ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t1, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Insertion: bst (list):   ";
+      std::clog << "Insertion: bst (list):          ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t2, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Insertion: std::set:     ";
+      std::clog << "Insertion: bst (std::allocator) ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t3, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Lookup:    bst (vector): ";
+      std::clog << "Insertion: std::set:            ";
+      boost::timer::auto_cpu_timer timer;
+      fill_set(t4, std::begin(data), std::end(data));
+    }
+    {
+      std::clog << "Lookup:    bst (vector):        ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t1, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Lookup:    bst (list)    ";
+      std::clog << "Lookup:    bst (list)           ";
       boost::timer::auto_cpu_timer timer;
       fill_set(t2, std::begin(data), std::end(data));
     }
     {
-      std::clog << "Lookup:    std::set:     ";
+      std::clog << "Lookup:    bst (std::allocator) ";
       boost::timer::auto_cpu_timer timer;
-      fill_set(t3, std::begin(data), std::end(data));
+      fill_set(t2, std::begin(data), std::end(data));
+    }
+    {
+      std::clog << "Lookup:    std::set:            ";
+      boost::timer::auto_cpu_timer timer;
+      fill_set(t4, std::begin(data), std::end(data));
     }
     //{
     //  std::clog << "Lookup:    flat_set:   ";
-    //  boost::container::flat_set<int> t4;
-    //  fill_set(t4, std::begin(data), std::end(data));
+    //  boost::container::flat_set<int> t5;
+    //  fill_set(t5, std::begin(data), std::end(data));
     //  boost::timer::auto_cpu_timer timer;
-    //  fill_set(t4, std::begin(data), std::end(data));
+    //  fill_set(t5, std::begin(data), std::end(data));
     //}
     {
-      std::clog << "Deletion: bst (vector):  ";
+      std::clog << "Deletion: bst (vector):         ";
       boost::timer::auto_cpu_timer timer;
       t1.clear();
     }
     {
-      std::clog << "Deletion: bst (list)     ";
+      std::clog << "Deletion: bst (list)            ";
       boost::timer::auto_cpu_timer timer;
       t2.clear();
     }
     {
-      std::clog << "Deletion: std::set:      ";
+      std::clog << "Deletion: bst (std::allocator)  ";
       boost::timer::auto_cpu_timer timer;
-      t3.clear();
+      t2.clear();
+    }
+    {
+      std::clog << "Deletion: std::set:             ";
+      boost::timer::auto_cpu_timer timer;
+      t4.clear();
     }
   } catch (...) {
     return 1;
