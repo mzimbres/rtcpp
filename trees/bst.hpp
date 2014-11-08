@@ -21,10 +21,11 @@ class bst { // Unbalanced binary search tree
   typedef Compare key_compare;
   typedef Compare value_compare;
   typedef typename std::allocator_traits<Allocator>::allocator_type allocator_type;
+  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
-  typedef typename Allocator::pointer& pointer;
-  typedef typename Allocator::const_pointer& const_pointer;
+  typedef typename std::allocator_traits<Allocator>::pointer pointer;
+  typedef typename std::allocator_traits<Allocator>::const_pointer const_pointer;
   typedef std::ptrdiff_t difference_type;
   typedef bst_iterator<T> const_iterator;
   typedef const_iterator iterator;
