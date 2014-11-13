@@ -17,7 +17,7 @@ class allocator {
   typedef std::ptrdiff_t difference_type;
   template< class U >
   struct rebind { typedef allocator<U> other; };
-  pointer allocate(size_type, void*) {return new T;}
+  pointer allocate(size_type) {return new T;}
   void deallocate(pointer p, size_type) {delete p;}
   allocator() {}
   allocator(const allocator&) {}
@@ -44,7 +44,7 @@ class allocator<bst_node<T>> {
   allocator(node_stack<value_type> stack)
   : m_stack(stack)
   {}
-  pointer allocate(size_type, void*)
+  pointer allocate(size_type)
   {
     return m_stack.pop();
   }

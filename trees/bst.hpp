@@ -109,7 +109,7 @@ void bst<T, Compare, Allocator>::clear() noexcept
   for (;;) {
     node_pointer q = inorder_successor(p);
     if (p != &head)
-      pool.deallocate(p, 1);
+      std::allocator_traits<inner_allocator_type>::deallocate(pool, p, 1);
     if (q == &head)
       break;
     p = q;
@@ -139,7 +139,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noe
 
   for (;;) {
     if (!has_null_llink(p->tag)) {
-      node_pointer tmp = rhs.pool.allocate(1, 0);
+      node_pointer tmp = std::allocator_traits<inner_allocator_type>::allocate(rhs.pool, 1);
       if (!tmp)
         break; // The tree has exhausted its capacity.
 
@@ -153,7 +153,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noe
       break;
 
     if (!has_null_rlink(p->tag)) {
-      node_pointer tmp = rhs.pool.allocate(1, 0);
+      node_pointer tmp = std::allocator_traits<inner_allocator_type>::allocate(rhs.pool, 1);
       if (!tmp)
         break; // The tree has exhausted its capacity.
 
@@ -170,7 +170,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
 {
   typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty
-    node_pointer q = pool.allocate(1, 0);
+    node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(pool, 1);
     if (!q)
       return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
@@ -186,7 +186,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
         p = p->llink;
         continue;
       }
-      node_pointer q = pool.allocate(1, 0);
+      node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(pool, 1);
       if (!q)
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
@@ -198,7 +198,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
         p = p->rlink;
         continue;
       }
-      node_pointer q = pool.allocate(1, 0);
+      node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(pool, 1);
       if (!q)
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
