@@ -128,9 +128,6 @@ bst<T, Compare, Allocator>::~bst() noexcept
 template <typename T, typename Compare, typename Allocator>
 void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noexcept
 {
-  if (this == &rhs)
-    return;
-
   rhs.clear();
   rhs.pool = pool;
 
