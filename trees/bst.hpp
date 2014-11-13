@@ -46,7 +46,7 @@ class bst { // Unbalanced binary search tree
   ~bst() noexcept;
   void copy(bst& rhs) const noexcept;
   void clear() noexcept;
-  std::pair<iterator, bool> insert(T key) noexcept;
+  std::pair<iterator, bool> insert(const value_type& key) noexcept;
   const_iterator begin() const noexcept {return const_iterator(inorder_successor(&head));}
   const_iterator end() const noexcept {return const_iterator(&head);}
   const_reverse_iterator rbegin() const noexcept {return const_reverse_iterator(end());}
@@ -166,7 +166,7 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noe
 
 template <typename T, typename Compare, typename Allocator>
 std::pair<typename bst<T, Compare, Allocator>::iterator, bool>
-bst<T, Compare, Allocator>::insert(T key) noexcept
+bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::value_type& key) noexcept
 {
   typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) { // The tree is empty
