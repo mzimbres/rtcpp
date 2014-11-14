@@ -1,11 +1,10 @@
 #pragma once
 
-#include "bst_node.hpp"
 #include "node_stack.hpp"
 
 namespace rtcpp {
 
-template <typename T>
+template <typename T, bool B = (sizeof (T) > sizeof (char*))>
 class allocator {
   public:
   typedef T value_type;
@@ -16,19 +15,19 @@ class allocator {
   typedef std::size_t size_type;
   typedef std::ptrdiff_t difference_type;
   template< class U >
-  struct rebind { typedef allocator<U> other; };
+  struct rebind { typedef allocator<U, (sizeof (U) > sizeof (char*))> other; };
   pointer allocate(size_type) {return new T;}
   void deallocate(pointer p, size_type) {delete p;}
   allocator() {}
   allocator(const allocator&) {}
   template<class U>
-  allocator(const allocator<U>&);
+  allocator(const allocator<U, false>&);
 };
 
 template <typename T>
-class allocator<bst_node<T>> {
+class allocator<T, true> {
   public:
-  typedef bst_node<T> value_type;
+  typedef T value_type;
   typedef value_type* pointer;
   typedef const value_type* const_pointer;
   typedef value_type& reference;
@@ -36,7 +35,7 @@ class allocator<bst_node<T>> {
   typedef std::size_t size_type;
   typedef std::ptrdiff_t difference_type;
   template<class U>
-  struct rebind { typedef allocator<U> other;};
+  struct rebind { typedef allocator<U, (sizeof (U) > sizeof (char*))> other;};
   private:
   node_stack<value_type> m_stack;
   public:
@@ -44,14 +43,8 @@ class allocator<bst_node<T>> {
   allocator(node_stack<value_type> stack)
   : m_stack(stack)
   {}
-  pointer allocate(size_type)
-  {
-    return m_stack.pop();
-  }
-  void deallocate(pointer p, size_type)
-  {
-    m_stack.push(p);
-  }
+  pointer allocate(size_type) { return m_stack.pop(); }
+  void deallocate(pointer p, size_type) { m_stack.push(p); }
 };
 
 }
