@@ -30,7 +30,7 @@ int main()
   using namespace rtcpp;
 
   try {
-    const std::size_t size = 8000000;
+    const std::size_t size = 4000000;
     const int a = 1;
     const int b = std::numeric_limits<int>::max();
     // Use this limit to make the tree more likely unbalanced.
@@ -39,11 +39,12 @@ int main()
     std::vector<int> data = make_rand_data(size, a, b);
 
     typedef bst_node<int> node_type;
-    std::vector<node_type> buffer1(data.size()); // Buffer from a vector.
-    std::list<node_type> buffer2(data.size()); // Buffer from a list.
+    typedef alloc_block<sizeof(node_type)> alloc_node_type;
+    std::vector<alloc_node_type> buffer1(data.size()); // Buffer from a vector.
+    std::list<alloc_node_type> buffer2(data.size()); // Buffer from a list.
 
-    node_stack<node_type> pool1(link_stack(std::begin(buffer1), std::end(buffer1)));
-    node_stack<node_type> pool2(link_stack(std::begin(buffer2), std::end(buffer2)));
+    node_stack<sizeof(node_type)> pool1(link_stack(std::begin(buffer1), std::end(buffer1)));
+    node_stack<sizeof(node_type)> pool2(link_stack(std::begin(buffer2), std::end(buffer2)));
 
     // The three containers we will benchmark.
     bst<int> t1(allocator<node_type>(std::ref(pool1))); // Uses a vector as buffer.

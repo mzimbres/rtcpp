@@ -37,14 +37,14 @@ class allocator<T, true> {
   template<class U>
   struct rebind { typedef allocator<U, (sizeof (U) > sizeof (char*))> other;};
   private:
-  node_stack<value_type> m_stack;
+  node_stack<sizeof(value_type)> m_stack;
   public:
   allocator() {}
-  allocator(node_stack<value_type> stack)
+  allocator(node_stack<sizeof(value_type)> stack)
   : m_stack(stack)
   {}
-  pointer allocate(size_type) { return m_stack.pop(); }
-  void deallocate(pointer p, size_type) { m_stack.push(p); }
+  pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack.pop()); }
+  void deallocate(pointer p, size_type) { m_stack.push(reinterpret_cast<alloc_block<sizeof(value_type)>*>(p)); }
 };
 
 }
