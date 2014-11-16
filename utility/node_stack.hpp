@@ -7,7 +7,7 @@ namespace rtcpp {
 template <std::size_t S>
 struct alloc_block { // Check if S is a multiple of word size.
   alloc_block* llink;
-  char padding[S - 1];
+  char padding[S - sizeof(alloc_block*)];
 };
 
 template <std::size_t S>
