@@ -9,8 +9,10 @@
 #include <vector>
 #include <scoped_allocator>
 
-#include <trees/node_stack.hpp>
 #include <trees/bst.hpp>
+
+#include <utility/node_stack.hpp>
+#include <utility/link_stack.hpp>
 #include <utility/make_rand_data.hpp>
 
 int main()

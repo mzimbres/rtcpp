@@ -9,8 +9,9 @@
 
 #include <trees/bst_node.hpp>
 #include <trees/bst.hpp>
-#include <trees/node_stack.hpp>
 
+#include <utility/node_stack.hpp>
+#include <utility/link_stack.hpp>
 #include <utility/to_number.hpp>
 #include <utility/make_rand_data.hpp>
 #include <utility/timer.hpp>

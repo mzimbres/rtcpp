@@ -4,8 +4,9 @@
 #include <algorithm>
 #include <memory>
 
+#include <utility/node_stack.hpp>
+
 #include "allocator.hpp"
-#include "node_stack.hpp"
 #include "bst_iterator.hpp"
 
 namespace rtcpp {

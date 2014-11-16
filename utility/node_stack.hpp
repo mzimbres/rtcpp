@@ -2,10 +2,6 @@
 
 #include <iterator>
 
-#include <utility/link_stack.hpp>
-
-#include "bst_node.hpp"
-
 namespace rtcpp {
 
 template <std::size_t S>
