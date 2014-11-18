@@ -16,8 +16,8 @@ class allocator {
   typedef std::ptrdiff_t difference_type;
   template< class U >
   struct rebind { typedef allocator<U, (sizeof (U) > sizeof (char*))> other; };
-  pointer allocate(size_type) {return new T;}
-  void deallocate(pointer p, size_type) {delete p;}
+  //pointer allocate(size_type) {return new T;}
+  //void deallocate(pointer p, size_type) {delete p;}
   allocator() {}
   allocator(const allocator&) {}
   template<class U>
