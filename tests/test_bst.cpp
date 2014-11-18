@@ -34,17 +34,11 @@ int main()
   // We have to know the node_type used by the tree in order to build an avail
   // stack.
   typedef bst<int>::node_type node_type;
-  typedef alloc_block<sizeof(node_type)> alloc_node_type;
-  // Node buffer
-  std::vector<alloc_node_type> buffer(5 * size);
+  std::vector<char> buffer(5 * size * sizeof (node_type));
 
-  // A pointer to the to of the node stack. All containers shall clain nodes
-  // from this stack.
-  alloc_node_type* const avail = link_stack(std::begin(buffer), std::end(buffer));
+  allocator<node_type> alloc(&buffer[0], buffer.size());
 
-  node_stack<sizeof(node_type)> pool(avail);
-
-  bst<int> t1(std::begin(tmp), std::end(tmp), allocator<node_type>(std::ref(pool)));
+  bst<int> t1(std::begin(tmp), std::end(tmp), std::ref(alloc));
 
   if (t1.size() != tmp.size())
     return 1;
@@ -52,7 +46,7 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  bst<int> t2(allocator<node_type>(std::ref(pool)));
+  bst<int> t2(std::ref(alloc));
   t1.copy(t2);
 
   bst<int> t3(t2);

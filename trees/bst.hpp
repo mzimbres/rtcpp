@@ -5,8 +5,8 @@
 #include <memory>
 
 #include <utility/node_stack.hpp>
+#include <utility/allocator.hpp>
 
-#include "allocator.hpp"
 #include "bst_iterator.hpp"
 
 namespace rtcpp {

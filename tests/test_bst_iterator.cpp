@@ -20,15 +20,13 @@ int main()
   const int size = 5; // Space for three items.
 
   typedef bst_node<int> node_type;
-  typedef alloc_block<sizeof(node_type)> alloc_node_type;
-  std::vector<alloc_node_type> buffer(size);
-  node_stack<sizeof(node_type)> pool(link_stack(std::begin(buffer), std::end(buffer)));
+  std::vector<char> buffer(size * sizeof (node_type));
+  allocator<node_type> alloc(&buffer[0], buffer.size());
   std::array<int, size> arr = {{5, 4, 3, 2, 1}};
-  bst<int> t1(std::begin(arr), std::end(arr), allocator<node_type>(std::ref(pool)));
+  bst<int> t1(std::begin(arr), std::end(arr), std::ref(alloc));
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.
-
   typedef std::reverse_iterator<bst<int>::iterator> reverse_iter;
   reverse_iter iter(t1.end());
 

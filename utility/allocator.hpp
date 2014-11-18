@@ -40,8 +40,8 @@ class allocator<T, true> {
   node_stack<sizeof(value_type)> m_stack;
   public:
   allocator() {}
-  allocator(node_stack<sizeof(value_type)> stack)
-  : m_stack(stack)
+  allocator(void* p, std::size_t n)
+  : m_stack(p, n)
   {}
   pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack.pop()); }
   void deallocate(pointer p, size_type) { m_stack.push(reinterpret_cast<alloc_block<sizeof(value_type)>*>(p)); }

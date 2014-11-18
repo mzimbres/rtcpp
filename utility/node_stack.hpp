@@ -19,13 +19,19 @@ class node_stack {
   private:
   pointer avail;
   public:
-  node_stack(pointer p) noexcept
-  : avail(p)
-  {}
+  node_stack(void* p, std::size_t n) noexcept;
   node_stack() noexcept : avail(0) {}
   pointer pop() noexcept;
   void push(pointer p) noexcept;
 };
+
+template <std::size_t S>
+node_stack<S>::node_stack(void* p, std::size_t n) noexcept
+{
+  pointer begin = reinterpret_cast<pointer>(p);
+  std::size_t m = n / S; // Number of alloc_blocks we need.
+  avail = link_stack(begin, begin + m);
+}
 
 template <std::size_t S>
 typename node_stack<S>::pointer node_stack<S>::pop() noexcept
