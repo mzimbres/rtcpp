@@ -39,6 +39,7 @@ class bst { // Unbalanced binary search tree
   inner_allocator_type m_inner_alloc;
   node_type head;
   Compare comp;
+  void copy(bst& rhs) const noexcept;
   public:
   bst(const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
   bst(const bst& rhs) noexcept;
@@ -46,7 +47,6 @@ class bst { // Unbalanced binary search tree
   template <typename InputIt>
   bst(InputIt begin, InputIt end, const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
   ~bst() noexcept;
-  void copy(bst& rhs) const noexcept;
   void clear() noexcept;
   std::pair<iterator, bool> insert(const value_type& key) noexcept;
   const_iterator begin() const noexcept {return const_iterator(inorder_successor(&head));}
@@ -64,18 +64,22 @@ template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, Compare, Allocator>& rhs) noexcept
 {
   // This ctor can fail if the allocator runs out of memory.
-  if (this != &rhs)
+  if (this != &rhs) {
+    clear();
     rhs.copy(*this);
+  }
   return *this;
 }
 
 template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
+: m_inner_alloc(rhs.m_inner_alloc)
 {
   // This ctor can fail if the allocator runs out of memory.
   head.llink = &head;
   head.rlink = &head;
   head.tag = detail::lbit;
+  clear();
   rhs.copy(*this);
 }
 
@@ -132,9 +136,6 @@ bst<T, Compare, Allocator>::~bst() noexcept
 template <typename T, typename Compare, typename Allocator>
 void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noexcept
 {
-  rhs.clear();
-  rhs.m_inner_alloc = m_inner_alloc;
-
   const_node_pointer p = &head;
   node_pointer q = &rhs.head;
 

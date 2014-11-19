@@ -46,14 +46,8 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  bst<int> t2(std::ref(alloc));
-  t1.copy(t2);
-
-  bst<int> t3(t2);
+  bst<int> t3(t1);
   bst<int> t4 = t3;
-
-  if (!std::equal(std::begin(t1), std::end(t1), std::begin(t2)))
-    return 1;
 
   if (!std::equal(std::begin(t1), std::end(t1), std::begin(t3)))
     return 1;
@@ -63,9 +57,6 @@ int main()
 
   if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
     return 1; // No duplicates allowed. (this must be improved)
-
-  if (t2.size() != tmp.size())
-    return 1;
 
   if (t3.size() != tmp.size())
     return 1;
