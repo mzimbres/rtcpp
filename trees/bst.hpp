@@ -71,7 +71,7 @@ bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, C
 
 template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
-: m_inner_alloc(rhs.m_inner_alloc)
+: m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(rhs.m_inner_alloc))
 {
   // This ctor can fail if the allocator runs out of memory.
   head.llink = &head;
@@ -83,7 +83,7 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
 
 template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept
-: m_inner_alloc(alloc)
+: m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(alloc))
 {
   head.llink = &head;
   head.rlink = &head;
@@ -93,7 +93,7 @@ bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
 bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const inner_allocator_type& alloc) noexcept
-: m_inner_alloc(alloc)
+: m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(alloc))
 {
   head.llink = &head;
   head.rlink = &head;
