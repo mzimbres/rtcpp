@@ -9,7 +9,8 @@ Node based
 =============
 
   (This is still unfinished work)
-  Some of the problems when using standard node-based containers are:
+  Some of the problems when using standard node-based containers (with default
+  allocators) are:
 
   1) Dynamic allocations (with system calls) on every insertion.
 
@@ -23,38 +24,10 @@ Node based
      depend on the container size and on heap fragmentation.
   
   To avoid these problems one has to write custom allocators and this is one
-  the motivations for this project. The idea is to use a block of nodes and
+  of the motivations for this project. The idea is to use a block of nodes and
   link the nodes together to form an avail stack. That way allocations are
   performed by pushing and poppig fro the stack. However, since the container
-  node_type is not exposed, we need a workaround. An example showing the
-  general idea can be seen below.
-
-  ```
-  typedef bst<int>::node_type node_type; // Container node type.
-
-  std::vector<node_type> buffer1(10); // Buffer of nodes in a vector.
-  std::list<node_type> buffer2(10); // Buffer of nodes in a list.
-
-  // Links the nodes.
-  node_type* avail1 = link_stack(std::begin(buffer1), std::end(buffer1));
-  node_type* avail2 = link_stack(std::begin(buffer2), std::end(buffer2));
-
-  // Now we need an allocator-like interface to the stack
-  node_stack<node_type> stack1(avail1);
-  node_stack<node_type> stack2(avail2);
-
-  // Binary search trees that allocates nodes from buffer1
-  bst<int> a1(std::ref(stack1));
-  bst<int> b1(std::ref(stack1));
-
-  // Binary search trees that allocates nodes from buffer2
-  bst<int> a2(std::ref(stack2));
-  bst<int> b2(std::ref(stack2));
-  ```
-  We have used the container node_type here for the sake of clarity. Once we
-  know it, we can declare the buffers to store the nodes. The only demand on
-  the container is that it offers forward iterators. Usually the user do not
-  want to store the buffers on a list, because of memory fragmentation.
+  node_type is not exposed, we need a workaround.
 
 Binary Search Trees
 ===================
