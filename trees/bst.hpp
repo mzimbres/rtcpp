@@ -22,7 +22,6 @@ class bst { // Unbalanced binary search tree
   typedef std::size_t size_type;
   typedef Compare key_compare;
   typedef Compare value_compare;
-  typedef typename std::allocator_traits<Allocator>::allocator_type allocator_type;
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
@@ -35,7 +34,6 @@ class bst { // Unbalanced binary search tree
   private:
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
-  allocator_type m_alloc;
   inner_allocator_type m_inner_alloc;
   node_type head;
   Compare comp;
@@ -115,7 +113,7 @@ void bst<T, Compare, Allocator>::clear() noexcept
   for (;;) {
     node_pointer q = inorder_successor(p);
     if (p != &head) {
-      std::allocator_traits<allocator_type>::destroy(m_alloc, &q->key);
+      std::allocator_traits<inner_allocator_type>::destroy(m_inner_alloc, &q->key);
       std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, p, 1);
     }
     if (q == &head)
@@ -177,7 +175,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
       return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
     attach_node_left(&head, q);
-    std::allocator_traits<allocator_type>::construct(m_alloc, std::addressof(q->key), key);
+    std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->key), key);
     return std::make_pair(const_iterator(q), true);
   }
 
@@ -193,7 +191,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
       attach_node_left(p, q);
-      std::allocator_traits<allocator_type>::construct(m_alloc, std::addressof(q->key), key);
+      std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->key), key);
       return std::make_pair(q, true);
     } else if (comp(p->key, key)) {
       if (!has_null_rlink(p->tag)) {
@@ -205,7 +203,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
         return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
 
       attach_node_right(p, q);
-      std::allocator_traits<allocator_type>::construct(m_alloc, std::addressof(q->key), key);
+      std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->key), key);
       return std::make_pair(q, true);
     } else {
       return std::make_pair(p, false);
