@@ -5,18 +5,10 @@ namespace rtcpp {
 template <typename T>
 struct bst_node {
   typedef T value_type;
-
   bst_node* llink;
   bst_node* rlink;
   value_type key;
   int tag;
-
-  bst_node() noexcept
-  : llink(0)
-  , rlink(0)
-  , key(0)
-  , tag(0)
-  {}
 };
 
 namespace detail {
