@@ -21,7 +21,10 @@ int main()
 
   typedef bst_node<int> node_type;
   std::vector<char> buffer(size * sizeof (node_type));
-  allocator<node_type> alloc(&buffer[0], buffer.size());
+
+  allocator<int> alloc1(&buffer[0], buffer.size());
+  allocator<node_type> alloc(alloc1);
+
   std::array<int, size> arr = {{5, 4, 3, 2, 1}};
   bst<int> t1(std::begin(arr), std::end(arr), std::ref(alloc));
 

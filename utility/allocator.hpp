@@ -7,6 +7,9 @@ namespace rtcpp {
 template <typename T, bool B = (sizeof (T) > sizeof (char*))>
 class allocator {
   public:
+  std::size_t m_size;
+  void* m_data;
+  public:
   typedef T value_type;
   typedef T* pointer;
   typedef const T* const_pointer;
@@ -16,12 +19,14 @@ class allocator {
   typedef std::ptrdiff_t difference_type;
   template< class U >
   struct rebind { typedef allocator<U, (sizeof (U) > sizeof (char*))> other; };
-  //pointer allocate(size_type) {return new T;}
-  //void deallocate(pointer p, size_type) {delete p;}
-  allocator() {}
-  allocator(const allocator&) {}
-  template<class U>
-  allocator(const allocator<U, false>&);
+  allocator()
+  : m_size(0)
+  , m_data(0)
+  {}
+  allocator(void* data, std::size_t size)
+  : m_size(size)
+  , m_data(data)
+  {}
 };
 
 template <typename T>
@@ -38,13 +43,20 @@ class allocator<T, true> {
   struct rebind { typedef allocator<U, (sizeof (U) > sizeof (char*))> other;};
   private:
   node_stack<sizeof(value_type)> m_stack;
+  node_stack<sizeof(value_type)>* m_stack_pointer;
   public:
-  allocator() {}
-  allocator(void* p, std::size_t n)
-  : m_stack(p, n)
+  // Should be used only once. How to determine this at compile time?
+  template<typename U>
+  allocator(const allocator<U, false>& alloc)
+  : m_stack(alloc.m_data, alloc.m_size)
+  , m_stack_pointer(&m_stack)
   {}
-  pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack.pop()); }
-  void deallocate(pointer p, size_type) { m_stack.push(reinterpret_cast<alloc_block<sizeof(value_type)>*>(p)); }
+  template<typename U>
+  allocator(const allocator<U, true>& alloc)
+  : m_stack_pointer(alloc.m_stack_pointer)
+  {}
+  pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack_pointer->pop()); }
+  void deallocate(pointer p, size_type) { m_stack_pointer->push(reinterpret_cast<alloc_block<sizeof(value_type)>*>(p)); }
 };
 
 }

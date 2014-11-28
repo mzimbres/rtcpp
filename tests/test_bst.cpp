@@ -36,7 +36,8 @@ int main()
   typedef bst<int>::node_type node_type;
   std::vector<char> buffer(5 * size * sizeof (node_type));
 
-  allocator<node_type> alloc(&buffer[0], buffer.size());
+  allocator<int> alloc1(&buffer[0], buffer.size());
+  allocator<node_type> alloc(alloc1);
 
   bst<int> t1(std::begin(tmp), std::end(tmp), std::ref(alloc));
 
