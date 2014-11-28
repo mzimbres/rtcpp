@@ -39,11 +39,11 @@ class bst { // Unbalanced binary search tree
   Compare comp;
   void copy(bst& rhs) const noexcept;
   public:
-  bst(const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
+  bst(const Allocator& alloc = allocator<node_type>()) noexcept;
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const inner_allocator_type& alloc = allocator<node_type>()) noexcept;
+  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<T>()) noexcept;
   ~bst() noexcept;
   void clear() noexcept;
   std::pair<iterator, bool> insert(const value_type& key) noexcept;
@@ -55,7 +55,7 @@ class bst { // Unbalanced binary search tree
   value_compare value_comp() const noexcept {return comp;}
   size_type size() const noexcept {return std::distance(begin(), end());}
   bool empty() const noexcept {return begin() == end();}
-  inner_allocator_type get_allocator() const noexcept {return m_inner_alloc;}
+  Allocator get_allocator() const noexcept {return m_inner_alloc;}
 };
 
 template <typename T, typename Compare, typename Allocator>
@@ -82,8 +82,8 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept
-: m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(alloc))
+bst<T, Compare, Allocator>::bst(const Allocator& alloc) noexcept
+: m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
 {
   head.llink = &head;
   head.rlink = &head;
@@ -92,8 +92,8 @@ bst<T, Compare, Allocator>::bst(const inner_allocator_type& alloc) noexcept
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const inner_allocator_type& alloc) noexcept
-: m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(alloc))
+bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Allocator& alloc) noexcept
+: m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
 {
   head.llink = &head;
   head.rlink = &head;

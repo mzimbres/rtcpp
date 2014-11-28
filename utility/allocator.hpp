@@ -27,6 +27,11 @@ class allocator {
   : m_size(size)
   , m_data(data)
   {}
+  //template<typename U, bool B>
+  //allocator(const allocator<U, B>& alloc)
+  //: m_size(alloc.m_size)
+  //, m_data(alloc.m_data)
+  //{}
 };
 
 template <typename T>
