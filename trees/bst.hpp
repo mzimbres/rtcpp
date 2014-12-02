@@ -9,6 +9,11 @@
 
 #include "bst_iterator.hpp"
 
+  // My implementation of a binary search tree that is meant to be C++14
+  // compliant. It has the same interface as an std::set but lacks a guarantee
+  // on logarithmic search time. On big data an unbalanced tree is extremely
+  // rare and this implementation can outperform a balanced tree.
+
 namespace rtcpp {
 
 template < typename T

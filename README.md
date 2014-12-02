@@ -35,19 +35,18 @@ Binary Search Trees
 Let me list some important facts about my implementation of a Binary Search Tree
 (the bst class)
 
-1) All member functions are exception safe and noexcept (I am assuming some 
-   facts on the container value_type).
-
-2) It is real-time when used toguether with the allocator I have written. The
+1) It is real-time when used toguether with the allocator I have written. The
    time taken to allocate a node is constant and independent of the heap state.
    But since the tree is unbalanced no logarithmic time can be guaranteed and that
-   may be undesirable in real-time applications. (You will have to wait a bit for
-   my implementation of a balanced tree).
+   may be undesirable in real-time applications.
 
-3) It is generic enough to be usable with std::allocator.
+2) On large data sets with uniform distribution, it is extremely unlikely that an
+   unbalanced tree will arise. The reader should not exclude an unbalanced bst
+   from cosideration just because it does not guarantee logarithmic time, as that
+   would also prevent us from using algorithms like quick sort.
 
-4) Its design is the same as std::set.  The are only some missing functions
-   currently.
+3) Its design is the same as std::set.  The are only some missing functions
+   currently. It is meant to be C++14 compliant.
 
 To play with the benchmarks use the program bench_bst.
 
