@@ -78,6 +78,8 @@ class allocator<T, N, true> {
   {}
   pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack_pointer->pop()); }
   void deallocate(pointer p, size_type) { m_stack_pointer->push(reinterpret_cast<alloc_block<sizeof(value_type)>*>(p)); }
+  template<typename U>
+  void destroy(U* p) {p->~U();}
 };
 
 }
