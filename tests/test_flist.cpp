@@ -11,7 +11,7 @@ int main()
   using namespace rtcpp;
 
   const std::size_t size = 40;
-  flist<int> l(size);
+  flist<int> l;
 
   // Random number range.
   const int a = 1;

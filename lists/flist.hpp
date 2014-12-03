@@ -2,47 +2,39 @@
 
 #include <vector>
 #include <iterator>
+#include <memory>
 
 #include "flist_node.hpp"
 #include "flist_iterator.hpp"
 
 namespace rtcpp {
 
-template <typename T>
+template <typename T, typename Allocator = std::allocator<T>>
 class flist {
   public:
   typedef flist_node<T> node_type;
+  typedef Allocator allocator_type;
   typedef node_type* node_pointer;
   typedef flist_iterator<T> iterator;
   typedef T value_type;
   private:
-  std::vector<flist_node<T>> pool;
-  node_pointer avail;
+  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
+  inner_allocator_type m_inner_alloc;
   node_pointer head;
   node_pointer tail;
   public:
   iterator begin() {return iterator(head);}
   iterator end() {return iterator(0);}
-  flist(std::size_t n)
-  : pool(n)
-  , avail(0)
+  flist(const std::allocator<T>& alloc = std::allocator<T>())
+  : m_inner_alloc(alloc)
   , head(0)
   , tail(0)
-  {
-    pool[0].llink = 0;
-    for (std::size_t i = 0; i < n; ++i)
-      pool[i].llink = &pool[i - 1];
-    avail = &pool.back();
-  }
+  { }
   node_pointer add_node(T data)
   {
-    if (!avail)
-      return 0;
-
-    node_pointer q = avail;
-    avail = avail->llink;
+    node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1);
+    std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->info), data);
     q->info = data;
-    q->llink = 0;
     return q;
   }
   bool push_back(T data)
@@ -66,8 +58,8 @@ class flist {
     while (p2) {
       if (p2->info == value) {
         node_pointer tmp = p2->llink;
-        p2->llink = avail;
-        avail = p2;
+        std::allocator_traits<inner_allocator_type>::destroy(m_inner_alloc, &p2->info);
+        std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, p2, 1);
         p2 = tmp;
         *p1 = p2;
         continue;
