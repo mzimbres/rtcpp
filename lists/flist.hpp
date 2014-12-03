@@ -37,7 +37,7 @@ class flist {
     q->info = data;
     return q;
   }
-  bool push_back(T data)
+  bool push_back(const T& data)
   {
     if (!head) {
       head = add_node(data);
