@@ -4,10 +4,12 @@
 #include <algorithm>
 #include <functional>
 
-#include <utility/flist.hpp>
+#include <lists/flist.hpp>
 
 int main()
 {
+  using namespace rtcpp;
+
   const std::size_t size = 40;
   flist<int> l(size);
 
