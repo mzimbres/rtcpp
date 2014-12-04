@@ -61,6 +61,8 @@ class bst { // Unbalanced binary search tree
   size_type size() const noexcept {return std::distance(begin(), end());}
   bool empty() const noexcept {return begin() == end();}
   Allocator get_allocator() const noexcept {return m_inner_alloc;}
+  template<typename K>
+  size_type count(const K& x) const noexcept;
 };
 
 template <typename T, typename Compare, typename Allocator>
@@ -217,6 +219,35 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
       return std::make_pair(q, true);
     } else {
       return std::make_pair(p, false);
+    }
+  }
+}
+
+template <typename T, typename Compare, typename Allocator>
+template <typename K>
+typename bst<T, Compare, Allocator>::size_type
+bst<T, Compare, Allocator>::count(const K& key) const noexcept
+{
+  typedef typename bst<T>::const_iterator const_iterator;
+  if (has_null_llink(head.tag)) // The tree is empty
+    return 0;
+
+  node_pointer p = head.llink;
+  for (;;) {
+    if (comp(key, p->key)) {
+      if (!has_null_llink(p->tag)) {
+        p = p->llink;
+        continue;
+      }
+      return 0;
+    } else if (comp(p->key, key)) {
+      if (!has_null_rlink(p->tag)) {
+        p = p->rlink;
+        continue;
+      }
+      return 0;
+    } else {
+      return 1;
     }
   }
 }
