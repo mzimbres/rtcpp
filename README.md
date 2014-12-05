@@ -57,7 +57,7 @@ Compilation
   use on cmake (maybe without all the optimization flags):
 
   cmake ../../rtcpp/ -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -std=c++0x -Ofast -fipa-pta \
-  -flto -funsafe-loop-optimizations" -DCMAKE_BUILD_TYPE=Release \
+  -flto -funsafe-loop-optimizations -fno-exceptions -fno-rtti" -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=g++ -DBOOST_ROOT=${BOOST}
 
   I have experienced some strange problems with std::revers_iterators on gcc. For example:
