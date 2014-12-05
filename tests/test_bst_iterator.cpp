@@ -9,7 +9,6 @@
 
 #include <trees/bst.hpp>
 #include <utility/node_stack.hpp>
-#include <utility/link_stack.hpp>
 #include <utility/make_rand_data.hpp>
 
 int main()
