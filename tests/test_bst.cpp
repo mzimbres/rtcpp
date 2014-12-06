@@ -20,19 +20,11 @@ int main()
   const int size = 400000;
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
-  // Use the limit below if you want the tree to be more unbalanced.
-  // That is useful for benchmarks against balanced trees i.e. avl
-  // or red-black for example.
-  //const int b = size;
 
   // Random unique integers in the range [a,b].
   std::vector<int> tmp = make_rand_data(size, a, b);
-  // The data size may be different from size as we remove repeated elements.
-  std::cout << "Data size: " << tmp.size() << std::endl;
-  // We have to know the node_type used by the tree in order to build an avail
-  // stack.
-  typedef bst<int>::node_type node_type;
-  std::vector<char> buffer(5 * size * sizeof (node_type));
+
+  std::vector<char> buffer(5 * size * sizeof (bst<int>::node_type));
 
   allocator<int> alloc(&buffer[0], buffer.size());
 
