@@ -4,8 +4,7 @@
 #include <algorithm>
 #include <memory>
 
-#include <utility/node_stack.hpp>
-#include <utility/allocator.hpp>
+#include <memory/allocator.hpp>
 
 #include "bst_iterator.hpp"
 

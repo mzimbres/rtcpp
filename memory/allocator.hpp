@@ -1,6 +1,6 @@
 #pragma once
 
-#include <utility/node_stack.hpp>
+#include <memory/node_stack.hpp>
 
 namespace rtcpp {
 
