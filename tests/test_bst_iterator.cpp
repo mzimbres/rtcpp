@@ -52,12 +52,6 @@ int main()
   if (!std::equal(t1.begin(), t1.end(), arr.rbegin()))
     return 1;
 
-  if (t1.count(5) != 1)
-    return 1;
-
-  if (t1.count(15) != 0)
-    return 1;
-
   return 0;
 }
 

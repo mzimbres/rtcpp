@@ -13,10 +13,29 @@
 
 #include <utility/make_rand_data.hpp>
 
+using namespace rtcpp;
+
+bool test_count()
+{
+  const std::size_t size = 5;
+  const std::size_t node_size = sizeof (bst<int>::node_type);
+
+  std::array<char, size * node_size> buffer; // Buffer.
+
+  std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
+  bst<int> t1(std::begin(arr), std::end(arr), allocator<int>(&buffer[0], buffer.size()));
+  if (!std::all_of(std::begin(arr), std::end(arr), [&](int a){ return t1.count(a) == 1;}))
+    return false;
+
+  std::array<int, 5> tmp = {{1, 4, 8, 2, -1}};
+  if (!std::any_of(std::begin(tmp), std::end(tmp), [&](int a){ return t1.count(a) == 0;}))
+    return false;
+
+  return true;
+}
+
 int main()
 {
-  using namespace rtcpp;
-
   const int size = 400000;
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
@@ -61,6 +80,9 @@ int main()
 
   t1.clear();
   if (!t1.empty())
+    return 1;
+
+  if (!test_count())
     return 1;
     
   return 0;
