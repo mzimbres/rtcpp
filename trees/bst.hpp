@@ -3,6 +3,7 @@
 #include <functional>
 #include <algorithm>
 #include <memory>
+#include <limits>
 
 #include <memory/allocator.hpp>
 
@@ -64,6 +65,7 @@ class bst { // Unbalanced binary search tree
   size_type count(const K& x) const noexcept;
   template<typename K>
   const_iterator find(const K& x) const noexcept;
+  size_type max_size() const noexcept{ return std::numeric_limits<size_type>::max(); }
 };
 
 template <typename T, typename Compare, typename Allocator>
