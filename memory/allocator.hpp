@@ -2,6 +2,8 @@
 
 #include <memory/node_stack.hpp>
 
+#include "align.hpp"
+
 namespace rtcpp {
 
 template <typename T>
@@ -19,7 +21,7 @@ class allocator {
   const allocator& operator=(const allocator& rhs);
   public:
   std::size_t m_size;
-  void* m_data;
+  char* m_data;
   public:
   typedef T value_type;
   typedef T* pointer;
@@ -34,10 +36,17 @@ class allocator {
                      , size_of<U>::size
                      , !(size_of<U>::size < size_of<char*>::size)> other;
   };
-  allocator(void* data, std::size_t size)
+  allocator(char* data, std::size_t size)
   : m_size(size)
   , m_data(data)
-  {}
+  {
+    // aligns the pointer on a word boundary.
+    const std::size_t a = reinterpret_cast<std::size_t>(m_data);
+    const std::size_t b = sizeof (char*); // word size.
+    const std::size_t c = is_aligned(a, b) ? a : next_aligned(a, b);
+    m_data = reinterpret_cast<char*>(c);
+    size = c - a;
+  }
 };
 
 template <typename T, std::size_t N>
