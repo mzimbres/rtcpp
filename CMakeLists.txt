@@ -13,6 +13,7 @@ include_directories(.)
 add_executable(test_bst tests/test_bst.cpp)
 add_executable(test_bst_iterator tests/test_bst_iterator.cpp)
 add_executable(test_flist tests/test_flist.cpp)
+add_executable(test_align tests/test_align.cpp)
 add_executable(test_reverse tests/test_reverse.cpp)
 
 #if (Boost_FOUND)
@@ -24,4 +25,5 @@ add_executable(test_reverse tests/test_reverse.cpp)
 add_test(NAME test_bst COMMAND test_bst)
 add_test(NAME test_bst_iterator COMMAND test_bst_iterator)
 add_test(NAME test_reverse COMMAND test_reverse)
+add_test(NAME test_align COMMAND test_align)
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace rtcpp {
 
 constexpr bool is_power_of_two(std::size_t a) {return !(a & (a - 1));}
