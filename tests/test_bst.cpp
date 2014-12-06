@@ -34,6 +34,32 @@ bool test_count()
   return true;
 }
 
+bool test_find()
+{
+  const std::size_t size = 5;
+  const std::size_t node_size = sizeof (bst<int>::node_type);
+
+  std::array<char, size * node_size> buffer; // Buffer.
+
+  const std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
+  bst<int> t1(std::begin(arr), std::end(arr), allocator<int>(&buffer[0], buffer.size()));
+  auto func = [&](int a) -> bool
+  {
+    auto iter = t1.find(a);
+    if (iter == t1.end())
+      return false;
+    if (*iter != a)
+      return false;
+    return true;
+  };
+  const bool b1 = std::all_of(std::begin(arr), std::end(arr), func);
+  if (!b1)
+    return false;
+
+  return true;
+}
+
+
 int main()
 {
   const int size = 400000;
@@ -83,6 +109,9 @@ int main()
     return 1;
 
   if (!test_count())
+    return 1;
+
+  if (!test_find())
     return 1;
     
   return 0;
