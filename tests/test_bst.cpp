@@ -73,7 +73,7 @@ int main()
 
   allocator<int> alloc(&buffer[0], buffer.size());
 
-  bst<int> t1(std::begin(tmp), std::end(tmp), std::ref(alloc));
+  bst<int> t1(std::begin(tmp), std::end(tmp), alloc);
 
   if (t1.size() != tmp.size())
     return 1;

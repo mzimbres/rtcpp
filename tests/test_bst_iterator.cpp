@@ -23,7 +23,7 @@ int main()
   allocator<int> alloc(&buffer[0], buffer.size());
 
   std::array<int, size> arr = {{5, 4, 3, 2, 1}};
-  bst<int> t1(std::begin(arr), std::end(arr), std::ref(alloc));
+  bst<int> t1(std::begin(arr), std::end(arr), alloc);
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.

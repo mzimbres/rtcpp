@@ -24,18 +24,14 @@ int main(int argc, char* argv[])
 
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
-  // Use this limit to make the tree more likely unbalanced.
   //const int b = size;
 
   std::vector<int> data = make_rand_data(size, a, b);
 
-  typedef bst_node<int> node_type;
-  std::vector<char> buffer(data.size() * sizeof (node_type));
-
-  allocator<int> alloc(&buffer[0], buffer.size());
+  std::vector<char> buffer(data.size() * sizeof (bst<int>::node_type));
 
   // The three containers we will benchmark.
-  bst<int> t1(std::ref(alloc)); // Uses a vector as buffer.
+  bst<int> t1(allocator<int>(&buffer[0], buffer.size())); // Uses a vector as buffer.
   bst<int, std::less<int>, std::allocator<int>> t3((std::allocator<int>())); // Uses an allocator (more fragmented)
   std::set<int> t4;
 
