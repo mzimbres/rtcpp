@@ -297,5 +297,24 @@ void bst<T, Compare, Allocator>::insert(InputIt begin, InputIt end) noexcept
   }
 }
 
+template<typename Key, typename Compare, typename Alloc>
+bool operator==( const bst<Key, Compare, Alloc>& lhs
+               , const bst<Key, Compare, Alloc>& rhs) noexcept
+{
+  const bool b1 = lhs.size() == rhs.size();
+  const bool b2 = std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+  if (b1 && b2)
+    return true;
+
+  return false;
+}
+
+template<typename Key, typename Compare, typename Alloc>
+bool operator!=( const bst<Key, Compare, Alloc>& lhs
+               , const bst<Key, Compare, Alloc>& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+
 }
 

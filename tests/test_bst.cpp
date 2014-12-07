@@ -71,9 +71,7 @@ int main()
 
   std::vector<char> buffer(5 * size * sizeof (bst<int>::node_type));
 
-  allocator<int> alloc(&buffer[0], buffer.size());
-
-  bst<int> t1(std::begin(tmp), std::end(tmp), alloc);
+  bst<int> t1(std::begin(tmp), std::end(tmp), allocator<int>(&buffer[0], buffer.size()));
 
   if (t1.size() != tmp.size())
     return 1;
@@ -84,25 +82,14 @@ int main()
   bst<int> t3(t1);
   bst<int> t4 = t3;
 
-  if (!std::equal(std::begin(t1), std::end(t1), std::begin(t3)))
+  if (t3 != t1)
     return 1;
 
-  if (!std::equal(std::begin(t1), std::end(t1), std::begin(t4)))
+  if (t4 != t1)
     return 1;
 
   if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
-    return 1; // No duplicates allowed. (this must be improved)
-
-  if (t3.size() != tmp.size())
     return 1;
-
-  if (t4.size() != tmp.size())
-    return 1;
-
-  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
-  //std::cout << std::endl;
-  //std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
-  //std::cout << std::endl;
 
   t1.clear();
   if (!t1.empty())
@@ -114,6 +101,11 @@ int main()
   if (!test_find())
     return 1;
     
+  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
+  //std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
+  //std::cout << std::endl;
+
   return 0;
 }
 
