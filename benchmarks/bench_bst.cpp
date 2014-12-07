@@ -7,8 +7,8 @@
 #include <set>
 #include <list>
 
-#include <trees/bst_node.hpp>
-#include <trees/bst.hpp>
+#include <container/bst_node.hpp>
+#include <container/bst.hpp>
 
 #include <utility/to_number.hpp>
 #include <utility/make_rand_data.hpp>

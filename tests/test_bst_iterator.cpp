@@ -7,7 +7,7 @@
 #include <limits>
 #include <array>
 
-#include <trees/bst.hpp>
+#include <container/bst.hpp>
 #include <utility/make_rand_data.hpp>
 
 int main()

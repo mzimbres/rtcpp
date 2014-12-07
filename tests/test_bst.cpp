@@ -9,7 +9,7 @@
 #include <vector>
 #include <scoped_allocator>
 
-#include <trees/bst.hpp>
+#include <container/bst.hpp>
 
 #include <utility/make_rand_data.hpp>
 
