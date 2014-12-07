@@ -6,11 +6,6 @@
 
 namespace rtcpp {
 
-template <typename T>
-struct size_of {
-  static const std::size_t size = (sizeof (T));
-};
-
 template < typename T
          , std::size_t S = size_of<T>::size
          , bool B = !(S < size_of<char*>::size)
