@@ -14,11 +14,14 @@
 #include <utility/make_rand_data.hpp>
 #include <utility/timer.hpp>
 
-int main()
+int main(int argc, char* argv[])
 {
+  std::size_t size = 6000000;
+  if (argc == 2)
+    size = to_number<std::size_t>(argv[1]);
+
   using namespace rtcpp;
 
-  const std::size_t size = 6000000;
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
   // Use this limit to make the tree more likely unbalanced.
