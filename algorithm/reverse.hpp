@@ -7,7 +7,7 @@ namespace rtcpp {
 // For random access iterators.
 
 template<typename Iter>
-void reverse(Iter begin, Iter end)
+void reverse(Iter begin, Iter end) noexcept
 {
   while (begin < end) {
     std::iter_swap(begin, --end);

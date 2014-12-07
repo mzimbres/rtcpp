@@ -13,7 +13,6 @@
 #include <utility/to_number.hpp>
 #include <utility/make_rand_data.hpp>
 #include <utility/timer.hpp>
-#include <utility/fill_set.hpp>
 
 int main()
 {
@@ -41,32 +40,32 @@ int main()
   {
     std::clog << "Insertion: bst (rtcpp::allocator): ";
     timer t;
-    fill_set(t1, std::begin(data), std::end(data));
+    t1.insert(std::begin(data), std::end(data));
   }
   {
     std::clog << "Insertion: bst (std::allocator):   ";
     timer t;
-    fill_set(t3, std::begin(data), std::end(data));
+    t3.insert(std::begin(data), std::end(data));
   }
   {
     std::clog << "Insertion: std::set:               ";
     timer t;
-    fill_set(t4, std::begin(data), std::end(data));
+    t4.insert(std::begin(data), std::end(data));
   }
   {
     std::clog << "Lookup:    bst (rtcpp::allocator): ";
     timer t;
-    fill_set(t1, std::begin(data), std::end(data));
+    t1.insert(std::begin(data), std::end(data));
   }
   {
     std::clog << "Lookup:    bst (std::allocator):   ";
     timer t;
-    fill_set(t3, std::begin(data), std::end(data));
+    t3.insert(std::begin(data), std::end(data));
   }
   {
     std::clog << "Lookup:    std::set:               ";
     timer t;
-    fill_set(t4, std::begin(data), std::end(data));
+    t4.insert(std::begin(data), std::end(data));
   }
   {
     std::clog << "Deletion: bst (rtcpp::allocator):  ";

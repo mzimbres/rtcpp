@@ -66,6 +66,8 @@ class bst { // Unbalanced binary search tree
   template<typename K>
   const_iterator find(const K& x) const noexcept;
   size_type max_size() const noexcept{ return std::numeric_limits<size_type>::max(); }
+  template<typename InputIt>
+  void insert(InputIt begin, InputIt end) noexcept;
 };
 
 template <typename T, typename Compare, typename Allocator>
@@ -284,6 +286,16 @@ bst<T, Compare, Allocator>::find(const K& key) const noexcept
   }
 }
 
+template <typename T, typename Compare, typename Allocator>
+template <typename InputIt>
+void bst<T, Compare, Allocator>::insert(InputIt begin, InputIt end) noexcept
+{
+  for (InputIt iter = begin; iter != end; ++iter) {
+    auto pair = insert(*iter);
+    if (!pair.second)
+       continue;
+  }
+}
 
 }
 
