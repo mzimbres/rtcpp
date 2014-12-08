@@ -77,6 +77,8 @@ class allocator<T, N, true> {
   void deallocate(pointer p, size_type) { m_stack_pointer->push(reinterpret_cast<alloc_block<sizeof(value_type)>*>(p)); }
   template<typename U>
   void destroy(U* p) {p->~U();}
+  template< typename U, typename... Args>
+  void construct(U* p, Args&&... args) {::new((void *)p) U(std::forward<Args>(args)...);}
 };
 
 }
