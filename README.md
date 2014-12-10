@@ -1,14 +1,18 @@
 RTCPP
 ============
 
-  The idea of this project is to implement real-time data structures and algorithms
-  in C++. Most of what is implemented here was taken from the book "The Art of Computer
-  programming Vol. 1 and 3".
+  The idea of this project is to implement real-time data structures and
+  algorithms in C++. Most of what is implemented here was taken from the book
+  "The Art of Computer Programming Vol. 1 and 3".
+
+  "Realtime" here means there is an upper bound on how long the system takes to
+  respond or execute a task. This requirement exclude the use of dynamic
+  allocations (with system calls) and the use of exceptions since they
+  introduce unpredicted behaviour.
 
 Node based
 =============
 
-  (This is still unfinished work)
   Some of the problems when using standard node-based containers (with default
   allocators) are:
 
@@ -23,11 +27,12 @@ Node based
   4) Unsuitable for constant time allocations i.e. allocations that do not
      depend on the container size and on heap fragmentation.
   
-  To avoid these problems one has to write custom allocators and this is one
-  of the motivations for this project. The idea is to use a block of nodes and
+  To avoid these problems one has to write custom allocators and this is one of
+  the motivations for this project. The idea is to use a block of nodes and
   link the nodes together to form an avail stack. That way allocations are
-  performed by pushing and poppig fro the stack. However, since the container
-  node_type is not exposed, we need a workaround.
+  performed by pushing and popping from the stack and no use of system calls is
+  made. However, since the container node_type is not exposed, we need a
+  workaround.
 
 Binary Search Trees
 ===================
@@ -35,7 +40,7 @@ Binary Search Trees
 Let me list some important facts about my implementation of a Binary Search Tree
 (the bst class)
 
-1) It is real-time when used toguether with the allocator I have written. The
+1) It is real-time when used together with the allocator I have written. The
    time taken to allocate a node is constant and independent of the heap state.
    But since the tree is unbalanced no logarithmic time can be guaranteed and that
    may be undesirable in real-time applications.
