@@ -16,7 +16,7 @@
 
 int main(int argc, char* argv[])
 {
-  std::size_t size = 6000000;
+  std::size_t size = 600000;
   if (argc == 2)
     size = to_number<std::size_t>(argv[1]);
 
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
   std::vector<int> data_copy = data;
 
   std::vector<char> buffer(data.size() * sizeof (bst<int>::node_type));
-  std::vector<char> buffer2(2 * data.size() * sizeof (bst<int>::node_type));
+  std::vector<char> buffer2(10 * data.size() * sizeof (bst<int>::node_type));
 
   // The three containers we will benchmark.
   bst<int> t1(allocator<int>(&buffer.front(), buffer.size())); // Uses a vector as buffer.
@@ -54,11 +54,11 @@ int main(int argc, char* argv[])
     timer t;
     t4.insert(std::begin(data), std::end(data));
   }
-  {
-    std::clog << "Insertion: std::set (rtcpp::allocator): ";
-    timer t;
-    t5.insert(std::begin(data), std::end(data));
-  }
+  //{
+  //  std::clog << "Insertion: std::set (rtcpp::allocator): ";
+  //  timer t;
+  //  t5.insert(std::begin(data), std::end(data));
+  //}
   {
     std::clog << "Sort with std::sort:                    ";
     timer t;
@@ -79,11 +79,11 @@ int main(int argc, char* argv[])
     timer t;
     t4.insert(std::begin(data), std::end(data));
   }
-  {
-    std::clog << "Lookup: std::set (rtcpp::allocator):    ";
-    timer t;
-    t5.insert(std::begin(data), std::end(data));
-  }
+  //{
+  //  std::clog << "Lookup: std::set (rtcpp::allocator):    ";
+  //  timer t;
+  //  t5.insert(std::begin(data), std::end(data));
+  //}
   {
     std::clog << "Deletion: bst (rtcpp::allocator):       ";
     timer t;
@@ -99,11 +99,11 @@ int main(int argc, char* argv[])
     timer t;
     t4.clear();
   }
-  {
-    std::clog << "Deletion: std::set (rtcpp::allocator):  ";
-    timer t;
-    t5.clear();
-  }
+  //{
+  //  std::clog << "Deletion: std::set (rtcpp::allocator):  ";
+  //  timer t;
+  //  t5.clear();
+  //}
 
   return 0;
 }
