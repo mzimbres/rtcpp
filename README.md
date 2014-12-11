@@ -8,52 +8,59 @@ RTCPP
   "Realtime" here means there is an upper bound on how long the system takes to
   respond or execute a task. This requirement exclude the use of dynamic
   allocations (with system calls) and the use of exceptions since they
-  introduce unpredicted behaviour.
+  introduce unpredicted behaviour. I expect this project to be useful embedded
+  C++ programming.
 
 Node based
 =============
 
-  Some of the problems when using standard node-based containers (with default
-  allocators) are:
+  Some problems of STL containers for C++ embedded are:
 
-  1) Dynamic allocations (with system calls) on every insertion.
+  1) Dynamic allocations (with system calls) on every insertion and 
+     use of exceptions.
 
-  2) Heap fragmentation that impact performance, specially for small data types
-     like POD (plain old data).
-
-  3) More suitable when the containers must grow on demand. If you do not need
-     this feature, you are paying for what you do not need.
+  2) Heap fragmentation that impact performance and introduce unpredictability.
 
   4) Unsuitable for constant time allocations i.e. allocations that do not
      depend on the container size and on heap fragmentation.
-  
-  To avoid these problems one has to write custom allocators and this is one of
-  the motivations for this project. The idea is to use a block of nodes and
-  link the nodes together to form an avail stack. That way allocations are
-  performed by pushing and popping from the stack and no use of system calls is
-  made. However, since the container node_type is not exposed, we need a
-  workaround.
+
+  Even though custom allocators help addressing some of these problems,
+  they cannot address them all.
 
 Binary Search Trees
 ===================
 
-Let me list some important facts about my implementation of a Binary Search Tree
-(the bst class)
+I have made an implementation of std::set that does not use exception and
+allow non-throwing allocators. For a benchmark against std::set see the
+program bench_bst. An example use can be seem on the code below taken
+from the file examples/example1.cpp
 
-1) It is real-time when used together with the allocator I have written. The
-   time taken to allocate a node is constant and independent of the heap state.
-   But since the tree is unbalanced no logarithmic time can be guaranteed and that
-   may be undesirable in real-time applications.
+``
+  using namespace rtcpp;
 
-2) On large data sets with uniform distribution, it is extremely unlikely that an
-   unbalanced tree will arise. The reader should not exclude an unbalanced bst
-   from cosideration just because it does not guarantee logarithmic time, as that
-   would also prevent us from using algorithms like quick sort.
+  // Data to be inserted in the set.
+  std::array<int, 8> data = {{3, 5, 7, 20, 1, 44, 22, 8}};
 
-3) Its design is the same as std::set.  The are only some missing functions
-   currently. It is meant to be C++14 compliant.
+  // The buffer from which the set will allocate memory.
+  // Memory is on stack.
+  std::array<char, 8 * sizeof (bst<int>::node_type)> buffer;
 
-To play with the benchmarks use the program bench_bst.
+  // The allocator
+  allocator<int> alloc(&buffer.front(), buffer.size());
+
+  // Our realtime version of std::set.
+  bst<int> t1(alloc);
+
+  // Inserts the data
+  t1.insert(std::begin(data), std::end(data));
+
+  // Outputs it
+  std::copy( std::begin(t1)
+           , std::end(t1)
+           , std::ostream_iterator<int>(std::cout, " "));
+
+  std::cout << std::endl;
+``
 
 Compilation
 =============
