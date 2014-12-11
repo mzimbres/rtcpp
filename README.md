@@ -35,7 +35,7 @@ allow non-throwing allocators. For a benchmark against std::set see the
 program bench_bst. An example use can be seem on the code below taken
 from the file examples/example1.cpp
 
-``
+```
   using namespace rtcpp;
 
   // Data to be inserted in the set.
@@ -60,7 +60,7 @@ from the file examples/example1.cpp
            , std::ostream_iterator<int>(std::cout, " "));
 
   std::cout << std::endl;
-``
+```
 
 Compilation
 =============
