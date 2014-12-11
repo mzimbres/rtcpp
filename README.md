@@ -11,9 +11,6 @@ RTCPP
   introduce unpredicted behaviour. I expect this project to be useful embedded
   C++ programming.
 
-Node based
-=============
-
   Some problems of STL containers for C++ embedded are:
 
   1) Dynamic allocations (with system calls) on every insertion and 
@@ -27,7 +24,7 @@ Node based
   Even though custom allocators help addressing some of these problems,
   they cannot address them all.
 
-Binary Search Trees
+Realtime version of std::set.
 ===================
 
 I have made an implementation of std::set that does not use exception and
