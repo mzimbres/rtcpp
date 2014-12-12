@@ -16,13 +16,12 @@ template < typename T
          , typename Allocator = allocator<T>>
 class bst { // Unbalanced binary search tree
   public:
-  typedef bst_node<T> node_type;
+  typedef bst_node<T> node_type; // The standard does not require this to be public.
   typedef T key_type;
   typedef T value_type;
   typedef std::size_t size_type;
   typedef Compare key_compare;
   typedef Compare value_compare;
-  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
   typedef typename std::allocator_traits<Allocator>::pointer pointer;
@@ -32,18 +31,22 @@ class bst { // Unbalanced binary search tree
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
+  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
   inner_allocator_type m_inner_alloc;
   node_type head;
-  Compare comp;
+  Compare m_comp;
   void copy(bst& rhs) const noexcept;
   public:
   bst(const Allocator& alloc = allocator<node_type>()) noexcept;
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<T>()) noexcept;
+  bst(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept;
+  template <typename InputIt>
+  bst(InputIt begin, InputIt end, const Allocator& alloc) noexcept
+  : bst(begin, end, Compare(), alloc) {}
   ~bst() noexcept;
   void clear() noexcept;
   std::pair<iterator, bool> insert(const value_type& key) noexcept;
@@ -51,8 +54,8 @@ class bst { // Unbalanced binary search tree
   const_iterator end() const noexcept {return const_iterator(&head);}
   const_reverse_iterator rbegin() const noexcept {return const_reverse_iterator(end());}
   const_reverse_iterator rend() const noexcept {return const_reverse_iterator(begin());}
-  key_compare key_comp() const noexcept {return comp;}
-  value_compare value_comp() const noexcept {return comp;}
+  key_compare key_comp() const noexcept {return m_comp;}
+  value_compare value_comp() const noexcept {return m_comp;}
   size_type size() const noexcept {return std::distance(begin(), end());}
   bool empty() const noexcept {return begin() == end();}
   Allocator get_allocator() const noexcept {return m_inner_alloc;}
@@ -104,8 +107,9 @@ bst<T, Compare, Allocator>::bst(const Allocator& alloc) noexcept
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Allocator& alloc) noexcept
+bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
+, m_comp(comp)
 {
   head.llink = &head;
   head.rlink = &head;
@@ -193,7 +197,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
 
   node_pointer p = head.llink;
   for (;;) {
-    if (comp(key, p->key)) {
+    if (m_comp(key, p->key)) {
       if (!has_null_llink(p->tag)) {
         p = p->llink;
         continue;
@@ -205,7 +209,7 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
       attach_node_left(p, q);
       std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->key), key);
       return std::make_pair(q, true);
-    } else if (comp(p->key, key)) {
+    } else if (m_comp(p->key, key)) {
       if (!has_null_rlink(p->tag)) {
         p = p->rlink;
         continue;
@@ -234,13 +238,13 @@ bst<T, Compare, Allocator>::count(const K& key) const noexcept
 
   node_pointer p = head.llink;
   for (;;) {
-    if (comp(key, p->key)) {
+    if (m_comp(key, p->key)) {
       if (!has_null_llink(p->tag)) {
         p = p->llink;
         continue;
       }
       return 0;
-    } else if (comp(p->key, key)) {
+    } else if (m_comp(p->key, key)) {
       if (!has_null_rlink(p->tag)) {
         p = p->rlink;
         continue;
@@ -263,13 +267,13 @@ bst<T, Compare, Allocator>::find(const K& key) const noexcept
 
   node_pointer p = head.llink;
   for (;;) {
-    if (comp(key, p->key)) {
+    if (m_comp(key, p->key)) {
       if (!has_null_llink(p->tag)) {
         p = p->llink;
         continue;
       }
       return const_iterator(&head); // end iterator.
-    } else if (comp(p->key, key)) {
+    } else if (m_comp(p->key, key)) {
       if (!has_null_rlink(p->tag)) {
         p = p->rlink;
         continue;
