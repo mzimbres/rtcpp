@@ -45,6 +45,7 @@ class bst { // Unbalanced binary search tree
   : bst(Compare(), alloc) {}
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
+  bst& operator=(std::initializer_list<T> init) noexcept;
   template <typename InputIt>
   bst(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept;
   template <typename InputIt>
@@ -88,6 +89,14 @@ bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, C
   clear();
   rhs.copy(*this);
 
+  return *this;
+}
+
+template <typename T, typename Compare, typename Allocator>
+bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(std::initializer_list<T> init) noexcept
+{
+  clear();
+  insert(std::begin(init), std::end(init));
   return *this;
 }
 

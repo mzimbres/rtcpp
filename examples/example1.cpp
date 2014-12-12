@@ -18,7 +18,9 @@ int main()
   allocator<int> alloc(&buffer.front(), buffer.size());
 
   // Our realtime version of std::set with random data.
-  bst<int> t1({3, 5, 7, 20, 1, 44, 22, 8}, alloc);
+  bst<int> t1(alloc);
+
+  t1 = {3, 5, 7, 20, 1, 44, 22, 8};
 
   // Outputs it
   std::copy( std::begin(t1)
