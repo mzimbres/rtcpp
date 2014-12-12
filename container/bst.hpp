@@ -10,7 +10,7 @@
 
 #include "bst_iterator.hpp"
 
-namespace rtcpp {
+namespace rt {
 
 template < typename T
          , typename Compare = std::less<T>

@@ -2,7 +2,7 @@
 
 #include <iterator>
 
-namespace rtcpp {
+namespace rt {
 
 template <typename ForwardIter>
 typename std::iterator_traits<ForwardIter>::pointer link_stack(ForwardIter begin, ForwardIter end)

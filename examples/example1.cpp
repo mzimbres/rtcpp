@@ -8,17 +8,15 @@
 
 int main()
 {
-  using namespace rtcpp;
-
   // The buffer from which the set will allocate memory.
   // Memory is on stack.
-  std::array<char, 8 * sizeof (bst<int>::node_type)> buffer;
+  std::array<char, 8 * sizeof (rt::bst<int>::node_type)> buffer;
 
   // The allocator
-  allocator<int> alloc(&buffer.front(), buffer.size());
+  rt::allocator<int> alloc(&buffer.front(), buffer.size());
 
   // Our realtime version of std::set with random data.
-  bst<int> t1(alloc);
+  rt::bst<int> t1(alloc);
 
   t1 = {3, 5, 7, 20, 1, 44, 22, 8};
 

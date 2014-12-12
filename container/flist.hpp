@@ -7,7 +7,7 @@
 #include "flist_node.hpp"
 #include "flist_iterator.hpp"
 
-namespace rtcpp {
+namespace rt {
 
 template <typename T, typename Allocator = std::allocator<T>>
 class flist {

@@ -8,7 +8,7 @@
 
 int main()
 {
-  using namespace rtcpp;
+  using namespace rt;
 
   const std::size_t size = 40;
   flist<int> l;

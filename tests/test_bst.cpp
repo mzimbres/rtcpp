@@ -13,7 +13,7 @@
 
 #include <utility/make_rand_data.hpp>
 
-using namespace rtcpp;
+using namespace rt;
 
 bool test_count()
 {

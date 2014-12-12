@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace rtcpp {
+namespace rt {
 
 class timer {
   private:

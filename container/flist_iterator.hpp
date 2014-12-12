@@ -5,7 +5,7 @@
 
 #include "flist_node.hpp"
 
-namespace rtcpp {
+namespace rt {
 
 template <typename T>
 class flist_iterator : public std::iterator<std::forward_iterator_tag, T> {

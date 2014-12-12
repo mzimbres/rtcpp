@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
   if (argc == 2)
     size = to_number<std::size_t>(argv[1]);
 
-  using namespace rtcpp;
+  using namespace rt;
 
   const int a = 1;
   const int b = std::numeric_limits<int>::max();

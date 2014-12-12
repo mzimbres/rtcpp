@@ -1,6 +1,6 @@
 #include <memory/align.hpp>
 
-using namespace rtcpp;
+using namespace rt;
 
 int main()
 {

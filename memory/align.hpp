@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace rtcpp {
+namespace rt {
 
 template <typename T>
 struct size_of {

@@ -2,7 +2,7 @@
 
 #include <iterator>
 
-namespace rtcpp {
+namespace rt {
 
 // For random access iterators.
 

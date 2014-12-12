@@ -4,7 +4,7 @@
 
 #include "bst_node.hpp"
 
-namespace rtcpp {
+namespace rt {
 
 template <typename T>
 class bst_iterator : public std::iterator<std::bidirectional_iterator_tag, const T> {

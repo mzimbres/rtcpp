@@ -4,7 +4,7 @@
 
 #include "align.hpp"
 
-namespace rtcpp {
+namespace rt {
 
 template < typename T
          , std::size_t S = size_of<T>::size

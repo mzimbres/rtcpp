@@ -1,6 +1,6 @@
 #pragma once
 
-namespace rtcpp {
+namespace rt {
 
 template <typename T>
 struct bst_node {

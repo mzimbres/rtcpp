@@ -12,8 +12,7 @@
 
 int main()
 {
-  using namespace rtcpp;
-
+  using namespace rt;
 
   const int size = 5; // Space for three items.
 
