@@ -1,3 +1,4 @@
+#include <initializer_list>
 #include <utility>
 #include <iterator>
 #include <functional>
@@ -49,6 +50,10 @@ class bst { // Unbalanced binary search tree
   template <typename InputIt>
   bst(InputIt begin, InputIt end, const Allocator& alloc) noexcept
   : bst(begin, end, Compare(), alloc) {}
+  bst(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc) noexcept
+  : bst(std::begin(init), std::end(init), comp, alloc) {}
+  bst(std::initializer_list<T> init, const Allocator& alloc) noexcept
+  : bst(init, Compare(), alloc) {}
   ~bst() noexcept;
   void clear() noexcept;
   std::pair<iterator, bool> insert(const value_type& key) noexcept;
