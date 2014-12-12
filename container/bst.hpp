@@ -39,7 +39,9 @@ class bst { // Unbalanced binary search tree
   Compare m_comp;
   void copy(bst& rhs) const noexcept;
   public:
-  bst(const Allocator& alloc = allocator<node_type>()) noexcept;
+  bst(const Compare& comp, const Allocator& alloc) noexcept;
+  explicit bst(const Allocator& alloc) noexcept
+  : bst(Compare(), alloc) {}
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   template <typename InputIt>
@@ -97,8 +99,9 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const Allocator& alloc) noexcept
+bst<T, Compare, Allocator>::bst(const Compare& comp, const Allocator& alloc) noexcept
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
+, m_comp(comp)
 {
   head.llink = &head;
   head.rlink = &head;
