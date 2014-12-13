@@ -83,10 +83,10 @@ bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, C
   if (this == &rhs)
     return *this;
 
+  clear();
   if (std::allocator_traits<Allocator>::propagate_on_container_copy_assignment::value)
     m_inner_alloc = rhs.m_inner_alloc;
 
-  clear();
   rhs.copy(*this);
 
   return *this;
