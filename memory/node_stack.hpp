@@ -33,14 +33,14 @@ class node_stack {
   node_type* tmp; // We have to put this pointer in the buffer.
   node_type** avail;
   public:
-  node_stack(void* p, std::size_t n) noexcept;
+  node_stack(char* p, std::size_t n) noexcept;
   node_stack() noexcept : tmp(0) {}
   pointer pop() noexcept;
   void push(pointer p) noexcept;
 };
 
 template <std::size_t S>
-node_stack<S>::node_stack(void* p, std::size_t n) noexcept
+node_stack<S>::node_stack(char* p, std::size_t n) noexcept
 {
   pointer begin = reinterpret_cast<pointer>(p);
   std::size_t m = n / S; // Number of alloc_blocks we need.
