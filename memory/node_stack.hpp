@@ -4,66 +4,64 @@
 
 namespace rt {
 
-template <typename ForwardIter>
-typename std::iterator_traits<ForwardIter>::pointer link_stack(ForwardIter begin, std::size_t size)
+template <std::size_t S> // Blocks size.
+char* link_stack(char* p, std::size_t n)
 {
-  if (size < 2)
+  // n: Number of bytes beginning at p.
+
+  const std::size_t m = n / S; // Number of blocks of size S we need.
+
+  if (m < 2) // Minimum number of block we need.
     return 0;
 
-  begin->llink = 0;
-  for (std::size_t i = 1; i < size; ++i)
-    begin[i].llink = &begin[i - 1];
+  for (std::size_t i = 1; i < m; ++i) {
+    char* pn = p + i * S; // Points to the begin of the second block.
+    char& ad = *pn; // Memory address where pn points to.
+    // Pretends that ad is the address of a char* and not a char.
+    char*& pad = reinterpret_cast<char*&>(ad);
+    // sets the value of that pointer to the previous block.
+    pad = &*(p + (i - 1) * S);
+  }
 
-  return &begin[size - 1]; // Pointer to the top of the stack.
+  reinterpret_cast<char*&>(*p) = 0;
+  return p + (m - 1) * S; // Pointer to the top of the stack.
 }
 
 template <std::size_t S>
-struct alloc_block { // Check if S is a multiple of word size.
-  alloc_block* llink;
-  char padding[S - sizeof(alloc_block*)];
-};
-
-template <std::size_t S>
 class node_stack {
-  public:
-  typedef alloc_block<S> node_type;
-  typedef node_type* pointer;
-  typedef const node_type* const_pointer;
   private:
-  node_type* tmp; // We have to put this pointer in the buffer.
-  node_type** avail;
+  char* tmp; // We have to put this pointer in the buffer.
+  char** avail;
   public:
   node_stack(char* p, std::size_t n) noexcept;
   node_stack() noexcept : tmp(0) {}
-  pointer pop() noexcept;
-  void push(pointer p) noexcept;
+  char* pop() noexcept;
+  void push(char* p) noexcept;
 };
 
 template <std::size_t S>
 node_stack<S>::node_stack(char* p, std::size_t n) noexcept
 {
-  pointer begin = reinterpret_cast<pointer>(p);
-  std::size_t m = n / S; // Number of alloc_blocks we need.
-  tmp = link_stack(begin, m);
+  tmp = link_stack<S>(p, n);
   avail = &tmp;
 }
 
 template <std::size_t S>
-typename node_stack<S>::pointer node_stack<S>::pop() noexcept
+char* node_stack<S>::pop() noexcept
 {
-  pointer q = *avail;
-  if (*avail)
-    *avail = (*avail)->llink;
+  char* q = *avail;
+  if (q)
+    *avail = reinterpret_cast<char*&>(**avail);
   return q;
 }
 
 template <std::size_t S>
-void node_stack<S>::push(typename node_stack<S>::pointer p) noexcept
+void node_stack<S>::push(char* p) noexcept
 {
   if (!p)
     return;
 
-  p->llink = *avail;
+  reinterpret_cast<char*&>(*p) = *avail;
   *avail = p;
 }
 
