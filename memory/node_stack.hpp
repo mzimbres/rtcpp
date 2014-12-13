@@ -35,10 +35,11 @@ class node_stack {
   typedef node_type* pointer;
   typedef const node_type* const_pointer;
   private:
-  pointer avail;
+  node_type* tmp; // We have to put this pointer in the buffer.
+  node_type** avail;
   public:
   node_stack(void* p, std::size_t n) noexcept;
-  node_stack() noexcept : avail(0) {}
+  node_stack() noexcept : tmp(0) {}
   pointer pop() noexcept;
   void push(pointer p) noexcept;
 };
@@ -48,15 +49,16 @@ node_stack<S>::node_stack(void* p, std::size_t n) noexcept
 {
   pointer begin = reinterpret_cast<pointer>(p);
   std::size_t m = n / S; // Number of alloc_blocks we need.
-  avail = link_stack(begin, begin + m);
+  tmp = link_stack(begin, begin + m);
+  avail = &tmp;
 }
 
 template <std::size_t S>
 typename node_stack<S>::pointer node_stack<S>::pop() noexcept
 {
-  pointer q = avail;
-  if (avail)
-    avail = avail->llink;
+  pointer q = *avail;
+  if (*avail)
+    *avail = (*avail)->llink;
   return q;
 }
 
@@ -66,9 +68,8 @@ void node_stack<S>::push(typename node_stack<S>::pointer p) noexcept
   if (!p)
     return;
 
-  //p->rlink = 0;
-  p->llink = avail;
-  avail = p;
+  p->llink = *avail;
+  *avail = p;
 }
 
 }

@@ -249,7 +249,6 @@ template <typename K>
 typename bst<T, Compare, Allocator>::size_type
 bst<T, Compare, Allocator>::count(const K& key) const noexcept
 {
-  typedef typename bst<T>::const_iterator const_iterator;
   if (has_null_llink(head.tag)) // The tree is empty
     return 0;
 
