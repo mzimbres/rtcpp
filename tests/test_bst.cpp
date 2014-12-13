@@ -20,10 +20,10 @@ bool test_count()
   const std::size_t size = 5;
   const std::size_t node_size = sizeof (bst<int>::node_type);
 
-  std::array<char, size * node_size> buffer; // Buffer.
+  std::array<char, (size + 2) * node_size> buffer; // Buffer.
 
   std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
-  bst<int> t1(std::begin(arr), std::end(arr), allocator<int>(&buffer[0], buffer.size()));
+  bst<int> t1(std::begin(arr), std::end(arr), allocator<int>(&buffer.front(), buffer.size()));
   if (!std::all_of(std::begin(arr), std::end(arr), [&](int a){ return t1.count(a) == 1;}))
     return false;
 
@@ -39,10 +39,10 @@ bool test_find()
   const std::size_t size = 5;
   const std::size_t node_size = sizeof (bst<int>::node_type);
 
-  std::array<char, size * node_size> buffer; // Buffer.
+  std::array<char, (size + 2) * node_size> buffer; // Buffer.
 
   const std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
-  bst<int> t1(std::begin(arr), std::end(arr), allocator<int>(&buffer[0], buffer.size()));
+  bst<int> t1(std::begin(arr), std::end(arr), allocator<int>(&buffer.front(), buffer.size()));
   auto func = [&](int a) -> bool
   {
     auto iter = t1.find(a);
@@ -59,7 +59,6 @@ bool test_find()
   return true;
 }
 
-
 int main()
 {
   const int size = 400000;
@@ -69,7 +68,7 @@ int main()
   // Random unique integers in the range [a,b].
   std::vector<int> tmp = make_rand_data(size, a, b);
 
-  std::vector<char> buffer(5 * size * sizeof (bst<int>::node_type));
+  std::vector<char> buffer(5 * (size + 2) * sizeof (bst<int>::node_type));
 
   bst<int> t1(std::begin(tmp), std::end(tmp), allocator<int>(&buffer[0], buffer.size()));
 

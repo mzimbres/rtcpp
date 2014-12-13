@@ -4,7 +4,7 @@
 
 namespace rt {
 
-template <std::size_t S> // Blocks size.
+template <std::size_t S> // Block size.
 char* link_stack(char* p, std::size_t n)
 {
   // n: Number of bytes beginning at p.
@@ -30,11 +30,10 @@ char* link_stack(char* p, std::size_t n)
 template <std::size_t S>
 class node_stack {
   private:
-  char* tmp; // We have to put this pointer in the buffer.
   char** avail;
   public:
   node_stack(char* p, std::size_t n) noexcept;
-  node_stack() noexcept : tmp(0) {}
+  node_stack() noexcept {}
   char* pop() noexcept;
   void push(char* p) noexcept;
 };
@@ -42,8 +41,10 @@ class node_stack {
 template <std::size_t S>
 node_stack<S>::node_stack(char* p, std::size_t n) noexcept
 {
-  tmp = link_stack<S>(p, n);
-  avail = &tmp;
+  const std::size_t s = sizeof (char*);
+  avail = &reinterpret_cast<char*&>(*p);
+  // The first word will be used to store a pointer to the avail node.
+  reinterpret_cast<char*&>(*p) = link_stack<S>(p + s, n - s);
 }
 
 template <std::size_t S>

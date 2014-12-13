@@ -17,9 +17,9 @@ int main()
   const int size = 5; // Space for three items.
 
   typedef bst_node<int> node_type;
-  std::vector<char> buffer(size * sizeof (node_type));
+  std::vector<char> buffer((size + 1) * sizeof (node_type));
 
-  allocator<int> alloc(&buffer[0], buffer.size());
+  allocator<int> alloc(&buffer.front(), buffer.size());
 
   std::array<int, size> arr = {{5, 4, 3, 2, 1}};
   bst<int> t1(std::begin(arr), std::end(arr), alloc);

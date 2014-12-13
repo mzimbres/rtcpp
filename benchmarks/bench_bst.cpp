@@ -29,14 +29,12 @@ int main(int argc, char* argv[])
   std::vector<int> data = make_rand_data(size, a, b);
   std::vector<int> data_copy = data;
 
-  std::vector<char> buffer(data.size() * sizeof (bst<int>::node_type));
-  std::vector<char> buffer2(10 * data.size() * sizeof (bst<int>::node_type));
+  std::vector<char> buffer((data.size() + 2) * sizeof (bst<int>::node_type));
 
   // The three containers we will benchmark.
   bst<int> t1(allocator<int>(&buffer.front(), buffer.size())); // Uses a vector as buffer.
   bst<int, std::less<int>, std::allocator<int>> t3((std::allocator<int>())); // Uses an allocator (more fragmented)
   std::set<int> t4;
-  std::set<int, std::less<int>, allocator<int>> t5(std::less<int>(), allocator<int>(&buffer2.front(), buffer2.size()));
 
   // Benchmarks.
   {
