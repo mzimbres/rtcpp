@@ -5,21 +5,16 @@
 namespace rt {
 
 template <typename ForwardIter>
-typename std::iterator_traits<ForwardIter>::pointer link_stack(ForwardIter begin, ForwardIter end)
+typename std::iterator_traits<ForwardIter>::pointer link_stack(ForwardIter begin, std::size_t size)
 {
-  if (std::distance(begin, end) < 2)
+  if (size < 2)
     return 0;
 
   begin->llink = 0;
-  ForwardIter iter = begin;
-  ForwardIter next = ++begin;
-  while (next != end) {
-    next->llink = &*iter;
-    ++iter;
-    ++next;
-  }
+  for (std::size_t i = 1; i < size; ++i)
+    begin[i].llink = &begin[i - 1];
 
-  return &*iter; // Pointer to the top of the stack.
+  return &begin[size - 1]; // Pointer to the top of the stack.
 }
 
 template <std::size_t S>
@@ -49,7 +44,7 @@ node_stack<S>::node_stack(void* p, std::size_t n) noexcept
 {
   pointer begin = reinterpret_cast<pointer>(p);
   std::size_t m = n / S; // Number of alloc_blocks we need.
-  tmp = link_stack(begin, begin + m);
+  tmp = link_stack(begin, m);
   avail = &tmp;
 }
 
