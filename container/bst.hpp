@@ -40,20 +40,20 @@ class bst { // Unbalanced binary search tree
   Compare m_comp;
   void copy(bst& rhs) const noexcept;
   public:
-  bst(const Compare& comp, const Allocator& alloc) noexcept;
-  explicit bst(const Allocator& alloc) noexcept
+  bst(const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
+  explicit bst(const Allocator& alloc = allocator<T>()) noexcept
   : bst(Compare(), alloc) {}
   bst(const bst& rhs) noexcept;
   bst& operator=(const bst& rhs) noexcept;
   bst& operator=(std::initializer_list<T> init) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept;
+  bst(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Allocator& alloc) noexcept
+  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<T>()) noexcept
   : bst(begin, end, Compare(), alloc) {}
-  bst(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc) noexcept
+  bst(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept
   : bst(std::begin(init), std::end(init), comp, alloc) {}
-  bst(std::initializer_list<T> init, const Allocator& alloc) noexcept
+  bst(std::initializer_list<T> init, const Allocator& alloc = allocator<T>()) noexcept
   : bst(init, Compare(), alloc) {}
   ~bst() noexcept;
   void clear() noexcept;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <memory/node_stack.hpp>
 
 #include "align.hpp"
@@ -31,10 +33,6 @@ class allocator {
                      , size_of<U>::size
                      , !(size_of<U>::size < size_of<char*>::size)> other;
   };
-  allocator(char* data, std::size_t size)
-  {
-    init(data, size);
-  }
   void init(char* data, std::size_t size)
   {
     m_size = size;
@@ -45,6 +43,12 @@ class allocator {
     const std::size_t c = is_aligned(a, b) ? a : next_aligned(a, b);
     m_data = reinterpret_cast<char*>(c);
     size = c - a;
+  }
+  allocator(char* data, std::size_t size) { init(data, size); }
+  template <std::size_t N = 200>
+  allocator(const std::array<char, N>& arr = std::array<char,N>())
+  {
+    init(const_cast<char*>(&arr.front()), arr.size());
   }
 };
 
