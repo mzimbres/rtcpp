@@ -74,23 +74,22 @@ class bst { // Unbalanced binary search tree
   size_type max_size() const noexcept{ return std::numeric_limits<size_type>::max(); }
   template<typename InputIt>
   void insert(InputIt begin, InputIt end) noexcept;
-  void swap(bst& other) noexcept;
+  //void swap(bst& other) noexcept;
 };
 
-template <typename T, typename Compare, typename Allocator>
-void bst<T, Compare, Allocator>::swap(bst<T, Compare, Allocator>& rhs) noexcept
-{
-  // This ctor can fail if the allocator runs out of memory.
-  if (this == &rhs)
-    return *this;
-
-  std::swap(m_inner_alloc, rhs.m_inner_alloc);
-  std::swap(m_head, rhs.m_head);
-  std::swap(m_comp, rhs.m_comp);
-
-  return *this;
-}
-
+//template <typename T, typename Compare, typename Allocator>
+//void bst<T, Compare, Allocator>::swap(bst<T, Compare, Allocator>& rhs) noexcept
+//{
+//  // This ctor can fail if the allocator runs out of memory.
+//  if (this == &rhs)
+//    return;
+//
+//  std::swap(m_inner_alloc, rhs.m_inner_alloc);
+//  std::swap(m_head, rhs.m_head);
+//  std::swap(m_comp, rhs.m_comp);
+//
+//  return;
+//}
 
 template <typename T, typename Compare, typename Allocator>
 bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, Compare, Allocator>& rhs) noexcept

@@ -21,6 +21,7 @@ bool test_swap()
   bst<int> t1_copy = t1;
   bst<int> t2 = {1, 4, 8, 2, 7};
   bst<int> t2_copy = t2;
+  //t1.swap(t2);
   std::swap(t1, t2);
 
   if (t1 != t2_copy)
