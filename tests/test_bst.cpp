@@ -69,7 +69,7 @@ bool test_find()
 
 int main()
 {
-  const int size = 400000;
+  const int size = 40000;
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
 

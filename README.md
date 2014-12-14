@@ -6,12 +6,11 @@ RTCPP
   "The Art of Computer Programming Vol. 1 and 3".
 
   "Realtime" here means there is an upper bound on how long the system takes to
-  respond or execute a task. This requirement exclude the use of dynamic
+  respond or execute a task. This requirement usually excludes the use of dynamic
   allocations (with system calls) and the use of exceptions since they
-  introduce unpredicted behaviour. I expect this project to be useful embedded
-  C++ programming.
+  introduce unpredictable behaviour.
 
-  Some problems of STL containers for C++ embedded are:
+  Some problems of STL node-based containers for C++ embedded are:
 
   1) Dynamic allocations (with system calls) on every insertion and 
      use of exceptions.
