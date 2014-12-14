@@ -27,4 +27,5 @@ add_test(NAME test_bst COMMAND test_bst)
 add_test(NAME test_bst_iterator COMMAND test_bst_iterator)
 add_test(NAME test_reverse COMMAND test_reverse)
 add_test(NAME test_align COMMAND test_align)
+add_test(NAME example1 COMMAND example1)
 

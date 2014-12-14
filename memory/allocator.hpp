@@ -45,7 +45,7 @@ class allocator {
     size = c - a;
   }
   allocator(char* data, std::size_t size) { init(data, size); }
-  template <std::size_t N = 200>
+  template <std::size_t N = 1000>
   allocator(const std::array<char, N>& arr = std::array<char,N>())
   {
     init(const_cast<char*>(&arr.front()), arr.size());
@@ -70,19 +70,17 @@ class allocator<T, N, true> {
   };
   private:
   node_stack<size_of<value_type>::size> m_stack;
-  node_stack<size_of<value_type>::size>* m_stack_pointer;
   public:
   template<typename U>
   allocator(const allocator<U, size_of<U>::size, false>& alloc)
   : m_stack(alloc.m_data, alloc.m_size)
-  , m_stack_pointer(&m_stack)
   {}
   template<typename U>
   allocator(const allocator<U, size_of<U>::size, true>& alloc)
-  : m_stack_pointer(alloc.m_stack_pointer)
+  : m_stack(alloc.m_stack)
   {}
-  pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack_pointer->pop()); }
-  void deallocate(pointer p, size_type) { m_stack_pointer->push(reinterpret_cast<char*>(p)); }
+  pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack.pop()); }
+  void deallocate(pointer p, size_type) { m_stack.push(reinterpret_cast<char*>(p)); }
   template<typename U>
   void destroy(U* p) {p->~U();}
   template< typename U, typename... Args>

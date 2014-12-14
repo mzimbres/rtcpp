@@ -15,6 +15,23 @@
 
 using namespace rt;
 
+bool test_swap()
+{
+  bst<int> t1 = {2, 5, 9, 3, 0};
+  bst<int> t1_copy = t1;
+  bst<int> t2 = {1, 4, 8, 2, 7};
+  bst<int> t2_copy = t2;
+  std::swap(t1, t2);
+
+  if (t1 != t2_copy)
+    return false;
+
+  if (t2 != t1_copy)
+    return false;
+
+  return true;
+}
+
 bool test_count()
 {
   std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
@@ -88,6 +105,9 @@ int main()
     return 1;
 
   if (!test_find())
+    return 1;
+
+  if (!test_swap())
     return 1;
     
   //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
