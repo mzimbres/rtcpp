@@ -52,12 +52,12 @@ class allocator {
   }
   allocator(char* data, std::size_t size) { init(data, size); }
   template <std::size_t N>
-  allocator(const std::array<char, N>& arr)
+  explicit allocator(const std::array<char, N>& arr)
   {
     init(const_cast<char*>(&arr.front()), arr.size());
   }
   template <std::size_t N = 1000>
-  allocator(const alloc_buffer<N>& arr = alloc_buffer<N>())
+  explicit allocator(const alloc_buffer<N>& arr = alloc_buffer<N>())
   {
     init(const_cast<char*>(&arr.data.front()), arr.data.size());
   }

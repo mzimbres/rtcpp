@@ -30,7 +30,8 @@ char* link_stack(char* p, std::size_t n)
 template <std::size_t S>
 class node_stack {
   private:
-  char** avail;
+  int* m_counter;
+  char** m_avail;
   public:
   node_stack(char* p, std::size_t n) noexcept;
   node_stack() noexcept {}
@@ -41,18 +42,27 @@ class node_stack {
 template <std::size_t S>
 node_stack<S>::node_stack(char* p, std::size_t n) noexcept
 {
+  // p is expected to be word aligned and its memory zero-initialized.
+  // The first word pointed to by p will store a counter of how many times the
+  // stack has been linked. The second, a pointer to the avail stack.
+  // TODO: check whether n is big enough.
+
   const std::size_t s = sizeof (char*);
-  avail = &reinterpret_cast<char*&>(*p);
-  // The first word will be used to store a pointer to the avail node.
-  reinterpret_cast<char*&>(*p) = link_stack<S>(p + s, n - s);
+  m_counter = &reinterpret_cast<int&>(*p);
+  m_avail = &reinterpret_cast<char*&>(*(p + s));
+  if (*m_counter == 0) { // Links only once.
+    // The first word will be used to store a pointer to the avail node.
+    *m_avail = link_stack<S>(p + 2 * s, n - 2 * s);
+  }
+  *m_counter += 1;
 }
 
 template <std::size_t S>
 char* node_stack<S>::pop() noexcept
 {
-  char* q = *avail;
+  char* q = *m_avail;
   if (q)
-    *avail = reinterpret_cast<char*&>(**avail);
+    *m_avail = reinterpret_cast<char*&>(**m_avail);
   return q;
 }
 
@@ -62,8 +72,8 @@ void node_stack<S>::push(char* p) noexcept
   if (!p)
     return;
 
-  reinterpret_cast<char*&>(*p) = *avail;
-  *avail = p;
+  reinterpret_cast<char*&>(*p) = *m_avail;
+  *m_avail = p;
 }
 
 }
