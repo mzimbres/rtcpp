@@ -1,38 +1,27 @@
 RTCPP
 ============
 
-  The idea of this project is to implement real-time data structures and
-  algorithms in C++. Most of what is implemented here was taken from the book
-  "The Art of Computer Programming Vol. 1 and 3".
+  The idea of this project is to implement a realtime version of the C++
+  Standard Template Library (STL).
 
-  "Realtime" here means there is an upper bound on how long the system takes to
-  respond or execute a task. This requirement usually excludes the use of dynamic
-  allocations (with system calls) and the use of exceptions since they
-  introduce unpredictable behaviour.
+  "Realtime" here means a guarantee that the program will execute a particular
+  task in at most n steps (or processor cycles). To honor this demand we have
+  to get rid of all sources of unpredictable behaviour. Some of them are:
 
-  Some problems of STL node-based containers for C++ embedded are:
+  1) Heap fragmentation.
+  2) Use of operator new.
+  3) Use of exceptions.
 
-  1) Dynamic allocations (with system calls) on every insertion and 
-     use of exceptions.
-
-  2) Heap fragmentation that impact performance and introduce unpredictability.
-
-  4) Unsuitable for constant time allocations i.e. allocations that do not
-     depend on the container size and on heap fragmentation.
-
-  Even though custom allocators help addressing some of these problems,
-  they cannot address them all.
+  Before we talk about how I addressed these problems, let us see some examples.
 
 Realtime version of std::set.
 ===================
 
-I have made an implementation of std::set that does not use exception and
-allow non-throwing allocators. For a benchmark against std::set see the
-program bench_bst. An example use can be seem on the code below taken
-from the file examples/example1.cpp
+The reader can find these examples in the directory "examples". For benchmarks,
+see the program bench_bst.
 
 ```
-  rt::set<int> t1 = {5, 3, 7, 20, 1, 44, 22, 8};
+  rt::bst<int> t1 = {5, 3, 7, 20, 1, 44, 22, 8}; // equivalent of std:set.
 
   std::copy( std::begin(t1)
            , std::end(t1)
@@ -40,6 +29,43 @@ from the file examples/example1.cpp
 
   std::cout << std::endl;
 ```
+
+The output of this program is "1 3 5 7 8 20 22 44". The class rt::bst is the
+equivalent of std::set. Since we did not provide an allocator it is using a
+default constructed one, that provides storage for 1k bytes of storage. To
+use a different storge size one needs an explicit allocator.
+
+```
+  std::array<char, 200> buffer = {{}}; // 200 bytes buffer.
+  rt::allocator<int> alloc(buffer);
+  rt::bst<int> t1(alloc);
+  rt::bst<int> t2(alloc);
+
+  t1 = {5, 3, 7, 20, 1};
+  t2 = {44, 22, 8, 44, 33};
+
+  std::copy( std::begin(t1)
+           , std::end(t1)
+           , std::ostream_iterator<int>(std::cout, " "));
+
+  std::cout << std::endl;
+
+  std::copy( std::begin(t2)
+           , std::end(t2)
+           , std::ostream_iterator<int>(std::cout, " "));
+
+  std::cout << std::endl;
+```
+In the code snipet above, we see a 200 bytes buffer being shared
+by the two sets t1 and t2. The program outputs
+"1 3 5 7 20 "
+"22 44      ",
+the reason for which t2 does not contain the five numbers is that
+the 200 bytes buffer is not enough storage for both t1 and t2.
+
+The realtime version of std::set has the same interface as std::set itself but
+requires more guarantees on its template parameters i.e. the compare function
+and the allocator.
 
 Compilation
 =============
@@ -62,4 +88,11 @@ Compilation
 
   GCC 4.8.2
   Clang 3.4
+
+Credits
+===============
+
+Most of what is implemented here was taken from the book
+  "The Art of Computer Programming Vol. 1 and 3".
+
 
