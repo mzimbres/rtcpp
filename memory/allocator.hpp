@@ -8,6 +8,12 @@
 
 namespace rt {
 
+template <std::size_t N>
+struct alloc_buffer {
+  std::array<char, N> data;
+  alloc_buffer() {std::fill(std::begin(data), std::end(data), 0);}
+};
+
 template < typename T
          , std::size_t S = size_of<T>::size
          , bool B = !(S < size_of<char*>::size)
@@ -45,10 +51,15 @@ class allocator {
     size = c - a;
   }
   allocator(char* data, std::size_t size) { init(data, size); }
-  template <std::size_t N = 1000>
-  allocator(const std::array<char, N>& arr = std::array<char,N>())
+  template <std::size_t N>
+  allocator(const std::array<char, N>& arr)
   {
     init(const_cast<char*>(&arr.front()), arr.size());
+  }
+  template <std::size_t N = 1000>
+  allocator(const alloc_buffer<N>& arr = alloc_buffer<N>())
+  {
+    init(const_cast<char*>(&arr.data.front()), arr.data.size());
   }
 };
 

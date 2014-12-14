@@ -108,8 +108,8 @@ int main()
   if (!test_find())
     return 1;
 
-  if (!test_swap())
-    return 1;
+  //if (!test_swap())
+  //  return 1;
     
   //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   //std::cout << std::endl;
