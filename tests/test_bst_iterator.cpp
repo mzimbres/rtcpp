@@ -14,15 +14,8 @@ int main()
 {
   using namespace rt;
 
-  const int size = 5; // Space for three items.
-
-  typedef bst_node<int> node_type;
-  std::vector<char> buffer((size + 1) * sizeof (node_type));
-
-  allocator<int> alloc(&buffer.front(), buffer.size());
-
-  std::array<int, size> arr = {{5, 4, 3, 2, 1}};
-  bst<int> t1(std::begin(arr), std::end(arr), alloc);
+  std::array<int, 5> arr = {{5, 4, 3, 2, 1}};
+  bst<int> t1(std::begin(arr), std::end(arr));
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.
