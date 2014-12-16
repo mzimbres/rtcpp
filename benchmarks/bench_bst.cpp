@@ -38,70 +38,55 @@ int main(int argc, char* argv[])
 
   // Benchmarks.
   {
-    std::clog << "Insertion: bst (rtcpp::allocator):      ";
+    std::clog << "Insertion: bst (rt::allocator):  ";
     timer t;
     t1.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Insertion: bst (std::allocator):        ";
+    std::clog << "Insertion: bst (std::allocator): ";
     timer t;
     t3.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Insertion: std::set:                    ";
+    std::clog << "Insertion: std::set:             ";
     timer t;
     t4.insert(std::begin(data), std::end(data));
   }
-  //{
-  //  std::clog << "Insertion: std::set (rtcpp::allocator): ";
-  //  timer t;
-  //  t5.insert(std::begin(data), std::end(data));
-  //}
   {
-    std::clog << "Sort with std::sort:                    ";
+    std::clog << "Sort with std::sort:             ";
     timer t;
     std::sort(std::begin(data_copy), std::end(data_copy));
   }
   {
-    std::clog << "Lookup: bst (rtcpp::allocator):         ";
+    std::clog << "Lookup: bst (rt::allocator):     ";
     timer t;
     t1.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Lookup: bst (std::allocator):           ";
+    std::clog << "Lookup: bst (std::allocator):    ";
     timer t;
     t3.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Lookup: std::set:                       ";
+    std::clog << "Lookup: std::set:                ";
     timer t;
     t4.insert(std::begin(data), std::end(data));
   }
-  //{
-  //  std::clog << "Lookup: std::set (rtcpp::allocator):    ";
-  //  timer t;
-  //  t5.insert(std::begin(data), std::end(data));
-  //}
   {
-    std::clog << "Deletion: bst (rtcpp::allocator):       ";
+    std::clog << "Deletion: bst (rt::allocator):   ";
     timer t;
     t1.clear();
   }
   {
-    std::clog << "Deletion: bst (std::allocator):         ";
+    std::clog << "Deletion: bst (std::allocator):  ";
     timer t;
     t3.clear();
   }
   {
-    std::clog << "Deletion: std::set:                     ";
+    std::clog << "Deletion: std::set:              ";
     timer t;
     t4.clear();
   }
-  //{
-  //  std::clog << "Deletion: std::set (rtcpp::allocator):  ";
-  //  timer t;
-  //  t5.clear();
-  //}
 
   return 0;
 }
