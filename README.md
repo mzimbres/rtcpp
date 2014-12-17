@@ -17,7 +17,7 @@
 ##Real-time version of std::set.
 
 The reader can find these examples in the directory "examples". For benchmarks,
-see the program bench_set. Let us see the first example.
+see the program bench_set. So let us see the first example.
 
 ```c++
   rt::set<int> t1 = {5, 3, 7, 20, 1, 44, 22, 8}; // equivalent of std:set.
@@ -30,10 +30,10 @@ see the program bench_set. Let us see the first example.
 ```
 
 The output of this program is "1 3 5 7 8 20 22 44". The class `rt::set` is the
-equivalent of std::set but it makes no use of exceptions and expects the
+equivalent of `std::set` but it makes no use of exceptions and expects the
 allocator to return a null pointer when allocation fails. That means it is not
 safe to use it with `std::allocator`. Since we did not provide an allocator it
-is using a default constructed one, that provides storage for 1k bytes of
+is using a default constructed one, that provides storage for 1kb of
 storage. To use a different storage size one needs an explicit allocator.
 
 ```c++
@@ -52,7 +52,7 @@ The program outputs "1 3 5 7 20 " and "22 44", the reason for which t2 does not
 contain the five numbers is that the 200 bytes buffer is not enough storage for
 both t1 and t2 (remember the `node_type` must be allocated inside the buffer).
 
-The real-time version of std::set has the same interface as std::set itself but
+The real-time version of `std::set` has the same interface as std::set itself but
 requires more guarantees on its template parameters i.e. the compare function
 and the allocator.
 
@@ -66,7 +66,7 @@ failure and standard containers rely on that feature. Since on real-time
 systems exceptions are not allowed this is an undesired behaviour.
 
 2. Container writers are allowed to use Allocator::allocate(n) with n different
-from 1. That prevents me writing real-time allocation, where nodes are
+from 1. That prevents me from writing real-time allocation, where nodes are
 pre-allocated and linked together to form a stack. That way allocating and
 deallocating translates into popping and pushing from the stack. This is a way
 of achieving truly constant time allocation as opposed to "amortized".  This
