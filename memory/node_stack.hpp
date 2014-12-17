@@ -30,7 +30,7 @@ char* link_stack(char* p, std::size_t n)
 template <std::size_t S>
 class node_stack {
   private:
-  int* m_counter;
+  std::size_t* m_counter;
   char** m_avail;
   public:
   node_stack(char* p, std::size_t n) noexcept;
@@ -48,7 +48,7 @@ node_stack<S>::node_stack(char* p, std::size_t n) noexcept
   // TODO: check whether n is big enough.
 
   const std::size_t s = sizeof (char*);
-  m_counter = &reinterpret_cast<int&>(*p);
+  m_counter = &reinterpret_cast<std::size_t&>(*p);
   m_avail = &reinterpret_cast<char*&>(*(p + s));
   if (*m_counter == 0) { // Links only once.
     // The first word will be used to store a pointer to the avail node.
