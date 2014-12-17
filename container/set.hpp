@@ -15,7 +15,7 @@ namespace rt {
 template < typename T
          , typename Compare = std::less<T>
          , typename Allocator = allocator<T>>
-class bst { // Unbalanced binary search tree
+class set { // Unbalanced binary search tree
   public:
   typedef bst_node<T> node_type; // The standard does not require this to be public.
   typedef T key_type;
@@ -38,24 +38,24 @@ class bst { // Unbalanced binary search tree
   inner_allocator_type m_inner_alloc;
   node_type m_head;
   Compare m_comp;
-  void copy(bst& rhs) const noexcept;
+  void copy(set& rhs) const noexcept;
   public:
-  bst(const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
-  explicit bst(const Allocator& alloc = allocator<T>()) noexcept
-  : bst(Compare(), alloc) {}
-  bst(const bst& rhs) noexcept;
-  bst& operator=(const bst& rhs) noexcept;
-  bst& operator=(std::initializer_list<T> init) noexcept;
+  set(const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
+  explicit set(const Allocator& alloc = allocator<T>()) noexcept
+  : set(Compare(), alloc) {}
+  set(const set& rhs) noexcept;
+  set& operator=(const set& rhs) noexcept;
+  set& operator=(std::initializer_list<T> init) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
+  set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
   template <typename InputIt>
-  bst(InputIt begin, InputIt end, const Allocator& alloc = allocator<T>()) noexcept
-  : bst(begin, end, Compare(), alloc) {}
-  bst(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept
-  : bst(std::begin(init), std::end(init), comp, alloc) {}
-  bst(std::initializer_list<T> init, const Allocator& alloc = allocator<T>()) noexcept
-  : bst(init, Compare(), alloc) {}
-  ~bst() noexcept;
+  set(InputIt begin, InputIt end, const Allocator& alloc = allocator<T>()) noexcept
+  : set(begin, end, Compare(), alloc) {}
+  set(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept
+  : set(std::begin(init), std::end(init), comp, alloc) {}
+  set(std::initializer_list<T> init, const Allocator& alloc = allocator<T>()) noexcept
+  : set(init, Compare(), alloc) {}
+  ~set() noexcept;
   void clear() noexcept;
   std::pair<iterator, bool> insert(const value_type& key) noexcept;
   const_iterator begin() const noexcept {return const_iterator(inorder_successor(&m_head));}
@@ -77,7 +77,7 @@ class bst { // Unbalanced binary search tree
 };
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, Compare, Allocator>& rhs) noexcept
+set<T, Compare, Allocator>& set<T, Compare, Allocator>::operator=(const set<T, Compare, Allocator>& rhs) noexcept
 {
   // This ctor can fail if the allocator runs out of memory.
   if (this == &rhs)
@@ -93,7 +93,7 @@ bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(const bst<T, C
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(std::initializer_list<T> init) noexcept
+set<T, Compare, Allocator>& set<T, Compare, Allocator>::operator=(std::initializer_list<T> init) noexcept
 {
   clear();
   insert(std::begin(init), std::end(init));
@@ -101,7 +101,7 @@ bst<T, Compare, Allocator>& bst<T, Compare, Allocator>::operator=(std::initializ
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
+set<T, Compare, Allocator>::set(const set<T, Compare, Allocator>& rhs) noexcept
 : m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(rhs.m_inner_alloc))
 {
   // This ctor can fail if the allocator runs out of memory.
@@ -113,7 +113,7 @@ bst<T, Compare, Allocator>::bst(const bst<T, Compare, Allocator>& rhs) noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::bst(const Compare& comp, const Allocator& alloc) noexcept
+set<T, Compare, Allocator>::set(const Compare& comp, const Allocator& alloc) noexcept
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
 , m_comp(comp)
 {
@@ -124,7 +124,7 @@ bst<T, Compare, Allocator>::bst(const Compare& comp, const Allocator& alloc) noe
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept
+set<T, Compare, Allocator>::set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
 , m_comp(comp)
 {
@@ -140,7 +140,7 @@ bst<T, Compare, Allocator>::bst(InputIt begin, InputIt end, const Compare& comp,
 }
 
 template <typename T, typename Compare, typename Allocator>
-void bst<T, Compare, Allocator>::clear() noexcept
+void set<T, Compare, Allocator>::clear() noexcept
 {
   node_pointer p = &m_head;
   for (;;) {
@@ -159,13 +159,13 @@ void bst<T, Compare, Allocator>::clear() noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
-bst<T, Compare, Allocator>::~bst() noexcept
+set<T, Compare, Allocator>::~set() noexcept
 {
   clear();
 }
 
 template <typename T, typename Compare, typename Allocator>
-void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noexcept
+void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noexcept
 {
   const_node_pointer p = &m_head;
   node_pointer q = &rhs.m_head;
@@ -198,10 +198,10 @@ void bst<T, Compare, Allocator>::copy(bst<T, Compare, Allocator>& rhs) const noe
 }
 
 template <typename T, typename Compare, typename Allocator>
-std::pair<typename bst<T, Compare, Allocator>::iterator, bool>
-bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::value_type& key) noexcept
+std::pair<typename set<T, Compare, Allocator>::iterator, bool>
+set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::value_type& key) noexcept
 {
-  typedef typename bst<T>::const_iterator const_iterator;
+  typedef typename set<T>::const_iterator const_iterator;
   if (has_null_llink(m_head.tag)) { // The tree is empty
     node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1);
     if (!q)
@@ -246,8 +246,8 @@ bst<T, Compare, Allocator>::insert(const typename bst<T, Compare, Allocator>::va
 
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
-typename bst<T, Compare, Allocator>::size_type
-bst<T, Compare, Allocator>::count(const K& key) const noexcept
+typename set<T, Compare, Allocator>::size_type
+set<T, Compare, Allocator>::count(const K& key) const noexcept
 {
   if (has_null_llink(m_head.tag)) // The tree is empty
     return 0;
@@ -274,10 +274,10 @@ bst<T, Compare, Allocator>::count(const K& key) const noexcept
 
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
-typename bst<T, Compare, Allocator>::const_iterator
-bst<T, Compare, Allocator>::find(const K& key) const noexcept
+typename set<T, Compare, Allocator>::const_iterator
+set<T, Compare, Allocator>::find(const K& key) const noexcept
 {
-  typedef typename bst<T>::const_iterator const_iterator;
+  typedef typename set<T>::const_iterator const_iterator;
   if (has_null_llink(m_head.tag)) // The tree is empty
     return const_iterator(&m_head); // end iterator.
 
@@ -303,7 +303,7 @@ bst<T, Compare, Allocator>::find(const K& key) const noexcept
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-void bst<T, Compare, Allocator>::insert(InputIt begin, InputIt end) noexcept
+void set<T, Compare, Allocator>::insert(InputIt begin, InputIt end) noexcept
 {
   for (InputIt iter = begin; iter != end; ++iter) {
     auto pair = insert(*iter);
@@ -313,8 +313,8 @@ void bst<T, Compare, Allocator>::insert(InputIt begin, InputIt end) noexcept
 }
 
 template<typename Key, typename Compare, typename Alloc>
-bool operator==( const bst<Key, Compare, Alloc>& lhs
-               , const bst<Key, Compare, Alloc>& rhs) noexcept
+bool operator==( const set<Key, Compare, Alloc>& lhs
+               , const set<Key, Compare, Alloc>& rhs) noexcept
 {
   const bool b1 = lhs.size() == rhs.size();
   const bool b2 = std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
@@ -325,8 +325,8 @@ bool operator==( const bst<Key, Compare, Alloc>& lhs
 }
 
 template<typename Key, typename Compare, typename Alloc>
-bool operator!=( const bst<Key, Compare, Alloc>& lhs
-               , const bst<Key, Compare, Alloc>& rhs) noexcept
+bool operator!=( const set<Key, Compare, Alloc>& lhs
+               , const set<Key, Compare, Alloc>& rhs) noexcept
 {
   return !(lhs == rhs);
 }

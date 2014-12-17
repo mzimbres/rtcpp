@@ -8,7 +8,7 @@
 #include <list>
 
 #include <container/bst_node.hpp>
-#include <container/bst.hpp>
+#include <container/set.hpp>
 
 #include <utility/to_number.hpp>
 #include <utility/make_rand_data.hpp>
@@ -29,61 +29,61 @@ int main(int argc, char* argv[])
   std::vector<int> data = make_rand_data(size, a, b);
   std::vector<int> data_copy = data;
 
-  std::vector<char> buffer((data.size() + 2) * sizeof (bst<int>::node_type));
+  std::vector<char> buffer((data.size() + 2) * sizeof (set<int>::node_type));
 
   // The three containers we will benchmark.
-  bst<int> t1(allocator<int>(&buffer.front(), buffer.size())); // Uses a vector as buffer.
-  bst<int, std::less<int>, std::allocator<int>> t3((std::allocator<int>())); // Uses an allocator (more fragmented)
+  set<int> t1(allocator<int>(&buffer.front(), buffer.size())); // Uses a vector as buffer.
+  set<int, std::less<int>, std::allocator<int>> t3((std::allocator<int>())); // Uses an allocator (more fragmented)
   std::set<int> t4;
 
   // Benchmarks.
   {
-    std::clog << "Insertion: bst (rt::allocator):  ";
+    std::clog << "Insertion: rt::set<rt::alloc>   : ";
     timer t;
     t1.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Insertion: bst (std::allocator): ";
+    std::clog << "Insertion: rt::set<std::alloc>  : ";
     timer t;
     t3.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Insertion: std::set:             ";
+    std::clog << "Insertion: std::set<std::alloc> : ";
     timer t;
     t4.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Sort with std::sort:             ";
+    std::clog << "Sort with std::sort             : ";
     timer t;
     std::sort(std::begin(data_copy), std::end(data_copy));
   }
   {
-    std::clog << "Lookup: bst (rt::allocator):     ";
+    std::clog << "Lookup: rt::set<rt::alloc>      : ";
     timer t;
     t1.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Lookup: bst (std::allocator):    ";
+    std::clog << "Lookup: rt::set<std::alloc>     : ";
     timer t;
     t3.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Lookup: std::set:                ";
+    std::clog << "Lookup: std::set<std::alloc>    : ";
     timer t;
     t4.insert(std::begin(data), std::end(data));
   }
   {
-    std::clog << "Deletion: bst (rt::allocator):   ";
+    std::clog << "Deletion: rt::set<rt::alloc>    : ";
     timer t;
     t1.clear();
   }
   {
-    std::clog << "Deletion: bst (std::allocator):  ";
+    std::clog << "Deletion: rt::set<std::alloc>   : ";
     timer t;
     t3.clear();
   }
   {
-    std::clog << "Deletion: std::set:              ";
+    std::clog << "Deletion: std::set<std::alloc>  : ";
     timer t;
     t4.clear();
   }

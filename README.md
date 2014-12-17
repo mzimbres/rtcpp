@@ -1,10 +1,10 @@
 ##RTCPP
 
 
-  The idea of this project is to implement a realtime version of the C++
+  The idea of this project is to implement a real-time version of the C++
   Standard Template Library (STL).
 
-  "Realtime" here means a guarantee that the program will execute a particular
+  "Real-time" here means a guarantee that the program will execute a particular
   task in at most n steps (or processor cycles). To honor this demand we have
   to get rid of all sources of unpredictable behaviour. Some of them are:
 
@@ -14,13 +14,13 @@
 
   Before we talk about how I addressed these problems, let us see some examples.
 
-##Realtime version of std::set.
+##Real-time version of std::set.
 
 The reader can find these examples in the directory "examples". For benchmarks,
-see the program bench_bst.
+see the program bench_set. Let us see the first example.
 
 ```c++
-  rt::bst<int> t1 = {5, 3, 7, 20, 1, 44, 22, 8}; // equivalent of std:set.
+  rt::set<int> t1 = {5, 3, 7, 20, 1, 44, 22, 8}; // equivalent of std:set.
 
   std::copy( std::begin(t1)
            , std::end(t1)
@@ -29,44 +29,49 @@ see the program bench_bst.
   std::cout << std::endl;
 ```
 
-The output of this program is "1 3 5 7 8 20 22 44". The class `rt::bs`t is the
-equivalent of `std::set`. Since we did not provide an allocator it is using a
-default constructed one, that provides storage for 1k bytes of storage. To
-use a different storge size one needs an explicit allocator.
+The output of this program is "1 3 5 7 8 20 22 44". The class `rt::set` is the
+equivalent of std::set but it makes no use of exceptions and expects the
+allocator to return a null pointer when allocation fails. That means it is not
+safe to use it with `std::allocator`. Since we did not provide an allocator it
+is using a default constructed one, that provides storage for 1k bytes of
+storage. To use a different storage size one needs an explicit allocator.
 
 ```c++
   std::array<char, 200> buffer = {{}}; // 200 bytes buffer.
   rt::allocator<int> alloc(buffer);
-  rt::bst<int> t1(alloc);
-  rt::bst<int> t2(alloc);
+  rt::set<int> t1(alloc);
+  rt::set<int> t2(alloc);
 
   t1 = {5, 3, 7, 20, 1};
   t2 = {44, 22, 8, 44, 33};
 
-  std::copy( std::begin(t1)
-           , std::end(t1)
-           , std::ostream_iterator<int>(std::cout, " "));
-
-  std::cout << std::endl;
-
-  std::copy( std::begin(t2)
-           , std::end(t2)
-           , std::ostream_iterator<int>(std::cout, " "));
-
-  std::cout << std::endl;
+  // Print t1 and t2 ...
 ```
-In the code snipet above, we see a 200 bytes buffer being shared
-by the two sets t1 and t2. The program outputs
+In the code snippet above, we see a 200 bytes buffer being shared by t1 and t2.
+The program outputs "1 3 5 7 20 " and "22 44", the reason for which t2 does not
+contain the five numbers is that the 200 bytes buffer is not enough storage for
+both t1 and t2 (remember the `node_type` must be allocated inside the buffer).
 
-"1 3 5 7 20 "
-"22 44      ",
-
-the reason for which t2 does not contain the five numbers is that
-the 200 bytes buffer is not enough storage for both t1 and t2.
-
-The realtime version of std::set has the same interface as std::set itself but
+The real-time version of std::set has the same interface as std::set itself but
 requires more guarantees on its template parameters i.e. the compare function
 and the allocator.
+
+## How to write a real-time STL 
+
+There are two things in the current C++ standard that prevents me from
+using STL on real-time systems (point 2 is meant for node-based containers)
+
+1. Standard allocators are required to throw `std::bad_alloc` on allocation
+failure and standard containers rely on that feature. Since on real-time
+systems exceptions are not allowed this is an undesired behaviour.
+
+2. Container writers are allowed to use Allocator::allocate(n) with n different
+from 1. That prevents me writing real-time allocation, where nodes are
+pre-allocated and linked together to form a stack. That way allocating and
+deallocating translates into popping and pushing from the stack. This is a way
+of achieving truly constant time allocation as opposed to "amortized".  This
+way, no matter how fragmented the heap may be or how long the system has been
+running, allocation will last the same time.
 
 ##Compilation
 

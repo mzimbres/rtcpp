@@ -3,14 +3,14 @@
 #include <array>
 #include <iterator>
 
-#include <container/bst.hpp>
+#include <container/set.hpp>
 #include <memory/allocator.hpp>
 
 int main()
 {
   std::array<char, 2000> buffer = {{}};
   rt::allocator<int> alloc(buffer);
-  rt::bst<int> t1(alloc);
+  rt::set<int> t1(alloc);
 
   t1 = {5, 3, 7, 20, 1, 44, 22, 8, 44, 33, 9, 2, 99, 77};
 

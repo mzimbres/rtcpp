@@ -9,7 +9,7 @@
 #include <vector>
 #include <scoped_allocator>
 
-#include <container/bst.hpp>
+#include <container/set.hpp>
 
 #include <utility/make_rand_data.hpp>
 
@@ -17,10 +17,10 @@ using namespace rt;
 
 bool test_swap()
 {
-  bst<int> t1 = {2, 5, 9, 3, 0};
-  bst<int> t1_copy = t1;
-  bst<int> t2 = {1, 4, 8, 2, 7};
-  bst<int> t2_copy = t2;
+  set<int> t1 = {2, 5, 9, 3, 0};
+  set<int> t1_copy = t1;
+  set<int> t2 = {1, 4, 8, 2, 7};
+  set<int> t2_copy = t2;
   //t1.swap(t2);
   std::swap(t1, t2);
 
@@ -36,7 +36,7 @@ bool test_swap()
 bool test_count()
 {
   std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
-  bst<int> t1(std::begin(arr), std::end(arr));
+  set<int> t1(std::begin(arr), std::end(arr));
   if (!std::all_of(std::begin(arr), std::end(arr), [&](int a){ return t1.count(a) == 1;}))
     return false;
 
@@ -50,7 +50,7 @@ bool test_count()
 bool test_find()
 {
   const std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
-  bst<int> t1(std::begin(arr), std::end(arr));
+  set<int> t1(std::begin(arr), std::end(arr));
   auto func = [&](int a) -> bool
   {
     auto iter = t1.find(a);
@@ -76,9 +76,9 @@ int main()
   // Random unique integers in the range [a,b].
   std::vector<int> tmp = make_rand_data(size, a, b);
 
-  std::vector<char> buffer(5 * (size + 2) * sizeof (bst<int>::node_type));
+  std::vector<char> buffer(5 * (size + 2) * sizeof (set<int>::node_type));
 
-  bst<int> t1(std::begin(tmp), std::end(tmp), allocator<int>(&buffer[0], buffer.size()));
+  set<int> t1(std::begin(tmp), std::end(tmp), allocator<int>(&buffer[0], buffer.size()));
 
   if (t1.size() != tmp.size())
     return 1;
@@ -86,8 +86,8 @@ int main()
   if (!std::is_sorted(std::begin(t1), std::end(t1)))
     return 1;
 
-  bst<int> t3(t1);
-  bst<int> t4 = t3;
+  set<int> t3(t1);
+  set<int> t4 = t3;
 
   if (t3 != t1)
     return 1;

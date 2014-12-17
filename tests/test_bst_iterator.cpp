@@ -7,7 +7,7 @@
 #include <limits>
 #include <array>
 
-#include <container/bst.hpp>
+#include <container/set.hpp>
 #include <utility/make_rand_data.hpp>
 
 int main()
@@ -15,11 +15,11 @@ int main()
   using namespace rt;
 
   std::array<int, 5> arr = {{5, 4, 3, 2, 1}};
-  bst<int> t1(std::begin(arr), std::end(arr));
+  set<int> t1(std::begin(arr), std::end(arr));
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.
-  typedef std::reverse_iterator<bst<int>::iterator> reverse_iter;
+  typedef std::reverse_iterator<set<int>::iterator> reverse_iter;
   reverse_iter iter(t1.end());
 
   // We should be now at the rbegin.
