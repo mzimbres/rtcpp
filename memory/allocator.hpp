@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <utility>
 
 #include <memory/node_stack.hpp>
 
@@ -38,6 +39,11 @@ class allocator {
   };
   bool operator==(const allocator& alloc) const {return m_data == alloc.m_data;}
   bool operator!=(const allocator& alloc) const {return !(*this == alloc);}
+  void swap(allocator& other)
+  {
+    std::swap(m_size, other.m_size);
+    std::swap(m_data, other.m_data);
+  }
   void init(char* data, std::size_t size)
   {
     m_size = size;
@@ -97,6 +103,10 @@ class allocator<T, N, true> {
   void construct(U* p, Args&&... args) {::new((void *)p) U(std::forward<Args>(args)...);}
   bool operator==(const allocator& alloc) const {return m_stack == alloc.m_stack;}
   bool operator!=(const allocator& alloc) const {return !(*this == alloc);}
+  void swap(allocator& other)
+  {
+    m_stack.swap(other.m_stack);
+  }
 };
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iterator>
+#include <utility>
 
 namespace rt {
 
@@ -38,7 +39,15 @@ class node_stack {
   char* pop() noexcept;
   void push(char* p) noexcept;
   bool operator==(const node_stack& rhs) const {return m_counter == rhs.m_counter;}
+  void swap(node_stack& other) noexcept;
 };
+
+template <std::size_t S>
+void node_stack<S>::swap(node_stack<S>& other) noexcept
+{
+  std::swap(m_counter, other.m_counter);
+  std::swap(m_avail, other.m_avail);
+}
 
 template <std::size_t S>
 node_stack<S>::node_stack(char* p, std::size_t n) noexcept
