@@ -37,6 +37,7 @@ class node_stack {
   node_stack() noexcept {}
   char* pop() noexcept;
   void push(char* p) noexcept;
+  bool operator==(const node_stack& rhs) const {return m_counter == rhs.m_counter;}
 };
 
 template <std::size_t S>

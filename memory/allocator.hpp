@@ -19,9 +19,6 @@ template < typename T
          , bool B = !(S < size_of<char*>::size)
          >
 class allocator {
-  private:
-  allocator(const allocator* rhs);
-  const allocator& operator=(const allocator& rhs);
   public:
   std::size_t m_size;
   char* m_data;
@@ -39,6 +36,8 @@ class allocator {
                      , size_of<U>::size
                      , !(size_of<U>::size < size_of<char*>::size)> other;
   };
+  bool operator==(const allocator& alloc) const {return m_data == alloc.m_data;}
+  bool operator!=(const allocator& alloc) const {return !(*this == alloc);}
   void init(char* data, std::size_t size)
   {
     m_size = size;
@@ -96,6 +95,8 @@ class allocator<T, N, true> {
   void destroy(U* p) {p->~U();}
   template< typename U, typename... Args>
   void construct(U* p, Args&&... args) {::new((void *)p) U(std::forward<Args>(args)...);}
+  bool operator==(const allocator& alloc) const {return m_stack == alloc.m_stack;}
+  bool operator!=(const allocator& alloc) const {return !(*this == alloc);}
 };
 
 }
