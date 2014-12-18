@@ -74,7 +74,16 @@ class set { // Unbalanced binary search tree
   size_type max_size() const noexcept{ return std::numeric_limits<size_type>::max(); }
   template<typename InputIt>
   void insert(InputIt begin, InputIt end) noexcept;
+  void swap(set& other) noexcept;
 };
+
+template <typename T, typename Compare, typename Allocator>
+void set<T, Compare, Allocator>::swap(set<T, Compare, Allocator>& other) noexcept
+{
+  std::swap(m_inner_alloc, other.m_inner_alloc);
+  std::swap(m_head, other.m_head);
+  std::swap(m_comp, other.m_comp);
+}
 
 template <typename T, typename Compare, typename Allocator>
 set<T, Compare, Allocator>& set<T, Compare, Allocator>::operator=(const set<T, Compare, Allocator>& rhs) noexcept

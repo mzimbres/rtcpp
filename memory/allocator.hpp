@@ -39,7 +39,7 @@ class allocator {
   };
   bool operator==(const allocator& alloc) const {return m_data == alloc.m_data;}
   bool operator!=(const allocator& alloc) const {return !(*this == alloc);}
-  void swap(allocator& other)
+  void swap(allocator& other) noexcept
   {
     std::swap(m_size, other.m_size);
     std::swap(m_data, other.m_data);
@@ -103,7 +103,7 @@ class allocator<T, N, true> {
   void construct(U* p, Args&&... args) {::new((void *)p) U(std::forward<Args>(args)...);}
   bool operator==(const allocator& alloc) const {return m_stack == alloc.m_stack;}
   bool operator!=(const allocator& alloc) const {return !(*this == alloc);}
-  void swap(allocator& other)
+  void swap(allocator& other) noexcept
   {
     m_stack.swap(other.m_stack);
   }
