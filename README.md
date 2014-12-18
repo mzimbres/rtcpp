@@ -56,7 +56,8 @@ The real-time version of `std::set` has the same interface as std::set itself bu
 requires more guarantees on its template parameters i.e. the compare function
 and the allocator. Below the reader can see some benchmarks
 
-![Alt text](fig/set_bench-f0.pdf)
+![Insertion time](fig/set_insertion.pdf)
+![Deletion time](fig/set_deletion.pdf)
 
 
 ## How to write a real-time STL 
