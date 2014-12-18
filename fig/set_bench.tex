@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{graphics}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage[utf8]{inputenc}
+
+\pgfrealjobname{set_bench}
+
+\begin{document}
+\beginpgfgraphicnamed{set_bench-f0}
+   \begin{tikzpicture}[scale=1.0]
+      \begin{axis}[ xlabel= Number of elements, ylabel= Insertion Time(s)
+                  , title={}
+		  %,  width=12cm, height=5cm 
+                  , legend style={ cells={anchor=east}, anchor=south east} ]
+      \addplot+[only marks,mark size=1] table[x index=0,y index=1]   {data.dat};
+      \addlegendentry{rt::set(rt::alloc)}
+      \addplot+[only marks,mark size=1] table[x index=0,y index=2]   {data.dat};
+      \addlegendentry{rt::bst(std::alloc)}
+      \addplot+[only marks,mark size=1] table[x index=0,y index=3]   {data.dat};
+      \addlegendentry{std::set(std::alloc)}
+      \end{axis}
+   \end{tikzpicture}
+\endpgfgraphicnamed
+
+\end{document}
+

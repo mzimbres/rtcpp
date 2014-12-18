@@ -54,7 +54,10 @@ both t1 and t2 (remember the `node_type` must be allocated inside the buffer).
 
 The real-time version of `std::set` has the same interface as std::set itself but
 requires more guarantees on its template parameters i.e. the compare function
-and the allocator.
+and the allocator. Below the reader can see some benchmarks
+
+![Alt text](fig/set_bench-f0.pdf)
+
 
 ## How to write a real-time STL 
 
