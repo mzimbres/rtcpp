@@ -21,8 +21,8 @@ bool test_swap()
   set<int> t1_copy = t1;
   set<int> t2 = {1, 4, 8, 2, 7};
   set<int> t2_copy = t2;
-  //t1.swap(t2);
-  std::swap(t1, t2);
+  t1.swap(t2);
+  //std::swap(t1, t2);
 
   if (t1 != t2_copy)
     return false;
@@ -108,8 +108,8 @@ int main()
   if (!test_find())
     return 1;
 
-  //if (!test_swap())
-  //  return 1;
+  if (!test_swap())
+    return 1;
     
   //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
   //std::cout << std::endl;

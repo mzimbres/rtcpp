@@ -8,7 +8,7 @@
 
 int main()
 {
-  std::array<char, 200> buffer = {{}};
+  std::array<char, 240> buffer = {{}};
   rt::allocator<int> alloc(buffer);
   rt::set<int> t1(alloc);
   rt::set<int> t2(alloc);
