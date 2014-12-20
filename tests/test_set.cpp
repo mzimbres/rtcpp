@@ -24,12 +24,19 @@ bool test_swap()
   t1.swap(t2);
   //std::swap(t1, t2);
 
+  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl << std::endl;
+  std::copy(std::begin(t1_copy), std::end(t1_copy), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << std::endl << std::endl;
+  std::cout << "aaa" << std::endl;
   if (t1 != t2_copy)
     return false;
 
+  std::cout << "aaa" << std::endl;
   if (t2 != t1_copy)
     return false;
 
+  std::cout << "aaa" << std::endl;
   return true;
 }
 

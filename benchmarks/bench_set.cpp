@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
   {
     std::cout << "std::set<rt::alloc>: " << std::endl;
     std::vector<char> buffer((data.size() + 2) * (2 * sizeof (rt::set<int>::node_type)), 0);
-    std::set<int, std::less<int>, rt::allocator<int>> s(rt::allocator<int>(&buffer.front(), buffer.size()));
+    std::set<int, std::less<int>, rt::allocator<int>> s(std::less<int>(), rt::allocator<int>(&buffer.front(), buffer.size()));
     print_bench(s, data);
   }
   std::cout << std::endl;

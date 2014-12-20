@@ -11,7 +11,7 @@ int main()
 {
   std::array<char, 10000> buffer = {{}};
   rt::allocator<int> alloc(buffer);
-  std::set<int, std::less<int>, rt::allocator<int>> t1(alloc);
+  std::set<int, std::less<int>, rt::allocator<int>> t1(std::less<int>(), alloc);
 
   std::array<int, 12> data = {{4, 2, 9, 10, 7, 88, 44, 31, 22, 35, 96, 100}};
 
