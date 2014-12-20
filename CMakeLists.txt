@@ -19,10 +19,10 @@ add_executable(test_alloc tests/test_alloc.cpp)
 add_executable(example1 examples/example1.cpp)
 add_executable(example2 examples/example2.cpp)
 add_executable(example3 examples/example3.cpp)
+add_executable(bench_set benchmarks/bench_set.cpp)
 
 #if (Boost_FOUND)
 #  include_directories(${Boost_INCLUDE_DIR})
-  add_executable(bench_set benchmarks/bench_set.cpp)
 #  target_link_libraries(bench_set ${Boost_LIBRARIES})
 #endif()
 

@@ -56,7 +56,8 @@ int main(int argc, char* argv[])
   {
     std::cout << "rt::set<rt::alloc>: " << std::endl;
     std::vector<char> buffer((data.size() + 2) * sizeof (rt::set<int>::node_type), 0);
-    rt::set<int> s(rt::allocator<int>(&buffer.front(), buffer.size())); // Uses a vector as buffer.
+    rt::allocator<int> alloc(buffer);
+    rt::set<int> s(alloc); // Uses a vector as buffer.
     print_bench(s, data);
   }
   {
@@ -67,7 +68,8 @@ int main(int argc, char* argv[])
   {
     std::cout << "std::set<rt::alloc>: " << std::endl;
     std::vector<char> buffer((data.size() + 2) * (2 * sizeof (rt::set<int>::node_type)), 0);
-    std::set<int, std::less<int>, rt::allocator<int>> s(std::less<int>(), rt::allocator<int>(&buffer.front(), buffer.size()));
+    rt::allocator<int> alloc(buffer);
+    std::set<int, std::less<int>, rt::allocator<int>> s(std::less<int>(), alloc);
     print_bench(s, data);
   }
   std::cout << std::endl;

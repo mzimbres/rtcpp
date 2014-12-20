@@ -85,7 +85,7 @@ int main()
 
   std::vector<char> buffer(5 * (size + 2) * sizeof (set<int>::node_type));
 
-  set<int> t1(std::begin(tmp), std::end(tmp), allocator<int>(&buffer[0], buffer.size()));
+  set<int> t1(std::begin(tmp), std::end(tmp), allocator<int>(buffer));
 
   if (t1.size() != tmp.size())
     return 1;
