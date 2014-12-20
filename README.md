@@ -1,19 +1,27 @@
 ##RTCPP
 
 
-  The idea of this project is to implement a real-time version of the C++
-  Standard Template Library (STL).
+  The idea of this project is to enable real-time use of
+  STL containers by means of real-time allocators.
 
   "Real-time" here means a guarantee that the program will execute a particular
-  task in at most n steps (or processor cycles). To honor this demand we have
-  to get rid of all sources of unpredictable behaviour. Some of them are:
+  task in at most n steps (or processor cycles). When the standard says that
+  insertion on an std::list is constant time, it means operations inside
+  the list and does not account for example, whether the allocation of a 
+  new node is constant time or not. However, the performance of allocations
+  can become very bad in situations where the heap is fragmented. This is an
+  undesirable effect in many real-time systems.
 
-  1. Heap fragmentation.
-  2. Use of operator new.
+  To make a real-time guarantee on a given operation, we have to get rid of all
+  sources of unpredictable behaviour, some of them are.
+  
+  1. Dynamic allocations of the heap.
+  2. Heap fragmentation.
   3. Use of exceptions.
 
-  Before we talk about how I addressed these problems, let us see some examples.
-  The reader may be also interested in benchmarks:
+  It is debatable on whether number three above is valid or not so I will not
+  focus on it.  Before we talk about how I addressed these problems, let us see
+  some examples.  The reader may be also interested in benchmarks:
 
 ![Insertion time](fig/set_insertion.pdf),
 ![Deletion time](fig/set_deletion.pdf)
