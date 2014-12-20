@@ -35,10 +35,12 @@ class set { // Unbalanced binary search tree
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
-  inner_allocator_type m_inner_alloc;
+  mutable inner_allocator_type m_inner_alloc;
   node_pointer m_head;
   Compare m_comp;
   void copy(set& rhs) const noexcept;
+  node_pointer get_node() const;
+  void safe_construct(node_pointer p, const value_type& key) const;
   public:
   set(const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
   explicit set(const Allocator& alloc = allocator<T>()) noexcept
@@ -112,7 +114,7 @@ set<T, Compare, Allocator>& set<T, Compare, Allocator>::operator=(std::initializ
 template <typename T, typename Compare, typename Allocator>
 set<T, Compare, Allocator>::set(const set<T, Compare, Allocator>& rhs) noexcept
 : m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(rhs.m_inner_alloc))
-, m_head(std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1))
+, m_head(get_node())
 {
   // This ctor can fail if the allocator runs out of memory.
   m_head->llink = m_head;
@@ -125,7 +127,7 @@ set<T, Compare, Allocator>::set(const set<T, Compare, Allocator>& rhs) noexcept
 template <typename T, typename Compare, typename Allocator>
 set<T, Compare, Allocator>::set(const Compare& comp, const Allocator& alloc) noexcept
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
-, m_head(std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1))
+, m_head(get_node())
 , m_comp(comp)
 {
   m_head->llink = m_head;
@@ -137,7 +139,7 @@ template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
 set<T, Compare, Allocator>::set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
-, m_head(std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1))
+, m_head(get_node())
 , m_comp(comp)
 {
   m_head->llink = m_head;
@@ -185,10 +187,7 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
 
   for (;;) {
     if (!has_null_llink(p->tag)) {
-      node_pointer tmp = std::allocator_traits<inner_allocator_type>::allocate(rhs.m_inner_alloc, 1);
-      if (!tmp)
-        break; // The tree has exhausted its capacity.
-
+      node_pointer tmp = get_node();
       attach_node_left(q, tmp);
     }
 
@@ -199,14 +198,30 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
       break;
 
     if (!has_null_rlink(p->tag)) {
-      node_pointer tmp = std::allocator_traits<inner_allocator_type>::allocate(rhs.m_inner_alloc, 1);
-      if (!tmp)
-        break; // The tree has exhausted its capacity.
-
+      node_pointer tmp = get_node();
       attach_node_right(q, tmp);
     }
 
     q->key = p->key;
+  }
+}
+
+template <typename T, typename Compare, typename Allocator>
+typename set<T, Compare, Allocator>::node_pointer set<T, Compare, Allocator>::get_node() const
+{
+  return std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1);
+}
+
+template <typename T, typename Compare, typename Allocator>
+void
+set<T, Compare, Allocator>::safe_construct( typename set<T, Compare, Allocator>::node_pointer p
+                                          , const typename set<T, Compare, Allocator>::value_type& key) const
+{
+  try {
+    std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(p->key), key);
+  } catch (...) {
+    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, p, 1);
+    throw;
   }
 }
 
@@ -216,12 +231,9 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
 {
   typedef typename set<T>::const_iterator const_iterator;
   if (has_null_llink(m_head->tag)) { // The tree is empty
-    node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1);
-    if (!q)
-      return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
-
+    node_pointer q = get_node();
+    safe_construct(q, key);
     attach_node_left(m_head, q);
-    std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->key), key);
     return std::make_pair(const_iterator(q), true);
   }
 
@@ -232,24 +244,18 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
         p = p->llink;
         continue;
       }
-      node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1);
-      if (!q)
-        return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
-
+      node_pointer q = get_node();
+      safe_construct(q, key);
       attach_node_left(p, q);
-      std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->key), key);
       return std::make_pair(q, true);
     } else if (m_comp(p->key, key)) {
       if (!has_null_rlink(p->tag)) {
         p = p->rlink;
         continue;
       }
-      node_pointer q = std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1);
-      if (!q)
-        return std::make_pair(const_iterator(), false); // The tree has exhausted its capacity.
-
+      node_pointer q = get_node();
+      safe_construct(q, key);
       attach_node_right(p, q);
-      std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(q->key), key);
       return std::make_pair(q, true);
     } else {
       return std::make_pair(p, false);

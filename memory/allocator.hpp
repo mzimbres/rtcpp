@@ -2,6 +2,7 @@
 
 #include <array>
 #include <utility>
+#include <exception>
 
 #include <memory/node_stack.hpp>
 
@@ -99,7 +100,13 @@ class allocator<T, N, true> {
   allocator(const allocator<U, size_of<U>::size, true>& alloc)
   : m_stack(alloc.m_stack)
   {}
-  pointer allocate(size_type) { return reinterpret_cast<pointer>(m_stack.pop()); }
+  pointer allocate(size_type)
+  {
+    char* p = m_stack.pop(); 
+    if (!p)
+      throw std::bad_alloc();
+    return reinterpret_cast<pointer>(p); 
+  }
   void deallocate(pointer p, size_type) { m_stack.push(reinterpret_cast<char*>(p)); }
   template<typename U>
   void destroy(U* p) {p->~U();}
