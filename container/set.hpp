@@ -6,15 +6,13 @@
 #include <memory>
 #include <limits>
 
-#include <memory/allocator.hpp>
-
 #include "bst_iterator.hpp"
 
 namespace rt {
 
 template < typename T
          , typename Compare = std::less<T>
-         , typename Allocator = allocator<T>>
+         , typename Allocator = std::allocator<T>>
 class set { // Unbalanced binary search tree
   public:
   typedef bst_node<T> node_type; // The standard does not require this to be public.
@@ -42,20 +40,20 @@ class set { // Unbalanced binary search tree
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
   public:
-  set(const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
-  explicit set(const Allocator& alloc = allocator<T>()) noexcept
+  set(const Compare& comp, const Allocator& alloc = std::allocator<T>()) noexcept;
+  explicit set(const Allocator& alloc = std::allocator<T>()) noexcept
   : set(Compare(), alloc) {}
   set(const set& rhs) noexcept;
   set& operator=(const set& rhs) noexcept;
   set& operator=(std::initializer_list<T> init) noexcept;
   template <typename InputIt>
-  set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept;
+  set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = std::allocator<T>()) noexcept;
   template <typename InputIt>
-  set(InputIt begin, InputIt end, const Allocator& alloc = allocator<T>()) noexcept
+  set(InputIt begin, InputIt end, const Allocator& alloc = std::allocator<T>()) noexcept
   : set(begin, end, Compare(), alloc) {}
-  set(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = allocator<T>()) noexcept
+  set(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = std::allocator<T>()) noexcept
   : set(std::begin(init), std::end(init), comp, alloc) {}
-  set(std::initializer_list<T> init, const Allocator& alloc = allocator<T>()) noexcept
+  set(std::initializer_list<T> init, const Allocator& alloc = std::allocator<T>()) noexcept
   : set(init, Compare(), alloc) {}
   ~set() noexcept;
   void clear() noexcept;
@@ -82,7 +80,7 @@ class set { // Unbalanced binary search tree
 template <typename T, typename Compare, typename Allocator>
 void set<T, Compare, Allocator>::swap(set<T, Compare, Allocator>& other) noexcept
 {
-  m_inner_alloc.swap(other.m_inner_alloc);
+  std::swap(m_inner_alloc, other.m_inner_alloc); // this one is in namespace rt.
   std::swap(m_head, other.m_head);
   std::swap(m_comp, other.m_comp);
 }
@@ -348,6 +346,16 @@ bool operator!=( const set<Key, Compare, Alloc>& lhs
                , const set<Key, Compare, Alloc>& rhs) noexcept
 {
   return !(lhs == rhs);
+}
+
+}
+
+namespace std {
+
+template <typename T>
+void swap(rt::set<T>& s1, rt::set<T>& s2)
+{
+  s1.swap(s2);
 }
 
 }

@@ -122,3 +122,13 @@ class allocator<T, N, true> {
 
 }
 
+namespace std {
+
+template <typename T>
+void swap(rt::allocator<T>& s1, rt::allocator<T>& s2)
+{
+  s1.swap(s2);
+}
+
+}
+

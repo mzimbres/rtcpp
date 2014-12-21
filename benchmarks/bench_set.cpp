@@ -9,7 +9,7 @@
 
 #include <container/bst_node.hpp>
 #include <container/set.hpp>
-
+#include <memory/allocator.hpp>
 #include <utility/to_number.hpp>
 #include <utility/make_rand_data.hpp>
 #include <utility/timer.hpp>
@@ -50,14 +50,14 @@ int main(int argc, char* argv[])
   // Benchmarks.
   {
     std::cout << "rt::set<std::alloc>: " << std::endl;
-    rt::set<int, std::less<int>, std::allocator<int>> s((std::allocator<int>()));
+    rt::set<int> s;
     print_bench(s, data);
   }
   {
     std::cout << "rt::set<rt::alloc>: " << std::endl;
     std::vector<char> buffer((data.size() + 2) * sizeof (rt::set<int>::node_type), 0);
     rt::allocator<int> alloc(buffer);
-    rt::set<int> s(alloc); // Uses a vector as buffer.
+    rt::set<int, std::less<int>, rt::allocator<int>> s(alloc); // Uses a vector as buffer.
     print_bench(s, data);
   }
   {

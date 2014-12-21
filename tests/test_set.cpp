@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include <iterator>
 #include <random>
 #include <functional>
@@ -13,51 +14,39 @@
 
 #include <utility/make_rand_data.hpp>
 
-using namespace rt;
-
-bool test_swap()
+template <typename C>
+bool test_swap(const std::vector<int>& arr)
 {
-  set<int> t1 = {2, 5, 9, 3, 0};
-  set<int> t1_copy = t1;
-  set<int> t2 = {1, 4, 8, 2, 7};
-  set<int> t2_copy = t2;
-  t1.swap(t2);
+  C t1(std::begin(arr), std::end(arr));
+  C t1_copy = t1;
+  C t2 = {1, 4, 8, 2, 7};
+  C t2_copy = t2;
+  swap(t1, t2);
   //std::swap(t1, t2);
 
-  std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl << std::endl;
-  std::copy(std::begin(t1_copy), std::end(t1_copy), std::ostream_iterator<int>(std::cout, " "));
-  std::cout << std::endl << std::endl;
-  std::cout << "aaa" << std::endl;
   if (t1 != t2_copy)
     return false;
 
-  std::cout << "aaa" << std::endl;
   if (t2 != t1_copy)
     return false;
 
-  std::cout << "aaa" << std::endl;
   return true;
 }
 
-bool test_count()
+template <typename C>
+bool test_count(const std::vector<int>& arr)
 {
-  std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
-  set<int> t1(std::begin(arr), std::end(arr));
+  C t1(std::begin(arr), std::end(arr));
   if (!std::all_of(std::begin(arr), std::end(arr), [&](int a){ return t1.count(a) == 1;}))
     return false;
 
-  std::array<int, 5> tmp = {{1, 4, 8, 2, -1}};
-  if (!std::any_of(std::begin(tmp), std::end(tmp), [&](int a){ return t1.count(a) == 0;}))
-    return false;
-
   return true;
 }
 
-bool test_find()
+template <typename C>
+bool test_find(const std::vector<int>& arr)
 {
-  const std::array<int, 5> arr = {{2, 5, 9, 3, 0}};
-  set<int> t1(std::begin(arr), std::end(arr));
+  C t1(std::begin(arr), std::end(arr));
   auto func = [&](int a) -> bool
   {
     auto iter = t1.find(a);
@@ -74,6 +63,54 @@ bool test_find()
   return true;
 }
 
+template <typename C>
+bool test_basic(const std::vector<int>& tmp)
+{
+  C t1(std::begin(tmp), std::end(tmp));
+
+  if (t1.size() != tmp.size())
+    return false;
+
+  if (!std::is_sorted(std::begin(t1), std::end(t1)))
+    return false;
+
+  C t3(t1);
+  C t4 = t3;
+
+  if (t3 != t1)
+    return false;
+
+  if (t4 != t1)
+    return false;
+
+  if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
+    return false;
+
+  t1.clear();
+  if (!t1.empty())
+    return false;
+
+  return true;
+}
+
+template <typename C>
+bool run_tests(const std::vector<int>& tmp)
+{
+  if (!test_basic<C>(tmp))
+    return false;
+
+  if (!test_count<C>(tmp))
+    return false;
+
+  if (!test_find<C>(tmp))
+    return false;
+
+  if (!test_swap<C>(tmp))
+    return false;
+
+  return true;
+}
+
 int main()
 {
   const int size = 40000;
@@ -81,47 +118,13 @@ int main()
   const int b = std::numeric_limits<int>::max();
 
   // Random unique integers in the range [a,b].
-  std::vector<int> tmp = make_rand_data(size, a, b);
+  std::vector<int> tmp = rt::make_rand_data(size, a, b);
 
-  std::vector<char> buffer(5 * (size + 2) * sizeof (set<int>::node_type));
-
-  set<int> t1(std::begin(tmp), std::end(tmp), allocator<int>(buffer));
-
-  if (t1.size() != tmp.size())
-    return 1;
-
-  if (!std::is_sorted(std::begin(t1), std::end(t1)))
-    return 1;
-
-  set<int> t3(t1);
-  set<int> t4 = t3;
-
-  if (t3 != t1)
-    return 1;
-
-  if (t4 != t1)
-    return 1;
-
-  if (std::adjacent_find(std::begin(t1), std::end(t1)) != std::end(t1))
-    return 1;
-
-  t1.clear();
-  if (!t1.empty())
-    return 1;
-
-  if (!test_count())
-    return 1;
-
-  if (!test_find())
-    return 1;
-
-  if (!test_swap())
+  if (!run_tests<rt::set<int>>(tmp))
     return 1;
     
-  //std::copy(std::begin(t1), std::end(t1), std::ostream_iterator<int>(std::cout, " "));
-  //std::cout << std::endl;
-  //std::copy(t1.rbegin(), t1.rend(), std::ostream_iterator<int>(std::cout, " "));
-  //std::cout << std::endl;
+  if (!run_tests<std::set<int>>(tmp))
+    return 1;
 
   return 0;
 }
