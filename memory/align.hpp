@@ -4,17 +4,25 @@
 
 namespace rt {
 
-template <typename T>
-struct size_of {
-  static const std::size_t size = (sizeof (T));
+template <std::size_t N>
+struct is_power_of_two {
+  static const bool value = (N > 0) && ((N & (N - 1)) == 0);
 };
 
-constexpr bool is_power_of_two(std::size_t a) {return !(a & (a - 1));}
+// returns true if a is aligned with respect to N i.e. the remainder of a
+// divided by b is zero. N must be a power of two.
+template <std::size_t N>
+bool is_aligned(std::size_t a) noexcept
+{ 
+  static_assert(is_power_of_two<N>::value, "is_aligned: N must be a power of two.");
+  return (a & (N - 1)) == 0;
+}
 
-// returns true if the remainder of a divided by b is zero, i.e. a % b. b
-// must be a power of two.
-constexpr bool is_aligned(std::size_t a, std::size_t b) {return !(a & (b - 1));}
-
-constexpr std::size_t next_aligned(std::size_t a, std::size_t b) {return (a & ~(b - 1)) + b;}
+template <std::size_t N>
+std::size_t next_aligned(std::size_t a) noexcept
+{
+  static_assert(is_power_of_two<N>::value, "next_aligned: N must be a power of two.");
+  return (a & ~(N - 1)) + N;
+}
 
 }

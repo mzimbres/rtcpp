@@ -11,8 +11,8 @@
 namespace rt {
 
 template < typename T
-         , std::size_t S = size_of<T>::size
-         , bool B = !(S < size_of<char*>::size)
+         , std::size_t S = sizeof (T)
+         , bool B = !(S < sizeof (char*))
          >
 class allocator {
   public:
@@ -29,8 +29,8 @@ class allocator {
   template<typename U>
   struct rebind {
     typedef allocator< U
-                     , size_of<U>::size
-                     , !(size_of<U>::size < size_of<char*>::size)> other;
+                     , sizeof (U)
+                     , !(sizeof (U) < sizeof (char*))> other;
   };
   bool operator==(const allocator& alloc) const {return m_data == alloc.m_data;}
   bool operator!=(const allocator& alloc) const {return !(*this == alloc);}
@@ -46,7 +46,7 @@ class allocator {
     // aligns the pointer on a word boundary.
     const std::size_t a = reinterpret_cast<std::size_t>(m_data);
     const std::size_t b = sizeof (char*); // word size.
-    const std::size_t c = is_aligned(a, b) ? a : next_aligned(a, b);
+    const std::size_t c = is_aligned<b>(a) ? a : next_aligned<b>(a);
     m_data = reinterpret_cast<char*>(c);
     size = c - a;
   }
@@ -75,18 +75,18 @@ class allocator<T, N, true> {
   template<class U>
   struct rebind {
     typedef allocator< U
-                     , size_of<U>::size
-                     , !(size_of<U>::size < size_of<char*>::size)> other;
+                     , sizeof (U)
+                     , !(sizeof (U) < sizeof (char*))> other;
   };
   private:
-  node_stack<size_of<value_type>::size> m_stack;
+  node_stack<sizeof (T)> m_stack;
   public:
   template<typename U>
-  allocator(const allocator<U, size_of<U>::size, false>& alloc)
+  allocator(const allocator<U, sizeof (U), false>& alloc)
   : m_stack(alloc.m_data, alloc.m_size)
   {}
   template<typename U>
-  allocator(const allocator<U, size_of<U>::size, true>& alloc)
+  allocator(const allocator<U, sizeof (U), true>& alloc)
   : m_stack(alloc.m_stack)
   {}
   pointer allocate(size_type)
