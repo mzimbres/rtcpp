@@ -8,21 +8,19 @@
 #include <limits>
 #include <array>
 #include <vector>
-#include <scoped_allocator>
 
 #include <container/set.hpp>
+#include <memory/allocator.hpp>
 
 #include <utility/make_rand_data.hpp>
 
-template <typename C>
 bool test_swap(const std::vector<int>& arr)
 {
-  C t1(std::begin(arr), std::end(arr));
-  C t1_copy = t1;
-  C t2 = {1, 4, 8, 2, 7};
-  C t2_copy = t2;
-  swap(t1, t2);
-  //std::swap(t1, t2);
+  rt::set<int> t1(std::begin(arr), std::end(arr));
+  rt::set<int> t1_copy = t1;
+  rt::set<int> t2 = {1, 4, 8, 2, 7};
+  rt::set<int> t2_copy = t2;
+  std::swap(t1, t2);
 
   if (t1 != t2_copy)
     return false;
@@ -34,9 +32,10 @@ bool test_swap(const std::vector<int>& arr)
 }
 
 template <typename C>
-bool test_count(const std::vector<int>& arr)
+bool test_count(C& t1, const std::vector<int>& arr)
 {
-  C t1(std::begin(arr), std::end(arr));
+  t1.clear();
+  t1.insert(std::begin(arr), std::end(arr));
   if (!std::all_of(std::begin(arr), std::end(arr), [&](int a){ return t1.count(a) == 1;}))
     return false;
 
@@ -44,9 +43,10 @@ bool test_count(const std::vector<int>& arr)
 }
 
 template <typename C>
-bool test_find(const std::vector<int>& arr)
+bool test_find(C& t1,const std::vector<int>& arr)
 {
-  C t1(std::begin(arr), std::end(arr));
+  t1.clear();
+  t1.insert(std::begin(arr), std::end(arr));
   auto func = [&](int a) -> bool
   {
     auto iter = t1.find(a);
@@ -64,9 +64,10 @@ bool test_find(const std::vector<int>& arr)
 }
 
 template <typename C>
-bool test_basic(const std::vector<int>& tmp)
+bool test_basic(C& t1, const std::vector<int>& tmp)
 {
-  C t1(std::begin(tmp), std::end(tmp));
+  t1.clear();
+  t1.insert(std::begin(tmp), std::end(tmp));
 
   if (t1.size() != tmp.size())
     return false;
@@ -75,11 +76,10 @@ bool test_basic(const std::vector<int>& tmp)
     return false;
 
   C t3(t1);
-  C t4 = t3;
-
   if (t3 != t1)
     return false;
 
+  C t4 = t3;
   if (t4 != t1)
     return false;
 
@@ -94,18 +94,18 @@ bool test_basic(const std::vector<int>& tmp)
 }
 
 template <typename C>
-bool run_tests(const std::vector<int>& tmp)
+bool run_tests(C& t1, const std::vector<int>& tmp)
 {
-  if (!test_basic<C>(tmp))
+  if (!test_basic(t1, tmp))
     return false;
 
-  if (!test_count<C>(tmp))
+  if (!test_count(t1, tmp))
     return false;
 
-  if (!test_find<C>(tmp))
+  if (!test_find(t1, tmp))
     return false;
 
-  if (!test_swap<C>(tmp))
+  if (!test_swap(tmp))
     return false;
 
   return true;
@@ -113,17 +113,45 @@ bool run_tests(const std::vector<int>& tmp)
 
 int main()
 {
-  const int size = 40000;
+  const int size = 500;
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
 
   // Random unique integers in the range [a,b].
   std::vector<int> tmp = rt::make_rand_data(size, a, b);
 
-  if (!run_tests<rt::set<int>>(tmp))
+  const int bsize = 3 * (tmp.size() + 2) * 25; // Should be enough for rt::set.
+
+  // Tow buffers for two allocators.
+  std::vector<char> buffer1(2 * bsize);
+  std::vector<char> buffer2(4 * bsize);
+
+  rt::allocator<int> alloc1(buffer1);
+  rt::allocator<int> alloc2(buffer2);
+
+  rt::set<int> t1;
+  rt::set<int, std::less<int>, rt::allocator<int>> t2(std::less<int>(), alloc1);
+  rt::set<int, std::less<int>, rt::allocator<int>> t3(std::less<int>(), alloc1);
+  std::set<int> t4;
+  std::set<int, std::less<int>, rt::allocator<int>> t5(std::less<int>(), alloc2);
+  std::set<int, std::less<int>, rt::allocator<int>> t6(std::less<int>(), alloc2);
+
+  if (!run_tests(t1, tmp))
     return 1;
     
-  if (!run_tests<std::set<int>>(tmp))
+  if (!run_tests(t2, tmp))
+    return 1;
+
+  if (!run_tests(t3, tmp))
+    return 1;
+
+  if (!run_tests(t4, tmp))
+    return 1;
+
+  if (!run_tests(t5, tmp))
+    return 1;
+
+  if (!run_tests(t6, tmp))
     return 1;
 
   return 0;

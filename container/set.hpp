@@ -143,12 +143,7 @@ set<T, Compare, Allocator>::set(InputIt begin, InputIt end, const Compare& comp,
   m_head->llink = m_head;
   m_head->rlink = m_head;
   m_head->tag = detail::lbit;
-  auto func = [this](const T& tmp) -> void {
-    auto pair = this->insert(tmp);
-    if (pair.second)
-      return;
-  };
-  std::for_each(begin, end, func);
+  insert(begin, end);
 }
 
 template <typename T, typename Compare, typename Allocator>
