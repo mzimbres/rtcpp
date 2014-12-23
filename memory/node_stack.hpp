@@ -34,48 +34,59 @@ char* link_stack(char* p, std::size_t n)
 template <std::size_t S>
 class node_stack {
   private:
-  std::size_t* m_counter;
-  char** m_avail;
+  std::size_t m_ptr_size;
+  char* m_data;
+  char* m_avail_ptr;
   public:
   node_stack(char* p, std::size_t n) noexcept;
   node_stack() noexcept {}
   char* pop() noexcept;
   void push(char* p) noexcept;
-  bool operator==(const node_stack& rhs) const {return m_counter == rhs.m_counter;}
+  bool operator==(const node_stack& rhs) const {return m_data == rhs.m_data;}
   void swap(node_stack& other) noexcept;
 };
 
 template <std::size_t S>
 void node_stack<S>::swap(node_stack<S>& other) noexcept
 {
-  std::swap(m_counter, other.m_counter);
-  std::swap(m_avail, other.m_avail);
+  std::swap(m_ptr_size, other.m_ptr_size);
+  std::swap(m_data, other.m_data);
+  std::swap(m_avail_ptr, other.m_avail_ptr);
 }
 
 template <std::size_t S>
 node_stack<S>::node_stack(char* p, std::size_t n) noexcept
+: m_ptr_size(sizeof (char*))
+, m_data(p)
+, m_avail_ptr(m_data + m_ptr_size)
 {
   // p is expected to be word aligned and its memory zero-initialized.
   // The first word pointed to by p will store a counter of how many times the
   // stack has been linked. The second, a pointer to the avail stack.
   // TODO: check whether n is big enough.
 
-  const std::size_t s = sizeof (char*);
-  m_counter = &reinterpret_cast<std::size_t&>(*p);
-  m_avail = &reinterpret_cast<char*&>(*(p + s));
-  if (*m_counter == 0) { // Links only once.
+  // Current value of the counter.
+  int counter = 0;
+  std::memcpy(&counter, m_data, m_ptr_size);
+
+  if (counter == 0) { // Links only once.
     // The first word will be used to store a pointer to the avail node.
-    *m_avail = link_stack<S>(p + 2 * s, n - 2 * s);
+    char* top = link_stack<S>(m_data + 2 * m_ptr_size, n - 2 * m_ptr_size);
+    std::memcpy(m_avail_ptr, &top, m_ptr_size);
   }
-  *m_counter += 1;
+  ++counter;
+  const int int_size = sizeof (int);
+  std::memcpy(m_data, &counter, int_size);
 }
 
 template <std::size_t S>
 char* node_stack<S>::pop() noexcept
 {
-  char* q = *m_avail;
+  char* q;
+  std::memcpy(&q, m_avail_ptr, m_ptr_size);
   if (q)
-    *m_avail = reinterpret_cast<char*&>(**m_avail);
+    std::memcpy(m_avail_ptr, q, m_ptr_size);
+
   return q;
 }
 
@@ -85,8 +96,8 @@ void node_stack<S>::push(char* p) noexcept
   if (!p)
     return;
 
-  reinterpret_cast<char*&>(*p) = *m_avail;
-  *m_avail = p;
+  std::memcpy(p, m_avail_ptr, m_ptr_size);
+  std::memcpy(m_avail_ptr, &p, m_ptr_size);
 }
 
 }
