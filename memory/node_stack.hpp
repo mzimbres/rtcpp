@@ -2,29 +2,32 @@
 
 #include <iterator>
 #include <utility>
+#include <cstring>
 
 namespace rt {
 
-template <std::size_t S> // Block size.
+template <std::size_t S> // Block size in bytes.
 char* link_stack(char* p, std::size_t n)
 {
   // n: Number of bytes beginning at p.
 
-  const std::size_t m = n / S; // Number of blocks of size S we need.
+  // Number of blocks of size S we have available.
+  const std::size_t m = n / S;
 
-  if (m < 2) // Minimum number of block we need.
+  // The minimum number of blocks we need is 2.
+  if (m < 2)
     return 0;
 
+  const std::size_t ptr_size = sizeof (char*);
   for (std::size_t i = 1; i < m; ++i) {
-    char* pn = p + i * S; // Points to the begin of the second block.
-    char& ad = *pn; // Memory address where pn points to.
-    // Pretends that ad is the address of a char* and not a char.
-    char*& pad = reinterpret_cast<char*&>(ad);
-    // sets the value of that pointer to the previous block.
-    pad = &*(p + (i - 1) * S);
+    char* pp = p + (i - 1) * S; // Pointer to the previous block.
+    char* pn = p + i * S; // Pointer to the next block.
+    // We now store the address of the previous block in the memory
+    // location of the begin of the next block.
+    std::memcpy(pn, &pp, ptr_size);
   }
 
-  reinterpret_cast<char*&>(*p) = 0;
+  std::memset(p, 0, ptr_size);
   return p + (m - 1) * S; // Pointer to the top of the stack.
 }
 
