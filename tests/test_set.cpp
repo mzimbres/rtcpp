@@ -14,6 +14,34 @@
 
 #include <utility/make_rand_data.hpp>
 
+bool test_iterator()
+{
+  std::array<int, 5> arr = {{5, 10, -3, 32, 41}};
+  rt::set<int> t1(std::begin(arr), std::end(arr));
+
+  // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
+  // us to the right point.
+  auto iter = t1.end();
+
+  // We should be now at the rbegin.
+  if (*--iter != 41)
+    return false;
+
+  if (*--iter != 32)
+    return false;
+
+  if (*--iter != 10)
+    return false;
+
+  if (*--iter != 5)
+    return false;
+
+  if (*--iter != -3)
+    return false;
+
+  return true;
+}
+
 bool test_swap(const std::vector<int>& arr)
 {
   rt::set<int> t1(std::begin(arr), std::end(arr));
@@ -106,6 +134,9 @@ bool run_tests(C& t1, const std::vector<int>& tmp)
     return false;
 
   if (!test_swap(tmp))
+    return false;
+
+  if (!test_iterator())
     return false;
 
   return true;
