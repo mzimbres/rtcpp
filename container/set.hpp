@@ -235,21 +235,21 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
     if (m_comp(key, p->key)) {
       if (!has_null_llink(p->tag)) {
         p = p->llink;
-        continue;
+      } else {
+        node_pointer q = get_node();
+        safe_construct(q, key);
+        attach_node_left(p, q);
+        return std::make_pair(q, true);
       }
-      node_pointer q = get_node();
-      safe_construct(q, key);
-      attach_node_left(p, q);
-      return std::make_pair(q, true);
     } else if (m_comp(p->key, key)) {
       if (!has_null_rlink(p->tag)) {
         p = p->rlink;
-        continue;
+      } else {
+        node_pointer q = get_node();
+        safe_construct(q, key);
+        attach_node_right(p, q);
+        return std::make_pair(q, true);
       }
-      node_pointer q = get_node();
-      safe_construct(q, key);
-      attach_node_right(p, q);
-      return std::make_pair(q, true);
     } else {
       return std::make_pair(p, false);
     }
@@ -267,17 +267,15 @@ set<T, Compare, Allocator>::count(const K& key) const noexcept
   node_pointer p = m_head->llink;
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p->tag)) {
+      if (!has_null_llink(p->tag))
         p = p->llink;
-        continue;
-      }
-      return 0;
+      else
+        return 0;
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p->tag)) {
+      if (!has_null_rlink(p->tag))
         p = p->rlink;
-        continue;
-      }
-      return 0;
+      else
+        return 0;
     } else {
       return 1;
     }
@@ -296,17 +294,15 @@ set<T, Compare, Allocator>::find(const K& key) const noexcept
   node_pointer p = m_head->llink;
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p->tag)) {
+      if (!has_null_llink(p->tag))
         p = p->llink;
-        continue;
-      }
-      return const_iterator(m_head); // end iterator.
+      else
+        return const_iterator(m_head); // end iterator.
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p->tag)) {
+      if (!has_null_rlink(p->tag))
         p = p->rlink;
-        continue;
-      }
-      return const_iterator(m_head); // end iterator.
+      else
+        return const_iterator(m_head); // end iterator.
     } else {
       return p; // equivalent element.
     }
