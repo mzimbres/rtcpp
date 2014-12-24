@@ -15,7 +15,7 @@ class timer {
   {
     std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - m_start;
-    std::cout << elapsed_seconds.count() << "s" << std::endl;
+    std::cout << elapsed_seconds.count() << " ";
   }
 };
 
