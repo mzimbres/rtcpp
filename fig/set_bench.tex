@@ -13,12 +13,14 @@
                   , title={}
 		  %,  width=12cm, height=5cm 
                   , legend style={ cells={anchor=east}, anchor=south east} ]
-      \addplot+[only marks,mark size=1] table[x index=0,y index=1]   {data.dat};
+      \addplot+[mark size=1] table[x index=0,y index=1]   {data.dat};
+      \addlegendentry{rt::set(std::alloc)}
+      \addplot+[mark size=1] table[x index=0,y index=2]   {data.dat};
       \addlegendentry{rt::set(rt::alloc)}
-      \addplot+[only marks,mark size=1] table[x index=0,y index=2]   {data.dat};
-      \addlegendentry{rt::bst(std::alloc)}
-      \addplot+[only marks,mark size=1] table[x index=0,y index=3]   {data.dat};
+      \addplot+[mark size=1] table[x index=0,y index=3]   {data.dat};
       \addlegendentry{std::set(std::alloc)}
+      \addplot+[mark size=1] table[x index=0,y index=4]   {data.dat};
+      \addlegendentry{std::set(rt::alloc)}
       \end{axis}
    \end{tikzpicture}
 \endpgfgraphicnamed

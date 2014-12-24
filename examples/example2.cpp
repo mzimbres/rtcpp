@@ -21,7 +21,7 @@ int main()
     t1 = {5, 3, 7, 20, 1};
     t2 = {44, 22, 8, 44, 33};
   } catch (const std::bad_alloc& e) {
-    std::cout << "Thre is not enough memory." << std::endl;
+    std::cout << "There is not enough memory." << std::endl;
   }
 
   std::copy( std::begin(t1)
