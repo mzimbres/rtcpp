@@ -25,8 +25,10 @@ void print_bench(C& c, Iter begin, std::size_t n, bool frag)
       s2.insert(*iter);
     }
   } // s2 is destructed leaving many holes in the heap.
-  rt::timer t;
-  c.insert(begin, begin + n);
+  {
+    rt::timer t;
+    c.insert(begin, begin + n);
+  }
 }
 
 int main(int argc, char* argv[])
