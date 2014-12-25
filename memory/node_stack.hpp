@@ -3,6 +3,7 @@
 #include <iterator>
 #include <utility>
 #include <cstring>
+#include <exception>
 
 namespace rt {
 
@@ -33,6 +34,7 @@ char* link_stack(char* p, std::size_t n)
 
 template <std::size_t S>
 class node_stack {
+  static_assert(!((sizeof (std::uintptr_t)) > (sizeof (char*))), "node_stack: Error.");
   private:
   std::size_t m_ptr_size;
   char* m_data;
@@ -64,6 +66,9 @@ node_stack<S>::node_stack(char* p, std::size_t n) noexcept
   // The first word pointed to by p will store a counter of how many times the
   // stack has been linked. The second, a pointer to the avail stack.
   // TODO: check whether n is big enough.
+
+  if (n < (3 * m_ptr_size + 2 * S))
+    throw std::runtime_error("node_stack: There is not enough space.");
 
   // Current value of the counter.
   std::uintptr_t counter = 0;

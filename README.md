@@ -79,6 +79,7 @@ that allocation logic is kept inside the allocator.
 
   I have tested the code with the following compilers.
 
+  GCC 4.7.3
   GCC 4.8.2
   GCC 5.0
   Clang 3.4
