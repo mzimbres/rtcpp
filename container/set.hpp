@@ -40,20 +40,20 @@ class set { // Unbalanced binary search tree
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
   public:
-  set(const Compare& comp, const Allocator& alloc = std::allocator<T>()) noexcept;
-  explicit set(const Allocator& alloc = std::allocator<T>()) noexcept
+  set(const Compare& comp, const Allocator& alloc = std::allocator<T>());
+  explicit set(const Allocator& alloc = std::allocator<T>())
   : set(Compare(), alloc) {}
   set(const set& rhs) noexcept;
   set& operator=(const set& rhs) noexcept;
   set& operator=(std::initializer_list<T> init) noexcept;
   template <typename InputIt>
-  set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = std::allocator<T>()) noexcept;
+  set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = std::allocator<T>());
   template <typename InputIt>
-  set(InputIt begin, InputIt end, const Allocator& alloc = std::allocator<T>()) noexcept
+  set(InputIt begin, InputIt end, const Allocator& alloc = std::allocator<T>())
   : set(begin, end, Compare(), alloc) {}
-  set(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = std::allocator<T>()) noexcept
+  set(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = std::allocator<T>())
   : set(std::begin(init), std::end(init), comp, alloc) {}
-  set(std::initializer_list<T> init, const Allocator& alloc = std::allocator<T>()) noexcept
+  set(std::initializer_list<T> init, const Allocator& alloc = std::allocator<T>())
   : set(init, Compare(), alloc) {}
   ~set() noexcept;
   void clear() noexcept;
@@ -123,7 +123,7 @@ set<T, Compare, Allocator>::set(const set<T, Compare, Allocator>& rhs) noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
-set<T, Compare, Allocator>::set(const Compare& comp, const Allocator& alloc) noexcept
+set<T, Compare, Allocator>::set(const Compare& comp, const Allocator& alloc)
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
 , m_head(get_node())
 , m_comp(comp)
@@ -135,7 +135,7 @@ set<T, Compare, Allocator>::set(const Compare& comp, const Allocator& alloc) noe
 
 template <typename T, typename Compare, typename Allocator>
 template <typename InputIt>
-set<T, Compare, Allocator>::set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc) noexcept
+set<T, Compare, Allocator>::set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc)
 : m_inner_alloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(alloc))
 , m_head(get_node())
 , m_comp(comp)

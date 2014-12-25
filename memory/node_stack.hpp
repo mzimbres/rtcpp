@@ -40,7 +40,7 @@ class node_stack {
   char* m_data;
   char* m_avail_ptr;
   public:
-  node_stack(char* p, std::size_t n) noexcept;
+  node_stack(char* p, std::size_t n);
   node_stack() noexcept {}
   char* pop() noexcept;
   void push(char* p) noexcept;
@@ -57,15 +57,16 @@ void node_stack<S>::swap(node_stack<S>& other) noexcept
 }
 
 template <std::size_t S>
-node_stack<S>::node_stack(char* p, std::size_t n) noexcept
+node_stack<S>::node_stack(char* p, std::size_t n)
 : m_ptr_size(sizeof (char*))
 , m_data(p)
 , m_avail_ptr(m_data + m_ptr_size)
 {
-  // p is expected to be word aligned and its memory zero-initialized.
-  // The first word pointed to by p will store a counter of how many times the
-  // stack has been linked. The second, a pointer to the avail stack.
-  // TODO: check whether n is big enough.
+  // p is expected to be (sizeof pointer) aligned and its memory zero-initialized.
+  // The first word pointed to by p will be used to store a counter of how many times the
+  // stack has been linked. The second, a pointer to the avail stack and the third
+  // the number of bytes in ech node. Tht way we can know whether the same allocator
+  // instance is being used to serve containers with nodes of different size.
 
   if (n < (3 * m_ptr_size + 2 * S))
     throw std::runtime_error("node_stack: There is not enough space.");
@@ -74,10 +75,17 @@ node_stack<S>::node_stack(char* p, std::size_t n) noexcept
   std::uintptr_t counter = 0;
   std::memcpy(&counter, m_data, m_ptr_size);
 
-  if (counter == 0) { // Links only once.
+  if (counter != 0) { // Links only once.
+    std::uintptr_t ss;
+    std::memcpy(&ss, m_data + 3 * m_ptr_size, m_ptr_size);
+    if (ss != S)
+      throw std::runtime_error("node_stack: Avail stack already linked for node with different size.");
+  } else { // Links only once.
     // The first word will be used to store a pointer to the avail node.
     char* top = link_stack<S>(m_data + 2 * m_ptr_size, n - 2 * m_ptr_size);
     std::memcpy(m_avail_ptr, &top, m_ptr_size);
+    const std::uintptr_t node_size = S;
+    std::memcpy(m_data + 3 * m_ptr_size, &node_size, m_ptr_size);
   }
   ++counter;
   const std::uintptr_t int_size = sizeof (std::uintptr_t);
