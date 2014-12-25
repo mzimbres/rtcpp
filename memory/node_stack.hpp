@@ -66,7 +66,7 @@ node_stack<S>::node_stack(char* p, std::size_t n) noexcept
   // TODO: check whether n is big enough.
 
   // Current value of the counter.
-  int counter = 0;
+  std::uintptr_t counter = 0;
   std::memcpy(&counter, m_data, m_ptr_size);
 
   if (counter == 0) { // Links only once.
@@ -75,7 +75,7 @@ node_stack<S>::node_stack(char* p, std::size_t n) noexcept
     std::memcpy(m_avail_ptr, &top, m_ptr_size);
   }
   ++counter;
-  const int int_size = sizeof (int);
+  const std::uintptr_t int_size = sizeof (std::uintptr_t);
   std::memcpy(m_data, &counter, int_size);
 }
 
