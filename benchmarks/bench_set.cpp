@@ -18,13 +18,17 @@ template <typename C, typename Iter>
 void print_bench(C& c, Iter begin, std::size_t n, bool frag)
 {
   rt::set<int> s1;
+  std::set<int> s3;
   if (frag) { // Lets us fragment the heap.
-    std::set<int> s2;
+    rt::set<int> s2;
+    std::set<int> s4;
     for (Iter iter = begin; iter != begin + n; ++iter) {
       s1.insert(*iter);
       s2.insert(*iter);
+      s3.insert(*iter);
+      s4.insert(*iter);
     }
-  } // s2 is destructed leaving many holes in the heap.
+  } // s2 and s4 are destructed leaving many holes in the heap.
   {
     rt::timer t;
     c.insert(begin, begin + n);
