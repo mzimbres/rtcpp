@@ -5,32 +5,9 @@
 #include <cstring>
 #include <exception>
 
+#include "link_stack.hpp"
+
 namespace rt {
-
-template <std::size_t S> // Block size in bytes.
-char* link_stack(char* p, std::size_t n)
-{
-  // n: Number of bytes beginning at p.
-
-  // Number of blocks of size S we have available.
-  const std::size_t m = n / S;
-
-  // The minimum number of blocks we need is 2.
-  if (m < 2)
-    return 0;
-
-  const std::size_t ptr_size = sizeof (char*);
-  for (std::size_t i = 1; i < m; ++i) {
-    char* pp = p + (i - 1) * S; // Pointer to the previous block.
-    char* pn = p + i * S; // Pointer to the next block.
-    // We now store the address of the previous block in the memory
-    // location of the begin of the next block.
-    std::memcpy(pn, &pp, ptr_size);
-  }
-
-  std::memset(p, 0, ptr_size);
-  return p + (m - 1) * S; // Pointer to the top of the stack.
-}
 
 template <std::size_t S>
 class node_stack {
