@@ -12,7 +12,7 @@ namespace rt {
 template <std::size_t S>
 class node_stack {
   // I do not know whether the standard guarantees the condition below, since I
-  // rely on it I will testing it.
+  // rely on it I will test it.
   static_assert(!((sizeof (std::uintptr_t)) > (sizeof (char*))), "node_stack: Unable to use this class in this platform.");
   private:
   static const std::size_t ptr_size = sizeof (char*);

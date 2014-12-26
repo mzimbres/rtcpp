@@ -14,21 +14,25 @@
 #include <utility/make_rand_data.hpp>
 #include <utility/timer.hpp>
 
-template <typename C, typename Iter>
-void print_bench(C& c, Iter begin, std::size_t n, bool frag)
+template <typename Iter>
+void heap_frag(rt::set<int>& s1, std::set<int>& s3, Iter begin, std::size_t n)
 {
-  rt::set<int> s1;
-  std::set<int> s3;
-  if (frag) { // Lets us fragment the heap.
-    rt::set<int> s2;
-    std::set<int> s4;
-    for (Iter iter = begin; iter != begin + n; ++iter) {
-      s1.insert(*iter);
-      s2.insert(*iter);
-      s3.insert(*iter);
-      s4.insert(*iter);
-    }
-  } // s2 and s4 are destructed leaving many holes in the heap.
+  s1.clear();
+  s3.clear();
+  rt::set<int> s2;
+  std::set<int> s4;
+  for (Iter iter = begin; iter != begin + n; ++iter) {
+    s1.insert(*iter);
+    s2.insert(*iter);
+    s3.insert(*iter);
+    s4.insert(*iter);
+  }
+  // s2 and s4 are destructed leaving many holes in the heap.
+}
+
+template <typename C, typename Iter>
+void print_bench(C& c, Iter begin, std::size_t n)
+{
   {
     rt::timer t;
     c.insert(begin, begin + n);
@@ -71,28 +75,33 @@ int main(int argc, char* argv[])
   const std::size_t size = N + K * S;
   std::vector<int> data = rt::make_rand_data(size, a, b);
 
+  rt::set<int> s1;
+  std::set<int> s2;
+  if (frag) 
+    heap_frag(s1, s2, std::begin(data), data.size());
+
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t ss = N + i * S;
     std::cout << ss << " ";
     {
       rt::set<int> s;
-      print_bench(s, std::begin(data), ss, frag);
+      print_bench(s, std::begin(data), ss);
     }
     {
       std::vector<char> buffer((ss + 2) * sizeof (rt::set<int>::node_type), 0);
       rt::allocator<int> alloc(buffer);
       rt::set<int, std::less<int>, rt::allocator<int>> s(alloc); // Uses a vector as buffer.
-      print_bench(s, std::begin(data), ss, frag);
+      print_bench(s, std::begin(data), ss);
     }
     {
       std::set<int> s;
-      print_bench(s, std::begin(data), ss, frag);
+      print_bench(s, std::begin(data), ss);
     }
     {
       std::vector<char> buffer((ss + 2) * (2 * sizeof (rt::set<int>::node_type)), 0);
       rt::allocator<int> alloc(buffer);
       std::set<int, std::less<int>, rt::allocator<int>> s(std::less<int>(), alloc);
-      print_bench(s, std::begin(data), ss, frag);
+      print_bench(s, std::begin(data), ss);
     }
     std::cout << std::endl;
   }
