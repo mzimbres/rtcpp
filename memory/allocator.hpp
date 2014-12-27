@@ -43,12 +43,7 @@ class allocator {
   {
     m_size = size;
     m_data = data;
-    // aligns the pointer on a word boundary.
-    const std::uintptr_t a = reinterpret_cast<std::uintptr_t>(m_data);
-    const std::size_t b = sizeof (char*); // word size.
-    const std::uintptr_t c = is_aligned<b>(a) ? a : align_next<b>(a);
-    m_data = reinterpret_cast<char*>(c);
-    size = c - a;
+    align_if_needed<sizeof (char*)>(m_data, m_size);
   }
   allocator(char* data, std::size_t size) { init(data, size); }
   template <std::size_t N>

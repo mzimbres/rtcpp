@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 
 namespace rt {
 
@@ -30,6 +31,19 @@ std::size_t align_next(std::size_t a) noexcept
 {
   static_assert(is_power_of_two<N>::value, "align_next: N must be a power of two.");
   return align_previous<N>(a) + N;
+}
+
+template <std::size_t N>
+void align_if_needed(char*& p, std::size_t& s)
+{
+  // If p is not aligned on an N boundary, this unction will align it and and
+  // update s if alignment took place.
+  static_assert(is_power_of_two<N>::value, "align_next: N must be a power of two.");
+  // aligns the pointer on a word boundary.
+  const std::uintptr_t a = reinterpret_cast<std::uintptr_t>(p);
+  const std::uintptr_t c = is_aligned<N>(a) ? a : align_next<N>(a);
+  p = reinterpret_cast<char*>(c);
+  s -= c - a;
 }
 
 }
