@@ -14,10 +14,11 @@
 
 #include <utility/make_rand_data.hpp>
 
+template <typename T>
 bool test_iterator()
 {
-  std::array<int, 5> arr = {{5, 10, -3, 32, 41}};
-  rt::set<int> t1(std::begin(arr), std::end(arr));
+  std::array<T, 5> arr = {{5, 10, -3, 32, 41}};
+  rt::set<T> t1(std::begin(arr), std::end(arr));
 
   // Now the tree has three items 3, 2, 4. Lets test if the iterators can get
   // us to the right point.
@@ -42,12 +43,13 @@ bool test_iterator()
   return true;
 }
 
-bool test_swap(const std::vector<int>& arr)
+template <typename T>
+bool test_swap(const std::vector<T>& arr)
 {
-  rt::set<int> t1(std::begin(arr), std::end(arr));
-  rt::set<int> t1_copy = t1;
-  rt::set<int> t2 = {1, 4, 8, 2, 7};
-  rt::set<int> t2_copy = t2;
+  rt::set<T> t1(std::begin(arr), std::end(arr));
+  rt::set<T> t1_copy = t1;
+  rt::set<T> t2 = {1, 4, 8, 2, 7};
+  rt::set<T> t2_copy = t2;
   std::swap(t1, t2);
 
   if (t1 != t2_copy)
@@ -60,22 +62,24 @@ bool test_swap(const std::vector<int>& arr)
 }
 
 template <typename C>
-bool test_count(C& t1, const std::vector<int>& arr)
+bool test_count(C& t1, const std::vector<typename C::value_type>& arr)
 {
+  typedef typename C::value_type value_type;
   t1.clear();
   t1.insert(std::begin(arr), std::end(arr));
-  if (!std::all_of(std::begin(arr), std::end(arr), [&](int a){ return t1.count(a) == 1;}))
+  if (!std::all_of(std::begin(arr), std::end(arr), [&](value_type a){ return t1.count(a) == 1;}))
     return false;
 
   return true;
 }
 
 template <typename C>
-bool test_find(C& t1,const std::vector<int>& arr)
+bool test_find(C& t1,const std::vector<typename C::value_type>& arr)
 {
+  typedef typename C::value_type value_type;
   t1.clear();
   t1.insert(std::begin(arr), std::end(arr));
-  auto func = [&](int a) -> bool
+  auto func = [&](value_type a) -> bool
   {
     auto iter = t1.find(a);
     if (iter == t1.end())
@@ -92,7 +96,7 @@ bool test_find(C& t1,const std::vector<int>& arr)
 }
 
 template <typename C>
-bool test_basic(C& t1, const std::vector<int>& tmp)
+bool test_basic(C& t1, const std::vector<typename C::value_type>& tmp)
 {
   t1.clear();
   t1.insert(std::begin(tmp), std::end(tmp));
@@ -122,8 +126,9 @@ bool test_basic(C& t1, const std::vector<int>& tmp)
 }
 
 template <typename C>
-bool run_tests(C& t1, const std::vector<int>& tmp)
+bool run_tests(C& t1, const std::vector<typename C::value_type>& tmp)
 {
+  typedef typename C::value_type value_type;
   if (!test_basic(t1, tmp))
     return false;
 
@@ -133,10 +138,57 @@ bool run_tests(C& t1, const std::vector<int>& tmp)
   if (!test_find(t1, tmp))
     return false;
 
-  if (!test_swap(tmp))
+  if (!test_swap<value_type>(tmp))
     return false;
 
-  if (!test_iterator())
+  if (!test_iterator<value_type>())
+    return false;
+
+  return true;
+}
+
+template <typename T>
+bool run_tests_all()
+{
+  const T size = 500;
+  const T a = 1;
+  const T b = std::numeric_limits<T>::max();
+
+  // Random unique integers in the range [a,b].
+  std::vector<T> tmp = rt::make_rand_data(size, a, b);
+
+  const T bsize = 3 * (tmp.size() + 2) * 25; // Should be enough for rt::set.
+
+  // Tow buffers for two allocators.
+  std::vector<char> buffer1(2 * bsize);
+  std::vector<char> buffer2(4 * bsize);
+
+  rt::allocator<T> alloc1(buffer1);
+  rt::allocator<T> alloc2(buffer2);
+
+  rt::set<T> t1;
+  rt::set<T, std::less<T>, rt::allocator<T>> t2(std::less<T>(), alloc1);
+  rt::set<T, std::less<T>, rt::allocator<T>> t3(std::less<T>(), alloc1);
+  std::set<T> t4;
+  std::set<T, std::less<T>, rt::allocator<T>> t5(std::less<T>(), alloc2);
+  std::set<T, std::less<T>, rt::allocator<T>> t6(std::less<T>(), alloc2);
+
+  if (!run_tests(t1, tmp))
+    return false;
+    
+  if (!run_tests(t2, tmp))
+    return false;
+
+  if (!run_tests(t3, tmp))
+    return false;
+
+  if (!run_tests(t4, tmp))
+    return false;
+
+  if (!run_tests(t5, tmp))
+    return false;
+
+  if (!run_tests(t6, tmp))
     return false;
 
   return true;
@@ -144,47 +196,9 @@ bool run_tests(C& t1, const std::vector<int>& tmp)
 
 int main()
 {
-  const int size = 500;
-  const int a = 1;
-  const int b = std::numeric_limits<int>::max();
-
-  // Random unique integers in the range [a,b].
-  std::vector<int> tmp = rt::make_rand_data(size, a, b);
-
-  const int bsize = 3 * (tmp.size() + 2) * 25; // Should be enough for rt::set.
-
-  // Tow buffers for two allocators.
-  std::vector<char> buffer1(2 * bsize);
-  std::vector<char> buffer2(4 * bsize);
-
-  rt::allocator<int> alloc1(buffer1);
-  rt::allocator<int> alloc2(buffer2);
-
-  rt::set<int> t1;
-  rt::set<int, std::less<int>, rt::allocator<int>> t2(std::less<int>(), alloc1);
-  rt::set<int, std::less<int>, rt::allocator<int>> t3(std::less<int>(), alloc1);
-  std::set<int> t4;
-  std::set<int, std::less<int>, rt::allocator<int>> t5(std::less<int>(), alloc2);
-  std::set<int, std::less<int>, rt::allocator<int>> t6(std::less<int>(), alloc2);
-
-  if (!run_tests(t1, tmp))
-    return 1;
-    
-  if (!run_tests(t2, tmp))
-    return 1;
-
-  if (!run_tests(t3, tmp))
-    return 1;
-
-  if (!run_tests(t4, tmp))
-    return 1;
-
-  if (!run_tests(t5, tmp))
-    return 1;
-
-  if (!run_tests(t6, tmp))
-    return 1;
-
-  return 0;
+  const bool b1 = run_tests_all<int>();
+  //const bool b2 = run_tests_all<long long int>();
+  //return b1 && b2;
+  return b1 ? 0 : 1;
 }
 
