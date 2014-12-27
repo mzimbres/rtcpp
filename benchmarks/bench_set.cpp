@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
   const int b = std::numeric_limits<int>::max();
 
   const std::size_t size = N + K * S;
-  std::vector<int> data = rt::make_rand_data(size, a, b);
+  std::vector<int> data = rt::make_rand_data<int>(size, a, b);
 
   rt::set<int> s1;
   std::set<int> s2;

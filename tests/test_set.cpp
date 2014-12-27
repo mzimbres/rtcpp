@@ -151,11 +151,11 @@ template <typename T>
 bool run_tests_all()
 {
   const T size = 500;
-  const T a = 1;
-  const T b = std::numeric_limits<T>::max();
+  const int a = 1;
+  const int b = std::numeric_limits<int>::max();
 
   // Random unique integers in the range [a,b].
-  std::vector<T> tmp = rt::make_rand_data(size, a, b);
+  std::vector<T> tmp = rt::make_rand_data<T>(size, a, b);
 
   const T bsize = 3 * (tmp.size() + 2) * 25; // Should be enough for rt::set.
 
@@ -197,8 +197,7 @@ bool run_tests_all()
 int main()
 {
   const bool b1 = run_tests_all<int>();
-  //const bool b2 = run_tests_all<long long int>();
-  //return b1 && b2;
-  return b1 ? 0 : 1;
+  const bool b2 = run_tests_all<long long int>();
+  return (b1 && b2) ? 0 : 1;
 }
 

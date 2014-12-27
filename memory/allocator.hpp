@@ -66,16 +66,38 @@ class allocator<T, N, true> {
                      , sizeof (U)
                      , !(sizeof (U) < sizeof (char*))> other;
   };
-  private:
+  public:
+  char* m_data;
+  std::size_t m_size;
   node_stack<sizeof (T)> m_stack;
   public:
+  // Stack is not linked in this ctor
+  template <std::size_t S>
+  explicit allocator(std::array<char, S>& arr) 
+  : m_data(&arr.front())
+  , m_size(arr.size())
+  {}
+  // Stack is not linked in this ctor
+  explicit allocator(std::vector<char>& arr)
+  : m_data(&arr.front())
+  , m_size(arr.size())
+  {}
   template<typename U>
   allocator(const allocator<U, sizeof (U), false>& alloc)
-  : m_stack(alloc.m_data, alloc.m_size)
+  : m_data(alloc.m_data)
+  , m_size(alloc.m_size)
+  , m_stack(m_data, m_size)
+  {}
+  allocator(const allocator<T, N, true>& alloc)
+  : m_data(alloc.m_data)
+  , m_size(alloc.m_size)
+  , m_stack(alloc.m_stack)
   {}
   template<typename U>
   allocator(const allocator<U, sizeof (U), true>& alloc)
-  : m_stack(alloc.m_stack)
+  : m_data(alloc.m_data)
+  , m_size(alloc.m_size)
+  , m_stack(m_data, m_size)
   {}
   pointer allocate(size_type)
   {
@@ -94,6 +116,8 @@ class allocator<T, N, true> {
   void swap(allocator& other) noexcept
   {
     m_stack.swap(other.m_stack);
+    std::swap(m_data, other.m_data);
+    std::swap(m_size, other.m_size);
   }
 };
 

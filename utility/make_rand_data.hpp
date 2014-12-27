@@ -7,7 +7,7 @@
 namespace rt {
 
 template <typename T>
-std::vector<T> make_rand_data(std::size_t size, T first, T last, int type = 2)
+std::vector<T> make_rand_data(std::size_t size, int first, int last, int type = 2)
 {
   // Generates a uniform distribution of integers in the range [first, last]
   // with size size.
