@@ -6,6 +6,7 @@
 #include <exception>
 
 #include "link_stack.hpp"
+#include "align.hpp"
 
 namespace rt {
 
@@ -45,6 +46,7 @@ node_stack<S>::node_stack(char* p, std::size_t n)
   // being used to serve containers with nodes of different size. We can report
   // an error this way.
 
+  align_if_needed<ptr_size>(m_data, n);
   const std::size_t min_size = pool_offset + 2 * S;
   if (n < min_size)
     throw std::runtime_error("node_stack: There is not enough space.");

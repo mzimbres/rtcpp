@@ -6,8 +6,6 @@
 
 #include <memory/node_stack.hpp>
 
-#include "align.hpp"
-
 namespace rt {
 
 template < typename T
@@ -16,8 +14,8 @@ template < typename T
          >
 class allocator {
   public:
-  std::size_t m_size;
   char* m_data;
+  std::size_t m_size;
   public:
   typedef T value_type;
   typedef T* pointer;
@@ -39,22 +37,17 @@ class allocator {
     std::swap(m_size, other.m_size);
     std::swap(m_data, other.m_data);
   }
-  void init(char* data, std::size_t size)
-  {
-    m_size = size;
-    m_data = data;
-    align_if_needed<sizeof (char*)>(m_data, m_size);
-  }
-  allocator(char* data, std::size_t size) { init(data, size); }
+  allocator(char* data, std::size_t size)
+  : m_data(data)
+  , m_size(size)
+  {}
   template <std::size_t N>
   explicit allocator(std::array<char, N>& arr)
-  {
-    init(&arr.front(), arr.size());
-  }
+  : allocator(&arr.front(), arr.size())
+  {}
   explicit allocator(std::vector<char>& arr)
-  {
-    init(&arr.front(), arr.size());
-  }
+  : allocator(&arr.front(), arr.size())
+  {}
 };
 
 template <typename T, std::size_t N>
