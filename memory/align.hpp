@@ -19,10 +19,18 @@ bool is_aligned(std::size_t a) noexcept
 }
 
 template <std::size_t N>
-std::size_t next_aligned(std::size_t a) noexcept
+std::size_t align_previous(std::size_t a) noexcept
 {
-  static_assert(is_power_of_two<N>::value, "next_aligned: N must be a power of two.");
-  return (a & ~(N - 1)) + N;
+  static_assert(is_power_of_two<N>::value, "align_previous: N must be a power of two.");
+  return (a & ~(N - 1));
+}
+
+template <std::size_t N>
+std::size_t align_next(std::size_t a) noexcept
+{
+  static_assert(is_power_of_two<N>::value, "align_next: N must be a power of two.");
+  return align_previous<N>(a) + N;
 }
 
 }
+

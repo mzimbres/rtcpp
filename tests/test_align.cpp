@@ -25,16 +25,16 @@ int main()
   if (!is_aligned<8>(16))
     return 1;
 
-  if (next_aligned<8>(13) != 16)
+  if (align_next<8>(13) != 16)
     return 1;
 
-  if (next_aligned<4>(1) != 4)
+  if (align_next<4>(1) != 4)
     return 1;
 
-  if (next_aligned<4>(27) != 28)
+  if (align_next<4>(27) != 28)
     return 1;
 
-  if (next_aligned<8>(27) != 32)
+  if (align_next<8>(27) != 32)
     return 1;
 
   return 0;
