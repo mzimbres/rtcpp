@@ -83,18 +83,7 @@ class allocator<T, N, true> {
   , m_size(arr.size())
   {}
   template<typename U>
-  allocator(const allocator<U, sizeof (U), false>& alloc)
-  : m_data(alloc.m_data)
-  , m_size(alloc.m_size)
-  , m_stack(m_data, m_size)
-  {}
-  allocator(const allocator<T, N, true>& alloc)
-  : m_data(alloc.m_data)
-  , m_size(alloc.m_size)
-  , m_stack(alloc.m_stack)
-  {}
-  template<typename U>
-  allocator(const allocator<U, sizeof (U), true>& alloc)
+  allocator(const allocator<U, sizeof (U), !(sizeof (U) < sizeof (char*))>& alloc)
   : m_data(alloc.m_data)
   , m_size(alloc.m_size)
   , m_stack(m_data, m_size)
