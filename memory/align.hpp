@@ -36,7 +36,7 @@ std::size_t align_next(std::size_t a) noexcept
 template <std::size_t N>
 void align_if_needed(char*& p, std::size_t& s)
 {
-  // If p is not aligned on an N boundary, this unction will align it and and
+  // If p is not aligned on an N boundary, this unction will align it and
   // update s if alignment took place.
   static_assert(is_power_of_two<N>::value, "align_next: N must be a power of two.");
   // aligns the pointer on a word boundary.

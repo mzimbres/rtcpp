@@ -15,17 +15,30 @@
 #include <utility/timer.hpp>
 
 template <typename Iter>
-void heap_frag(rt::set<int>& s1, std::set<int>& s3, Iter begin, std::size_t n)
+void heap_frag( rt::set<int>& s1
+              , rt::set<int>& s2
+              , rt::set<int>& s3
+              , std::set<int>& s4
+              , Iter begin
+              , std::size_t n)
 {
   s1.clear();
+  s2.clear();
   s3.clear();
-  rt::set<int> s2;
-  std::set<int> s4;
+  s4.clear();
+  rt::set<int> s5;
+  rt::set<int> s6;
+  rt::set<int> s7;
+  std::set<int> s8;
   for (Iter iter = begin; iter != begin + n; ++iter) {
     s1.insert(*iter);
+    s5.insert(*iter);
     s2.insert(*iter);
+    s6.insert(*iter);
     s3.insert(*iter);
+    s7.insert(*iter);
     s4.insert(*iter);
+    s8.insert(*iter);
   }
   // s2 and s4 are destructed leaving many holes in the heap.
 }
@@ -76,9 +89,11 @@ int main(int argc, char* argv[])
   std::vector<int> data = rt::make_rand_data<int>(size, a, b);
 
   rt::set<int> s1;
-  std::set<int> s2;
+  rt::set<int> s2;
+  rt::set<int> s3;
+  std::set<int> s4;
   if (frag) 
-    heap_frag(s1, s2, std::begin(data), data.size());
+    heap_frag(s1, s2, s3, s4, std::begin(data), data.size());
 
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t ss = N + i * S;
