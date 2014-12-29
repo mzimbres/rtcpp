@@ -1,17 +1,18 @@
 ##RTCPP
 
-  The idea of this project is to make real-time use of STL containers by means
-  of *real-time allocators*.  "Real-time" here means a guarantee that the
+  The objective of this project is to make real-time use of STL containers by
+  means of *real-time allocators*.  "Real-time" here means a guarantee that the
   program will execute a particular task in at most n steps (or processor
   cycles).
   
-  When the standard places a guarantee that insertion on an std::list has
-  constant time complexity, it means operations inside the list and does not
-  account the complexity of each node allocation, which may be constant or not
-  depending on the allocation algorithm itself.
+  When the C++ standard places a guarantee that a given operation, like
+  insertion on an std::list, has constant time complexity, it means operations
+  inside the std::list and does not account for the complexity of each node
+  allocation, which may be constant or not depending on the allocation
+  algorithm itself and things like hep fragmentation.
 
-  This unpredictability is very undesirable in many applications like 24/7 and
-  real-time systems.
+  This unpredictability is very undesirable in many applications like 24/7,
+  real-time and safe critical systems.
 
   To make a real-time guarantee on a given operation, we have to get rid of all
   sources of unpredictable behaviour, some of them are.
@@ -20,21 +21,19 @@
   2. Heap fragmentation.
   3. Use of exceptions.
 
-  It is debatable whether use of exceptions is really important or not so I
+  It is debatable whether use of exceptions is really important, therefore I
   will not focus on it.  Before we talk about how I addressed these problems,
-  let us see some examples and benchmarks.
+  let us see some graphs, that show the behaviour of real-time allocators.
 
 ## Benchmarks
 
-In the link below show the time taken to fill a `std::set` and my own
-implementation of it `rt::set`. Each one is tested with `std::allocator`
-and my real-time allocator `rt::allocator`.
+The link below shows the time taken to fill a `std::set` and my own
+implementation of it `rt::set`. Each one is tested with `std::allocator` and my
+real-time allocator `rt::allocator`. The benchmark is performed on a scenario
+with a fragmented heap. It is amazing that a simply changing the allocator can
+lead to more than 50% performance improvement.
 
 ![Insertion time](fig/set_insertion.pdf).
-
-In this graph the reader can see almost 50% performance improvement when `std::set` and `rt::set`
-are used with a real-time allocator. More importantly, this improvement is
-independent of the current heap state as I will show in next graph. (To come).
 
 ## Using rt::allocator
 
@@ -67,8 +66,24 @@ of the real-time allocator `rt::allocator`.
 The first important thing is: **it is designed for node-based containers**
 and should not be used with other containers.
 
-When the user creates an allocator instance like `rt::allocator<int> alloc(buffer)`
-the object `alloc` will stores a pointer to the buffer and its size.
+It is designed as a stack. To allocate a node one pop's from the stack,
+to deallocate push is used. Something like.
+
+```c++
+  pointer allocate(size_type) { return m_stack.pop(); }
+  void deallocate(pointer p, size_type) { m_stack.push(p); }
+```
+
+There are many difficulties for writing such an allocator. I will try to list them
+here.
+
+1. On node-based containers the allocator is rebound to serve nodes instead
+of the allocator value type. That makes it difficult to link the stack, since
+the container node type is not exposed to the user.
+
+2. The use of `::allocate(n)` with `n != 1` cannot be achieved since
+the nodes are linked together and there is no guarantee that they
+are sequential.
 
 ##Compilation
 
