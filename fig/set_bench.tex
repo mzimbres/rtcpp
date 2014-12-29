@@ -9,21 +9,50 @@
 \begin{document}
 \beginpgfgraphicnamed{set_bench-f0}
    \begin{tikzpicture}[scale=1.0]
-      \begin{axis}[ xlabel= Number of elements, ylabel= Insertion Time(s)
+      \begin{axis}[ xlabel= Number of elements
+                  , grid
+                  , ylabel= Insertion Time(s)
                   , title={}
 		  %,  width=12cm, height=5cm 
-                  , legend style={ cells={anchor=east}, anchor=south east} ]
+                  , legend style={ cells={anchor=east}
+                  , anchor=south east} ]
       \addplot+[mark size=1] table[x index=0,y index=1]   {data.dat};
       \addlegendentry{rt::set(std::alloc)}
       \addplot+[mark size=1] table[x index=0,y index=2]   {data.dat};
       \addlegendentry{rt::set(rt::alloc)}
       \addplot+[mark size=1] table[x index=0,y index=3]   {data.dat};
-      \addlegendentry{std::set(std::alloc)}
+      \addlegendentry{rt::set(\_\_gnu\_cxx::\_\_pool\_alloc)}
       \addplot+[mark size=1] table[x index=0,y index=4]   {data.dat};
-      \addlegendentry{std::set(rt::alloc)}
+      \addlegendentry{rt::set(\_\_gnu\_cxx::bitmap\_alloc)}
+      \addplot+[mark size=1] table[x index=0,y index=5]   {data.dat};
+      \addlegendentry{rt::set(\_\_gnu\_cxx::\_\_mt\_alloc)}
       \end{axis}
    \end{tikzpicture}
 \endpgfgraphicnamed
+
+\beginpgfgraphicnamed{set_bench-f1}
+   \begin{tikzpicture}[scale=1.0]
+      \begin{axis}[ xlabel= Number of elements
+                  , grid
+                  , ylabel= Insertion Time(s)
+                  , title={}
+		  %,  width=12cm, height=5cm 
+                  , legend style={ cells={anchor=east}
+                  , anchor=south east} ]
+      \addplot+[mark size=1] table[x index=0,y index=6]   {data.dat};
+      \addlegendentry{std::set(std::alloc)}
+      \addplot+[mark size=1] table[x index=0,y index=7]   {data.dat};
+      \addlegendentry{std::set(rt::alloc)}
+      \addplot+[mark size=1] table[x index=0,y index=8]   {data.dat};
+      \addlegendentry{std::set(\_\_gnu\_cxx::\_\_pool\_alloc)}
+      \addplot+[mark size=1] table[x index=0,y index=9]   {data.dat};
+      \addlegendentry{std::set(\_\_gnu\_cxx::bitmap\_alloc)}
+      \addplot+[mark size=1] table[x index=0,y index=10]   {data.dat};
+      \addlegendentry{std::set(\_\_gnu\_cxx::\_\_mt\_alloc)}
+      \end{axis}
+   \end{tikzpicture}
+\endpgfgraphicnamed
+
 
 \end{document}
 

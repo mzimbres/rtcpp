@@ -7,6 +7,8 @@
 #include <set>
 #include <list>
 #include <ext/pool_allocator.h>
+#include <ext/bitmap_allocator.h>
+#include <ext/mt_allocator.h>
 
 #include <container/bst_node.hpp>
 #include <container/set.hpp>
@@ -64,8 +66,20 @@ int main(int argc, char* argv[])
     "F: Optional. If provided will not fragment the heap before benchmarks.\n"
     << std::endl;
     std::cout <<
-    "The benchmarks have the following layout: \n"
-    "N (rt::set<std::alloc>) (rt::set<rt::alloc>) (std::set<std::alloc>) (std::set<rt::alloc>): \n"
+    "The program output has the following layout: \n"
+    "(0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10): \n"
+    "Where: \n"
+    "(0)  Number of elements.\n"
+    "(1)  rt::set<std::alloc>\n"
+    "(2)  rt::set<rt::alloc>\n"
+    "(3)  rt::set<__gnu_cxx::__pool_alloc>\n"
+    "(4)  rt::set<__gnu_cxx::bitmap_alloc>\n"
+    "(5)  rt::set<__mt_alloc>\n"
+    "(6)  std::set<std::alloc>\n"
+    "(7)  std::set<rt::alloc>\n"
+    "(8)  std::set<__gnu_cxx::__pool_alloc>\n"
+    "(9)  std::set<__gnu_cxx::bitmap_alloc>\n"
+    "(10) std::set<__mt_alloc>\n"
     << std::endl;
 
     return 0;
@@ -99,28 +113,48 @@ int main(int argc, char* argv[])
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t ss = N + i * S;
     std::cout << ss << " ";
-    {
+    { // (1)
       rt::set<int> s;
       print_bench(s, std::begin(data), ss);
     }
-    {
+    { // (2)
       std::vector<char> buffer((ss + 2) * sizeof (rt::set<int>::node_type), 0);
       rt::allocator<int> alloc(buffer);
       rt::set<int, std::less<int>, rt::allocator<int>> s(alloc); // Uses a vector as buffer.
       print_bench(s, std::begin(data), ss);
     }
-    {
+    { // (3)
+      rt::set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> s;
+      print_bench(s, std::begin(data), ss);
+    }
+    { // (4)
+      rt::set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> s;
+      print_bench(s, std::begin(data), ss);
+    }
+    { // (5)
+      rt::set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> s;
+      print_bench(s, std::begin(data), ss);
+    }
+    { // (6)
       std::set<int> s;
       print_bench(s, std::begin(data), ss);
     }
-    {
+    { // (7)
       std::vector<char> buffer((ss + 2) * (2 * sizeof (rt::set<int>::node_type)), 0);
       rt::allocator<int> alloc(buffer);
       std::set<int, std::less<int>, rt::allocator<int>> s(std::less<int>(), alloc);
       print_bench(s, std::begin(data), ss);
     }
-    {
+    { // (8)
       std::set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> s;
+      print_bench(s, std::begin(data), ss);
+    }
+    { // (9)
+      std::set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> s;
+      print_bench(s, std::begin(data), ss);
+    }
+    { // (10)
+      std::set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> s;
       print_bench(s, std::begin(data), ss);
     }
     std::cout << std::endl;
