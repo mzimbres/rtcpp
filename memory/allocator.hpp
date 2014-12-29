@@ -61,6 +61,8 @@ class allocator {
   explicit allocator(std::vector<char>& arr)
   : allocator(&arr.front(), arr.size())
   {}
+  pointer address(reference x) const noexcept { return std::addressof(x); }
+  const_pointer address(const_reference x) const noexcept { return std::addressof(x); }
 };
 
 template <typename T, std::size_t N>
@@ -121,6 +123,8 @@ class allocator<T, N, true> {
     std::swap(m_data, other.m_data);
     std::swap(m_size, other.m_size);
   }
+  pointer address(reference x) const noexcept { return std::addressof(x); }
+  const_pointer address(const_reference x) const noexcept { return std::addressof(x); }
 };
 
 }

@@ -8,6 +8,9 @@
 #include <limits>
 #include <array>
 #include <vector>
+#include <ext/pool_allocator.h>
+#include <ext/bitmap_allocator.h>
+#include <ext/mt_allocator.h>
 
 #include <container/set.hpp>
 #include <memory/allocator.hpp>
@@ -169,9 +172,16 @@ bool run_tests_all()
   rt::set<T> t1;
   rt::set<T, std::less<T>, rt::allocator<T>> t2(std::less<T>(), alloc1);
   rt::set<T, std::less<T>, rt::allocator<T>> t3(std::less<T>(), alloc1);
-  std::set<T> t4;
-  std::set<T, std::less<T>, rt::allocator<T>> t5(std::less<T>(), alloc2);
-  std::set<T, std::less<T>, rt::allocator<T>> t6(std::less<T>(), alloc2);
+  rt::set<T, std::less<T>, __gnu_cxx::__pool_alloc<T>> t4;
+  rt::set<T, std::less<T>, __gnu_cxx::bitmap_allocator<T>> t5;
+  rt::set<T, std::less<T>, __gnu_cxx::__mt_alloc<T>> t6;
+
+  std::set<T> t7;
+  std::set<T, std::less<T>, rt::allocator<T>> t8(std::less<T>(), alloc2);
+  std::set<T, std::less<T>, rt::allocator<T>> t9(std::less<T>(), alloc2);
+  std::set<T, std::less<T>, __gnu_cxx::__pool_alloc<T>> t10;
+  std::set<T, std::less<T>, __gnu_cxx::bitmap_allocator<T>> t11;
+  std::set<T, std::less<T>, __gnu_cxx::__mt_alloc<T>> t12;
 
   if (!run_tests(t1, tmp))
     return false;
@@ -189,6 +199,24 @@ bool run_tests_all()
     return false;
 
   if (!run_tests(t6, tmp))
+    return false;
+
+  if (!run_tests(t7, tmp))
+    return false;
+
+  if (!run_tests(t8, tmp))
+    return false;
+
+  if (!run_tests(t9, tmp))
+    return false;
+
+  if (!run_tests(t10, tmp))
+    return false;
+
+  if (!run_tests(t11, tmp))
+    return false;
+
+  if (!run_tests(t12, tmp))
     return false;
 
   return true;

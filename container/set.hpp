@@ -48,20 +48,20 @@ class set {
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
   public:
-  set(const Compare& comp, const Allocator& alloc = std::allocator<T>());
-  explicit set(const Allocator& alloc = std::allocator<T>())
+  set(const Compare& comp, const Allocator& alloc = Allocator());
+  explicit set(const Allocator& alloc = Allocator())
   : set(Compare(), alloc) {}
   set(const set& rhs) noexcept;
   set& operator=(const set& rhs) noexcept;
   set& operator=(std::initializer_list<T> init) noexcept;
   template <typename InputIt>
-  set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = std::allocator<T>());
+  set(InputIt begin, InputIt end, const Compare& comp, const Allocator& alloc = Allocator());
   template <typename InputIt>
-  set(InputIt begin, InputIt end, const Allocator& alloc = std::allocator<T>())
+  set(InputIt begin, InputIt end, const Allocator& alloc = Allocator())
   : set(begin, end, Compare(), alloc) {}
-  set(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = std::allocator<T>())
+  set(std::initializer_list<T> init, const Compare& comp, const Allocator& alloc = Allocator())
   : set(std::begin(init), std::end(init), comp, alloc) {}
-  set(std::initializer_list<T> init, const Allocator& alloc = std::allocator<T>())
+  set(std::initializer_list<T> init, const Allocator& alloc = Allocator())
   : set(init, Compare(), alloc) {}
   ~set() noexcept;
   void clear() noexcept;

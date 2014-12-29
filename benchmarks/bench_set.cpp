@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <set>
 #include <list>
+#include <ext/pool_allocator.h>
 
 #include <container/bst_node.hpp>
 #include <container/set.hpp>
@@ -116,6 +117,10 @@ int main(int argc, char* argv[])
       std::vector<char> buffer((ss + 2) * (2 * sizeof (rt::set<int>::node_type)), 0);
       rt::allocator<int> alloc(buffer);
       std::set<int, std::less<int>, rt::allocator<int>> s(std::less<int>(), alloc);
+      print_bench(s, std::begin(data), ss);
+    }
+    {
+      std::set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> s;
       print_bench(s, std::begin(data), ss);
     }
     std::cout << std::endl;

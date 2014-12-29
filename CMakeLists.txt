@@ -10,14 +10,18 @@ include(CPack)
 
 include_directories(.)
 
-add_executable(test_set tests/test_set.cpp)
+if (UNIX)
+  add_executable(bench_set benchmarks/bench_set.cpp)
+  add_executable(test_set tests/test_set.cpp)
+  add_test(NAME test_set COMMAND test_set)
+endif (UNIX)
+
 add_executable(test_flist tests/test_flist.cpp)
 add_executable(test_align tests/test_align.cpp)
 add_executable(test_reverse tests/test_reverse.cpp)
 add_executable(test_alloc tests/test_alloc.cpp)
 add_executable(example1 examples/example1.cpp)
 add_executable(example2 examples/example2.cpp)
-add_executable(bench_set benchmarks/bench_set.cpp)
 add_executable(bench_map benchmarks/bench_map.cpp)
 
 #if (Boost_FOUND)
@@ -25,7 +29,6 @@ add_executable(bench_map benchmarks/bench_map.cpp)
 #  target_link_libraries(bench_set ${Boost_LIBRARIES})
 #endif()
 
-add_test(NAME test_set COMMAND test_set)
 add_test(NAME test_reverse COMMAND test_reverse)
 add_test(NAME test_align COMMAND test_align)
 add_test(NAME test_alloc COMMAND test_alloc)
