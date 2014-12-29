@@ -1,7 +1,7 @@
 ##RTCPP
 
   The objective of this project is to make real-time use of STL containers by
-  means of *real-time allocators*.  "Real-time" here means a guarantee that the
+  means of *real-time allocators*.  *real-time* here means a guarantee that the
   program will execute a particular task in at most n steps (or processor
   cycles).
   
@@ -28,12 +28,15 @@
 ## Benchmarks
 
 The link below shows the time taken to fill a `std::set` and my own
-implementation of it `rt::set`. Each one is tested with `std::allocator` and my
-real-time allocator `rt::allocator`. The benchmark is performed on a scenario
-with a fragmented heap. It is amazing that a simply changing the allocator can
-lead to more than 50% performance improvement.
+implementation of it `rt::set`. Each one is tested with five allocators:
+`std::allocator`, the real-time allocator `rt::allocator`,
+`__gnu_cxx::__pool_alloc`, `__gnu_cxx::bitmap_alloc` and
+`__gnu_cxx::__mt_alloc`. The benchmarks are performed on a scenario
+with a fragmented heap where I allocate many nodes and free some of them
+to make some holes. It is noteworthy that a simply changing the allocator can
+lead to more than 50% performance improvement. Follow the links below.
 
-![Insertion time](fig/set_insertion.pdf).
+![`std:set` insertion time](fig/std_set_insertion.pdf), ![`rt:set` insertion time](fig/rt_set_insertion.pdf),
 
 ## Using rt::allocator
 
