@@ -1,5 +1,12 @@
 #pragma once
 
+  /*
+
+  Definition of a node for a threaded binary search tree and its fundamental
+  operations.
+
+  */
+
 namespace rt {
 
 template <typename T>
@@ -7,8 +14,8 @@ struct bst_node {
   typedef T value_type;
   bst_node* llink;
   bst_node* rlink;
-  value_type key;
   int tag;
+  value_type key;
 };
 
 namespace detail {

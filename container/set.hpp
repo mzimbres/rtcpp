@@ -8,12 +8,20 @@
 
 #include "bst_iterator.hpp"
 
+  /*
+
+  Implements an std::set as an unbalanced binary search tree. That means it
+  does not guarantee logarithmic search time. It is however often faster than a
+  balanced implementation as a degenerate tree is very rare.
+
+  */
+
 namespace rt {
 
 template < typename T
          , typename Compare = std::less<T>
          , typename Allocator = std::allocator<T>>
-class set { // Unbalanced binary search tree
+class set {
   public:
   typedef bst_node<T> node_type; // The standard does not require this to be public.
   typedef T key_type;

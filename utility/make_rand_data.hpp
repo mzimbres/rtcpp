@@ -13,7 +13,7 @@ std::vector<T> make_rand_data(std::size_t size, int first, int last, int type = 
   // with size size.
   // The following options for the argument type are available.
   // 1 - The returned vector can have repeated elements.
-  // 2 - All elements apear only once. The vector can have size less the "size".
+  // 2 - All elements appear only once. The vector can have size less the "size".
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -27,7 +27,6 @@ std::vector<T> make_rand_data(std::size_t size, int first, int last, int type = 
     return data;
 
   std::sort(std::begin(data), std::end(data));
-  //std::unique(std::begin(data), std::end(data));
   data.erase(std::unique(std::begin(data), std::end(data)), std::end(data));
   shuffle(std::begin(data), std::end(data), gen);
   return data;

@@ -6,6 +6,19 @@
 
 #include <memory/node_stack.hpp>
 
+  /*
+
+  Implementation of a real-time allocator for node-based constainers.
+  It performs constant time allocation on a pre-allocated buffer.
+
+  Upon construction, only pointers are stored and you cannot use its
+  member functions. They can be used only after copy-constructing the rebound
+  instance, which will happen inside the container. At that point we know the
+  size o the type the allocator will serve and can link together blocks of that
+  size on the buffer.
+
+  */
+
 namespace rt {
 
 template < typename T
