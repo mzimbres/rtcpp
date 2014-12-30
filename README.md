@@ -33,7 +33,7 @@ implementation of it `rt::set`. Each one is tested with five allocators:
 `__gnu_cxx::__pool_alloc`, `__gnu_cxx::bitmap_alloc` and
 `__gnu_cxx::__mt_alloc`. The benchmarks are performed on a scenario
 with a fragmented heap where I allocate many nodes and free some of them
-to make some holes. It is noteworthy that a simply changing the allocator can
+to make some holes. It is noteworthy that simply changing the allocator can
 lead to more than 50% performance improvement. Follow the links below.
 
 ![std::set insertion time](fig/std_set_insertion.pdf), ![rt::set insertion time](fig/rt_set_insertion.pdf),
