@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <set>
 #include <list>
+#include <vector>
 #include <ext/pool_allocator.h>
 #include <ext/bitmap_allocator.h>
 #include <ext/mt_allocator.h>
@@ -18,32 +19,24 @@
 #include <utility/timer.hpp>
 
 template <typename Iter>
-void heap_frag( rt::set<int>& s1
-              , rt::set<int>& s2
-              , rt::set<int>& s3
-              , std::set<int>& s4
-              , Iter begin
-              , std::size_t n)
+std::vector<char*> heap_frag(std::size_t n_between, Iter begin, std::size_t n)
 {
-  s1.clear();
-  s2.clear();
-  s3.clear();
-  s4.clear();
-  rt::set<int> s5;
-  rt::set<int> s6;
-  rt::set<int> s7;
-  std::set<int> s8;
+  // Cannot use smart pointers here.
+  std::set<int> holes;
+  std::vector<char*> data;
+  std::vector<char*> holes2;
   for (Iter iter = begin; iter != begin + n; ++iter) {
-    s1.insert(*iter);
-    s5.insert(*iter);
-    s2.insert(*iter);
-    s6.insert(*iter);
-    s3.insert(*iter);
-    s7.insert(*iter);
-    s4.insert(*iter);
-    s8.insert(*iter);
+    for (std::size_t i = 0; i < n_between; ++i) {
+      data.push_back(new char);
+      holes2.push_back(new char);
+    }
+    holes.insert(*iter);
   }
-  // s2 and s4 are destructed leaving many holes in the heap.
+
+  for (auto iter = std::begin(holes2); iter != std::end(holes2); ++iter)
+    delete *iter;
+
+  return data; // s2 are destructed leaving many holes in the heap.
 }
 
 template <typename C, typename Iter>
@@ -57,12 +50,13 @@ void print_bench(C& c, Iter begin, std::size_t n)
 
 int main(int argc, char* argv[])
 {
-  if ((argc != 4) && (argc != 5)) {
+  if ((argc != 5) && (argc != 6)) {
     std::cout <<
-    "\nUsage: $ ./bench_set N S K F\n"
+    "\nUsage: $ ./bench_set N S K B F\n"
     "N: The start size.\n"
     "S: The step size.\n"
     "K: How many steps.\n"
+    "B: Chars between.\n"
     "F: Optional. If provided will not fragment the heap before benchmarks.\n"
     << std::endl;
     std::cout <<
@@ -88,8 +82,9 @@ int main(int argc, char* argv[])
   const std::size_t N = to_number<std::size_t>(argv[1]);
   const std::size_t S = to_number<std::size_t>(argv[2]);
   const std::size_t K = to_number<std::size_t>(argv[3]);
+  const std::size_t B = to_number<std::size_t>(argv[4]);
   bool frag = true;
-  if (argc == 5)
+  if (argc == 6)
     frag = false;
 
   if (S > N) {
@@ -103,12 +98,9 @@ int main(int argc, char* argv[])
   const std::size_t size = N + K * S;
   std::vector<int> data = rt::make_rand_data<int>(size, a, b);
 
-  rt::set<int> s1;
-  rt::set<int> s2;
-  rt::set<int> s3;
-  std::set<int> s4;
+  std::vector<char*> pointers;
   if (frag) 
-    heap_frag(s1, s2, s3, s4, std::begin(data), data.size());
+    pointers = heap_frag(B, std::begin(data), data.size());
 
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t ss = N + i * S;
@@ -160,6 +152,8 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
   }
   std::cout << std::endl;
+  for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
+    delete *iter;
 
   return 0;
 }
