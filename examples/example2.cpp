@@ -4,8 +4,8 @@
 #include <iterator>
 #include <set>
 
-#include <container/set.hpp>
-#include <memory/allocator.hpp>
+#include <rtcpp/container/set.hpp>
+#include <rtcpp/memory/allocator.hpp>
 
 int main()
 {

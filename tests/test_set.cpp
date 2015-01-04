@@ -12,10 +12,9 @@
 #include <ext/bitmap_allocator.h>
 #include <ext/mt_allocator.h>
 
-#include <container/set.hpp>
-#include <memory/allocator.hpp>
-
-#include <utility/make_rand_data.hpp>
+#include <rtcpp/container/set.hpp>
+#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/utility/make_rand_data.hpp>
 
 template <typename T>
 bool test_iterator()

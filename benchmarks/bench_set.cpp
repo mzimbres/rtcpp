@@ -11,12 +11,12 @@
 #include <ext/bitmap_allocator.h>
 #include <ext/mt_allocator.h>
 
-#include <container/bst_node.hpp>
-#include <container/set.hpp>
-#include <memory/allocator.hpp>
-#include <utility/to_number.hpp>
-#include <utility/make_rand_data.hpp>
-#include <utility/timer.hpp>
+#include <rtcpp/container/bst_node.hpp>
+#include <rtcpp/container/set.hpp>
+#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/utility/to_number.hpp>
+#include <rtcpp/utility/make_rand_data.hpp>
+#include <rtcpp/utility/timer.hpp>
 
 #include "heap_frag.hpp"
 

@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <list>
 
-#include <memory/allocator.hpp>
-#include <container/set.hpp>
+#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/container/set.hpp>
 
 bool test_buffer_size()
 {

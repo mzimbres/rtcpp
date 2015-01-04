@@ -1,4 +1,4 @@
-#include <memory/align.hpp>
+#include <rtcpp/memory/align.hpp>
 
 using namespace rt;
 

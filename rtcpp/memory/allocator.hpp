@@ -4,7 +4,7 @@
 #include <utility>
 #include <exception>
 
-#include <memory/node_stack.hpp>
+#include <rtcpp/memory/node_stack.hpp>
 
   /*
 

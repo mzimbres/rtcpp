@@ -3,7 +3,7 @@
 #include <iterator>
 #include <algorithm>
 
-#include <algorithm/reverse.hpp>
+#include <rtcpp/algorithm/reverse.hpp>
 
 int main()
 {

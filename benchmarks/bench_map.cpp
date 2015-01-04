@@ -8,11 +8,11 @@
 #include <set>
 #include <utility>
 
-#include <memory/allocator.hpp>
-#include <container/set.hpp>
-#include <utility/to_number.hpp>
-#include <utility/make_rand_data.hpp>
-#include <utility/timer.hpp>
+#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/container/set.hpp>
+#include <rtcpp/utility/to_number.hpp>
+#include <rtcpp/utility/make_rand_data.hpp>
+#include <rtcpp/utility/timer.hpp>
 
 template <typename Iter>
 void heap_frag( rt::set<int>& s1
