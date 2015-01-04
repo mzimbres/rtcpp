@@ -18,26 +18,7 @@
 #include <utility/make_rand_data.hpp>
 #include <utility/timer.hpp>
 
-template <typename Iter>
-std::vector<char*> heap_frag(std::size_t n_between, Iter begin, std::size_t n)
-{
-  // Cannot use smart pointers here.
-  std::set<int> holes;
-  std::vector<char*> data;
-  std::vector<char*> holes2;
-  for (Iter iter = begin; iter != begin + n; ++iter) {
-    for (std::size_t i = 0; i < n_between; ++i) {
-      data.push_back(new char);
-      holes2.push_back(new char);
-    }
-    holes.insert(*iter);
-  }
-
-  for (auto iter = std::begin(holes2); iter != std::end(holes2); ++iter)
-    delete *iter;
-
-  return data; // s2 are destructed leaving many holes in the heap.
-}
+#include "heap_frag.hpp"
 
 template <typename C, typename Iter>
 void print_bench(C& c, Iter begin, std::size_t n)
@@ -47,6 +28,46 @@ void print_bench(C& c, Iter begin, std::size_t n)
     c.insert(begin, begin + n);
   }
 }
+
+namespace rt {
+
+template <template <typename, typename, typename> class Set, typename Iter>
+void bench_allocators(Iter begin, std::size_t n)
+{
+  // The different sets we will benchmark.
+  typedef Set<int, std::less<int>, std::allocator<int>> set_type1;
+  typedef Set<int, std::less<int>, rt::allocator<int>> set_type2; // Uses a vector as buffer.
+  typedef Set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> set_type3;
+  typedef Set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> set_type4;
+  typedef Set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> set_type5;
+  std::cout << n << " ";
+  { // (1)
+    set_type1 s;
+    print_bench(s, begin, n);
+  }
+  { // (2)
+    std::vector<char> buffer((n + 2) * 40, 0);
+    rt::allocator<int> alloc(buffer);
+    set_type2 s(std::less<int>(), alloc); // Uses a vector as buffer.
+    print_bench(s, begin, n);
+  }
+  { // (3)
+    set_type3 s;
+    print_bench(s, begin, n);
+  }
+  { // (4)
+    set_type4 s;
+    print_bench(s, begin, n);
+  }
+  { // (5)
+    set_type5 s;
+    print_bench(s, begin, n);
+  }
+}
+
+}
+
+using namespace rt;
 
 int main(int argc, char* argv[])
 {
@@ -61,19 +82,14 @@ int main(int argc, char* argv[])
     << std::endl;
     std::cout <<
     "The program output has the following layout: \n"
-    "(0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10): \n"
+    "(0) (1) (2) (3) (4) (5): \n"
     "Where: \n"
     "(0)  Number of elements.\n"
-    "(1)  rt::set<std::alloc>\n"
-    "(2)  rt::set<rt::alloc>\n"
-    "(3)  rt::set<__gnu_cxx::__pool_alloc>\n"
-    "(4)  rt::set<__gnu_cxx::bitmap_alloc>\n"
-    "(5)  rt::set<__mt_alloc>\n"
-    "(6)  std::set<std::alloc>\n"
-    "(7)  std::set<rt::alloc>\n"
-    "(8)  std::set<__gnu_cxx::__pool_alloc>\n"
-    "(9)  std::set<__gnu_cxx::bitmap_alloc>\n"
-    "(10) std::set<__mt_alloc>\n"
+    "(1)  Set<std::alloc>\n"
+    "(2)  Set<rt::alloc>\n"
+    "(3)  Set<__gnu_cxx::__pool_alloc>\n"
+    "(4)  Set<__gnu_cxx::bitmap_alloc>\n"
+    "(5)  Set<__mt_alloc>\n"
     << std::endl;
 
     return 0;
@@ -96,65 +112,37 @@ int main(int argc, char* argv[])
   const int b = std::numeric_limits<int>::max();
 
   const std::size_t size = N + K * S;
-  std::vector<int> data = rt::make_rand_data<int>(size, a, b);
+  const std::vector<int> data = rt::make_rand_data<int>(size, a, b);
 
-  std::vector<char*> pointers;
-  if (frag) 
-    pointers = heap_frag(B, std::begin(data), data.size());
+  {
+    std::cout << "---- rt::set ----" << std::endl;
+    std::vector<char*> pointers;
+    if (frag) 
+      pointers = heap_frag<rt::set<int>>(B, data); // Fragments the heap.
 
-  for (std::size_t i = 0; i < K; ++i) {
-    const std::size_t ss = N + i * S;
-    std::cout << ss << " ";
-    { // (1)
-      rt::set<int> s;
-      print_bench(s, std::begin(data), ss);
+    for (std::size_t i = 0; i < K; ++i) {
+      bench_allocators<rt::set>(std::begin(data), N + i * S);
+      std::cout << std::endl;
     }
-    { // (2)
-      std::vector<char> buffer((ss + 2) * sizeof (rt::set<int>::node_type), 0);
-      rt::allocator<int> alloc(buffer);
-      rt::set<int, std::less<int>, rt::allocator<int>> s(alloc); // Uses a vector as buffer.
-      print_bench(s, std::begin(data), ss);
+
+    for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
+      delete *iter;
+  }
+  {
+    std::cout << "---- std::set ----" << std::endl;
+    std::vector<char*> pointers;
+    if (frag) 
+      pointers = heap_frag<std::set<int>>(B, data); // Fragments the heap.
+
+    for (std::size_t i = 0; i < K; ++i) {
+      const std::size_t ss = N + i * S;
+      bench_allocators<std::set>(std::begin(data), ss);
+      std::cout << std::endl;
     }
-    { // (3)
-      rt::set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> s;
-      print_bench(s, std::begin(data), ss);
-    }
-    { // (4)
-      rt::set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> s;
-      print_bench(s, std::begin(data), ss);
-    }
-    { // (5)
-      rt::set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> s;
-      print_bench(s, std::begin(data), ss);
-    }
-    { // (6)
-      std::set<int> s;
-      print_bench(s, std::begin(data), ss);
-    }
-    { // (7)
-      std::vector<char> buffer((ss + 2) * (2 * sizeof (rt::set<int>::node_type)), 0);
-      rt::allocator<int> alloc(buffer);
-      std::set<int, std::less<int>, rt::allocator<int>> s(std::less<int>(), alloc);
-      print_bench(s, std::begin(data), ss);
-    }
-    { // (8)
-      std::set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> s;
-      print_bench(s, std::begin(data), ss);
-    }
-    { // (9)
-      std::set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> s;
-      print_bench(s, std::begin(data), ss);
-    }
-    { // (10)
-      std::set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> s;
-      print_bench(s, std::begin(data), ss);
-    }
-    std::cout << std::endl;
+    for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
+      delete *iter;
   }
   std::cout << std::endl;
-  for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
-    delete *iter;
-
   return 0;
 }
 
