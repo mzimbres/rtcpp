@@ -1,0 +1,4 @@
+#pragma once
+
+#cmakedefine Boost_FOUND @Boost_FOUND@
+

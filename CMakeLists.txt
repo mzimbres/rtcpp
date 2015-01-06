@@ -2,13 +2,19 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(rtcpp)
 
-find_package(Boost "1.55.0" COMPONENTS timer system program_options OPTIONAL)
+find_package(Boost "1.55.0" COMPONENTS timer REQUIRED)
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/config.h.in
+  ${PROJECT_BINARY_DIR}/config.h
+)
 
 enable_testing()
 include(CTest)
 include(CPack)
 
 include_directories(.)
+include_directories(${PROJECT_BINARY_DIR})
 
 if (UNIX)
   add_executable(bench_set benchmarks/bench_set.cpp)
@@ -24,10 +30,10 @@ add_executable(example1 examples/example1.cpp)
 add_executable(example2 examples/example2.cpp)
 add_executable(bench_map benchmarks/bench_map.cpp)
 
-#if (Boost_FOUND)
-#  include_directories(${Boost_INCLUDE_DIR})
-#  target_link_libraries(bench_set ${Boost_LIBRARIES})
-#endif()
+if (Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIR})
+  target_link_libraries(bench_set ${Boost_LIBRARIES})
+endif()
 
 add_test(NAME test_reverse COMMAND test_reverse)
 add_test(NAME test_align COMMAND test_align)

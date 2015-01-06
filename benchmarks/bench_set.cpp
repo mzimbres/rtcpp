@@ -18,6 +18,12 @@
 #include <rtcpp/utility/make_rand_data.hpp>
 #include <rtcpp/utility/timer.hpp>
 
+#include <config.h>
+
+#ifdef Boost_FOUND
+#include <boost/container/flat_set.hpp>
+#endif
+
 #include "heap_frag.hpp"
 
 template <typename C, typename Iter>
@@ -142,6 +148,19 @@ int main(int argc, char* argv[])
     for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
       delete *iter;
   }
+#ifdef Boost_FOUND
+  {
+    std::cout << "---- boost::flat_set ----" << std::endl;
+    for (std::size_t i = 0; i < K; ++i) {
+      const std::size_t ss = N + i * S;
+      boost::container::flat_set<int> s;
+      s.reserve(ss);
+      std::cout << ss << " ";
+      print_bench(s, std::begin(data), ss);
+      std::cout << std::endl;
+    }
+  }
+#endif
   std::cout << std::endl;
   return 0;
 }
