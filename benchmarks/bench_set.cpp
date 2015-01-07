@@ -32,15 +32,14 @@ void print_bench(C& c, Iter begin, std::size_t n)
   {
     rt::timer t;
     c.insert(begin, begin + n);
-    for (std::size_t i = 0; i < n; ++i) {
-      //auto it = c.find(begin[n - i - 1]);
-      auto it = c.find(begin[i]);
-      if (it != c.end())
-        c.erase(it);
-    }
+    //for (std::size_t i = 0; i < n; ++i) {
+    //  auto it = c.find(begin[n - i - 1]);
+    //  if (it != c.end())
+    //    c.erase(it);
+    //}
   }
-  if (!c.empty())
-    throw std::runtime_error("");
+  //if (!c.empty())
+  //  throw std::runtime_error("");
 }
 
 namespace rt {
@@ -128,20 +127,20 @@ int main(int argc, char* argv[])
   const std::size_t size = N + K * S;
   const std::vector<int> data = rt::make_rand_data<int>(size, a, b);
 
-  //{
-  //  std::cout << "---- rt::set ----" << std::endl;
-  //  std::vector<char*> pointers;
-  //  if (frag) 
-  //    pointers = heap_frag<rt::set<int>>(B, data); // Fragments the heap.
+  {
+    std::cout << "---- rt::set ----" << std::endl;
+    std::vector<char*> pointers;
+    if (frag) 
+      pointers = heap_frag<rt::set<int>>(B, data); // Fragments the heap.
 
-  //  for (std::size_t i = 0; i < K; ++i) {
-  //    bench_allocators<rt::set>(std::begin(data), N + i * S);
-  //    std::cout << std::endl;
-  //  }
+    for (std::size_t i = 0; i < K; ++i) {
+      bench_allocators<rt::set>(std::begin(data), N + i * S);
+      std::cout << std::endl;
+    }
 
-  //  for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
-  //    delete *iter;
-  //}
+    for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
+      delete *iter;
+  }
   {
     std::cout << "---- std::set ----" << std::endl;
     std::vector<char*> pointers;
