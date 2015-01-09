@@ -44,7 +44,7 @@ implementation of it `rt::set. Each one is tested with five allocators:
   It is noteworthy that simply changing the allocator can lead to more than 50%
   performance improvement. Follow the links below.
 
-![std::set insertion time](fig/std_set_insertion.pdf), ![rt::set insertion time](fig/rt_set_insertion.pdf),
+![std::set insertion time](fig/std_set_insertion.png), ![rt::set insertion time](fig/rt_set_insertion.png),
 
 ## Using rt::allocator
 
