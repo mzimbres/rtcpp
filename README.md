@@ -22,29 +22,9 @@
   3. Use of exceptions.
 
   It is debatable whether use of exceptions is really important, therefore I
-  will not focus on it.  Before we talk about how I addressed these problems,
-  let us see some graphs, that show the behaviour of a real-time allocators
-  compared to other allocators.
+  will not focus on it.
 
-## Benchmarks
-
-The links below shows the time taken to fill a `std::set` and my own
-implementation of it `rt::set. Each one is tested with five allocators:
-
-  1. `std::allocator`.
-  2. `rt::allocator`. (The real-time allocator.)
-  3. `__gnu_cxx::__pool_alloc`.
-  4. `__gnu_cxx::bitmap_alloc`.
-  5. `__gnu_cxx::__mt_alloc`.
-
-  The benchmarks are performed on a scenario with a fragmented heap, where I
-  dynamically allocate many `char`'s on the heap and leave some holes for the nodes
-  that will be allocated by the container. 
-
-  It is noteworthy that simply changing the allocator can lead to more than 50%
-  performance improvement. Follow the links below.
-
-![std::set insertion time](fig/std_set_insertion.png), ![rt::set insertion time](fig/rt_set_insertion.png),
+  *If the reader is interested in benchmarks, please, go to the benchmarks section below.*
 
 ## Using rt::allocator
 
@@ -95,6 +75,26 @@ the container node type is not exposed to the user.
 
 2. The use of `::allocate(n)` with `n != 1` cannot be achieved since the nodes
 are linked together and there is no guarantee that they are sequential.
+
+## Benchmarks
+
+The links below shows the time taken to fill a `std::set` and my own
+implementation of it `rt::set. Each one is tested with five allocators:
+
+  1. `std::allocator`.
+  2. `rt::allocator`. (The real-time allocator.)
+  3. `__gnu_cxx::__pool_alloc`.
+  4. `__gnu_cxx::bitmap_alloc`.
+  5. `__gnu_cxx::__mt_alloc`.
+
+  The benchmarks are performed on a scenario with a fragmented heap, where I
+  dynamically allocate many `char`'s on the heap and leave some holes for the nodes
+  that will be allocated by the container. 
+
+  It is noteworthy that simply changing the allocator can lead to more than 50%
+  performance improvement. Follow the links below.
+
+![std::set insertion time](fig/std_set_insertion.png), ![rt::set insertion time](fig/rt_set_insertion.png),
 
 ##Compilation
 
