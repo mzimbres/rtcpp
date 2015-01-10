@@ -55,8 +55,8 @@ void bench_allocators(Iter begin, std::size_t n)
   typedef Set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> set_type4;
   typedef Set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> set_type5;
 #ifdef Boost_FOUND
-  typedef Set<int, std::less<int>, boost::container::node_allocator<int, 1000, 1>> set_type6;
-  typedef Set<int, std::less<int>, boost::container::node_allocator<int, 1000, 2>> set_type7;
+  typedef Set<int, std::less<int>, boost::container::node_allocator<int, 10000, 1>> set_type6;
+  typedef Set<int, std::less<int>, boost::container::node_allocator<int, 10000, 2>> set_type7;
 #endif
   std::cout << n << " ";
   { // (1)
