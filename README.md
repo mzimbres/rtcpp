@@ -1,34 +1,23 @@
-##RTCPP
+## RTCPP
 
   The goal of this project is to make real-time use of STL containers by
   means of *real-time allocators*.  *real-time* here means a guarantee that the
   program will execute a particular task in at most n steps (or processor
   cycles).
   
-  When the C++ standard places a guarantee that a given operation, like
-  constant time complexity on an `std::list::insert`, it means operations
-  inside the list and does not account for the complexity of each node
-  allocation, which may not be constant and usually depends on the allocation
-  algorithm and external things like heap fragmentation.
+  In the benchmarks section below I compare the performance of the following
+  allocators:
 
-  This unpredictability is very undesirable in many applications like 24/7,
-  real-time and safe critical systems.
+  1. `std::allocator`.
+  2. `rt::allocator`. (The real-time allocator.)
+  3. `__gnu_cxx::__pool_alloc`.
+  4. `__gnu_cxx::bitmap_alloc`.
+  5. `__gnu_cxx::__mt_alloc`.
+  6. `boost::constainer::node_allocator<int, N, 1>`.
+  7. `boost::constainer::node_allocator<int, N, 2>`.
 
-  To make a real-time guarantee on a given operation, we have to get rid of all
-  sources of unpredictable behaviour, some of them are.
-  
-  1. Dynamic allocations of the heap.
-  2. Heap fragmentation.
-  3. Use of exceptions.
-
-  It is debatable whether use of exceptions is really important, therefore I
-  will not focus on it.
-
-  *If the reader is interested in benchmarks, please, go to the benchmarks section below.*
-
-## Using rt::allocator
-
-The real-time allocator can be use just like any other allocator, for example:
+  The real-time allocator seems to be the fastest so far.  It can be use just
+  like any other allocator, for example:
 
 ```c++
   typedef std::set<int, std::less<int>, rt::allocator<int>> rt_set_type;
@@ -47,8 +36,28 @@ In the code snippet above, we see a 1000 bytes buffer being shared among t1 and
 t2.  All memory allocations happen inside the buffer and no call to operator
 new is made. It makes the most efficient use of memory as all nodes are
 allocated sequentially, that means you can easily fit them all on the cache.
-
 For more example see the examples directory.
+
+## Real-time C++
+
+  When the C++ standard places a guarantee that a given operation, like
+  constant time complexity on an `std::list::insert`, it means operations
+  inside the list and does not account for the complexity of each node
+  allocation, which may not be constant and usually depends on the allocation
+  algorithm and external things like heap fragmentation.
+
+  This unpredictability is very undesirable in many applications like 24/7,
+  real-time and safe critical systems.
+
+  To make a real-time guarantee on a given operation, we have to get rid of all
+  sources of unpredictable behaviour, some of them are.
+  
+  1. Dynamic allocations of the heap.
+  2. Heap fragmentation.
+  3. Use of exceptions.
+
+  It is debatable whether use of exceptions is really important, therefore I
+  will not focus on it.
 
 ## Rationale
 
@@ -86,6 +95,8 @@ implementation of it `rt::set. Each one is tested with five allocators:
   3. `__gnu_cxx::__pool_alloc`.
   4. `__gnu_cxx::bitmap_alloc`.
   5. `__gnu_cxx::__mt_alloc`.
+  6. `boost::constainer::node_allocator<int, 10000, 1>`.
+  7. `boost::constainer::node_allocator<int, 10000, 2>`.
 
   The benchmarks are performed on a scenario with a fragmented heap, where I
   dynamically allocate many `char`'s on the heap and leave some holes for the nodes

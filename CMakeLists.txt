@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(rtcpp)
 
-find_package(Boost "1.55.0" COMPONENTS timer REQUIRED)
+find_package(Boost "1.57.0" COMPONENTS container)
 
 configure_file(
   ${PROJECT_SOURCE_DIR}/config.h.in

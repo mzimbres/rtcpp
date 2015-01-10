@@ -22,6 +22,7 @@
 
 #ifdef Boost_FOUND
 #include <boost/container/flat_set.hpp>
+#include <boost/container/node_allocator.hpp>
 #endif
 
 #include "heap_frag.hpp"
@@ -53,6 +54,10 @@ void bench_allocators(Iter begin, std::size_t n)
   typedef Set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> set_type3;
   typedef Set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> set_type4;
   typedef Set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> set_type5;
+#ifdef Boost_FOUND
+  typedef Set<int, std::less<int>, boost::container::node_allocator<int, 1000, 1>> set_type6;
+  typedef Set<int, std::less<int>, boost::container::node_allocator<int, 1000, 2>> set_type7;
+#endif
   std::cout << n << " ";
   { // (1)
     set_type1 s;
@@ -76,6 +81,16 @@ void bench_allocators(Iter begin, std::size_t n)
     set_type5 s;
     print_bench(s, begin, n);
   }
+#ifdef Boost_FOUND
+  { // (6)
+    set_type6 s;
+    print_bench(s, begin, n);
+  }
+  { // (7)
+    set_type7 s;
+    print_bench(s, begin, n);
+  }
+#endif
 }
 
 }
