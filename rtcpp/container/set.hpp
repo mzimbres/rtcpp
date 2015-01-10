@@ -81,7 +81,9 @@ class set {
   template<typename K>
   size_type count(const K& x) const noexcept;
   template<typename K>
-  const_iterator find(const K& x) const noexcept;
+  const_iterator find(const K& x) const;
+  template<typename K>
+  std::pair<const_node_pointer, const const_node_pointer*> find_parent(const K& x) const;
   size_type max_size() const noexcept{ return std::numeric_limits<size_type>::max(); }
   template<typename InputIt>
   void insert(InputIt begin, InputIt end) noexcept;
@@ -327,25 +329,43 @@ set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::const_
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
 typename set<T, Compare, Allocator>::const_iterator
-set<T, Compare, Allocator>::find(const K& key) const noexcept
+set<T, Compare, Allocator>::find(const K& key) const
+{
+  // The function below is not the most efficient because it
+  // has an additional pointer to chase the parent pointer.
+  // However maintaining two functions is not desirable
+  auto p = find_parent(key);
+  return const_iterator(p.first);
+}
+
+template <typename T, typename Compare, typename Allocator>
+template <typename K>
+std::pair< typename set<T, Compare, Allocator>::const_node_pointer
+         , const typename set<T, Compare, Allocator>::const_node_pointer*>
+set<T, Compare, Allocator>::find_parent(const K& key) const
 {
   if (has_null_llink(m_head->tag)) // The tree is empty
-    return const_iterator(m_head); // end iterator.
+    return std::make_pair(m_head, &m_head); // end iterator.
 
-  node_pointer p = m_head->llink;
+  const_node_pointer p = m_head->llink;
+  const const_node_pointer* u = &m_head->llink; // pointer to the parent pointer.
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p->tag))
+      if (!has_null_llink(p->tag)) {
+        u = &p->llink;
         p = p->llink;
-      else
-        return const_iterator(m_head); // end iterator.
+      } else {
+        return std::make_pair(m_head, &m_head);
+      }
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p->tag))
+      if (!has_null_rlink(p->tag)) {
+        u = &p->rlink;
         p = p->rlink;
-      else
-        return const_iterator(m_head); // end iterator.
+      } else {
+        return std::make_pair(m_head, &m_head);
+      }
     } else {
-      return p; // equivalent element.
+      return std::make_pair(p, u); // equivalent element.
     }
   }
 }
