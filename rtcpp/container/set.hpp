@@ -12,7 +12,8 @@
 
   Implements an std::set as an unbalanced binary search tree. That means it
   does not guarantee logarithmic search time. It is however often faster than a
-  balanced implementation as a degenerate tree is very rare.
+  balanced implementation as a degenerate tree is very rare and there is no
+  balancing overhead.
 
   */
 
@@ -23,7 +24,6 @@ template < typename T
          , typename Allocator = std::allocator<T>>
 class set {
   public:
-  typedef bst_node<T> node_type; // The standard does not require this to be public.
   typedef T key_type;
   typedef T value_type;
   typedef std::size_t size_type;
@@ -38,6 +38,7 @@ class set {
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   private:
+  typedef bst_node<T> node_type;
   typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
   typedef node_type* node_pointer;
   typedef const node_type* const_node_pointer;
@@ -48,6 +49,7 @@ class set {
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
   public:
+  static std::size_t reserve_to_alloc(std::size_t n) {return sizeof ((node_type) + 1) * n;}
   set(const Compare& comp, const Allocator& alloc = Allocator());
   explicit set(const Allocator& alloc = Allocator())
   : set(Compare(), alloc) {}
