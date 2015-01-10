@@ -48,6 +48,7 @@ class set {
   void copy(set& rhs) const noexcept;
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
+  const_iterator deletion(const_iterator q) noexcept;
   public:
   static std::size_t reserve_to_alloc(std::size_t n) {return sizeof ((node_type) + 1) * n;}
   set(const Compare& comp, const Allocator& alloc = Allocator());
@@ -232,7 +233,6 @@ template <typename T, typename Compare, typename Allocator>
 std::pair<typename set<T, Compare, Allocator>::iterator, bool>
 set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::value_type& key) noexcept
 {
-  typedef typename set<T>::const_iterator const_iterator;
   if (has_null_llink(m_head->tag)) { // The tree is empty
     node_pointer q = get_node();
     safe_construct(q, key);
@@ -293,11 +293,42 @@ set<T, Compare, Allocator>::count(const K& key) const noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
+typename set<T, Compare, Allocator>::const_iterator
+set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::const_iterator q) noexcept
+{
+  const_iterator t = q;
+  if (has_null_rlink(t->tag)) {
+    q = t->llink;
+    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
+    return q;
+  }
+
+  const_iterator r = t->rlink;
+  if (has_null_llink(r->tag)) {
+    r->llink = t->llink;
+    q = r;
+    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
+    return q;
+  }
+
+  const_iterator s = r->llink;
+  while (!has_null_llink(s->tag)) {
+    r = s;
+    s = r->llink;
+  }
+  s->llink = t->llink;
+  r->llink = s->rlink;
+  s->rlink = t->rlink;
+  q = s;
+  std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
+  return q;
+}
+
+template <typename T, typename Compare, typename Allocator>
 template <typename K>
 typename set<T, Compare, Allocator>::const_iterator
 set<T, Compare, Allocator>::find(const K& key) const noexcept
 {
-  typedef typename set<T>::const_iterator const_iterator;
   if (has_null_llink(m_head->tag)) // The tree is empty
     return const_iterator(m_head); // end iterator.
 
