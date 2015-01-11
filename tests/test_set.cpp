@@ -63,6 +63,34 @@ bool test_swap(const std::vector<T>& arr)
   return true;
 }
 
+
+template <typename C>
+bool test_erase(C& t1, const std::vector<typename C::value_type>&)
+{
+  typedef typename C::value_type value_type;
+  std::array<value_type, 5> arr = {{2, 8, 3, 1, 10}};
+  t1.clear();
+  t1.insert(std::begin(arr), std::end(arr));
+  for (auto v : arr) {
+  std::copy( std::begin(t1)
+           , std::end(t1)
+           , std::ostream_iterator<int>(std::cout, " "));
+
+  std::cout << std::endl;
+    t1.erase(v);
+  std::copy( std::begin(t1)
+           , std::end(t1)
+           , std::ostream_iterator<int>(std::cout, " "));
+
+  std::cout << std::endl;
+    if (t1.find(v) != std::end(t1))
+      return false;
+  }
+  if (!t1.empty())
+    return false;
+  return true;
+}
+
 template <typename C>
 bool test_count(C& t1, const std::vector<typename C::value_type>& arr)
 {
@@ -136,6 +164,9 @@ bool run_tests(C& t1, const std::vector<typename C::value_type>& tmp)
 
   if (!test_count(t1, tmp))
     return false;
+
+  //if (!test_erase(t1, tmp))
+  //  return false;
 
   if (!test_find(t1, tmp))
     return false;

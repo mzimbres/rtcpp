@@ -48,7 +48,7 @@ class set {
   void copy(set& rhs) const noexcept;
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
-  const_iterator deletion(const_iterator q) noexcept;
+  node_pointer deletion(node_pointer q) noexcept;
   public:
   static std::size_t reserve_to_alloc(std::size_t n) {return sizeof ((node_type) + 1) * n;}
   set(const Compare& comp, const Allocator& alloc = Allocator());
@@ -84,11 +84,26 @@ class set {
   const_iterator find(const K& x) const;
   template<typename K>
   std::pair<const_node_pointer, const const_node_pointer*> find_parent(const K& x) const;
-  size_type max_size() const noexcept{ return std::numeric_limits<size_type>::max(); }
+  size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
   template<typename InputIt>
   void insert(InputIt begin, InputIt end) noexcept;
   void swap(set& other) noexcept;
+  template <typename K>
+  size_type erase(const K& key);
 };
+
+template <typename T, typename Compare, typename Allocator>
+template <typename K>
+typename set<T, Compare, Allocator>::size_type
+set<T, Compare, Allocator>::erase(const K& key)
+{
+  auto p = find_parent(key);
+  if (p.first == m_head)
+    return 0;
+
+  *const_cast<node_pointer*>(p.second) = deletion(const_cast<node_pointer>(p.first));
+  return 1;
+}
 
 template <typename T, typename Compare, typename Allocator>
 void set<T, Compare, Allocator>::swap(set<T, Compare, Allocator>& other) noexcept
@@ -295,17 +310,17 @@ set<T, Compare, Allocator>::count(const K& key) const noexcept
 }
 
 template <typename T, typename Compare, typename Allocator>
-typename set<T, Compare, Allocator>::const_iterator
-set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::const_iterator q) noexcept
+typename set<T, Compare, Allocator>::node_pointer
+set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::node_pointer q) noexcept
 {
-  const_iterator t = q;
+  node_pointer t = q;
   if (has_null_rlink(t->tag)) {
     q = t->llink;
     std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
     return q;
   }
 
-  const_iterator r = t->rlink;
+  node_pointer r = t->rlink;
   if (has_null_llink(r->tag)) {
     r->llink = t->llink;
     q = r;
@@ -313,7 +328,7 @@ set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::const_
     return q;
   }
 
-  const_iterator s = r->llink;
+  node_pointer s = r->llink;
   while (!has_null_llink(s->tag)) {
     r = s;
     s = r->llink;
