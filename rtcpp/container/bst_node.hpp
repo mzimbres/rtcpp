@@ -47,34 +47,34 @@ int has_null_rlink(const bst_node<T>* p) noexcept
   return p->tag & detail::rbit;
 }
 
-template <typename Node>
-Node* inorder_successor(Node* p) noexcept
+template <typename T>
+bst_node<T>* inorder_successor(const bst_node<T>* p) noexcept
 {
   if (has_null_rlink(p))
     return p->rlink;
 
-  Node* q = p->rlink;
+  bst_node<T>* q = p->rlink;
   while (!has_null_llink(q))
     q = q->llink;
 
   return q;
 }
 
-template <typename Node>
-Node* inorder_predecessor(Node* p) noexcept
+template <typename T>
+bst_node<T>* inorder_predecessor(const bst_node<T>* p) noexcept
 {
   if (has_null_llink(p))
     return p->llink;
 
-  Node* q = p->llink;
+  bst_node<T>* q = p->llink;
   while (!has_null_rlink(q))
     q = q->rlink;
 
   return q;
 }
 
-template <typename Node>
-Node* preorder_successor(Node* p) noexcept
+template <typename T>
+bst_node<T>* preorder_successor(const bst_node<T>* p) noexcept
 {
   if (!has_null_llink(p))
     return p->llink;
@@ -83,15 +83,15 @@ Node* preorder_successor(Node* p) noexcept
     return p->rlink;
 
   // This is a leaf node.
-  Node* q = p->rlink;
+  bst_node<T>* q = p->rlink;
   while (has_null_rlink(q))
     q = q->rlink;
 
   return q->rlink;
 }
 
-template <typename Node>
-void attach_node_left(Node* p, Node* q) noexcept
+template <typename T>
+void attach_node_left(bst_node<T>* p, bst_node<T>* q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
   q->llink = p->llink;
@@ -102,13 +102,13 @@ void attach_node_left(Node* p, Node* q) noexcept
   set_rlink_null(q);
 
   if (!has_null_llink(q)) {
-    Node* qs = inorder_predecessor(q);
+    bst_node<T>* qs = inorder_predecessor(q);
     qs->rlink = q;
   }
 }
 
-template <typename Node>
-void attach_node_right(Node* p, Node* q) noexcept
+template <typename T>
+void attach_node_right(bst_node<T>* p, bst_node<T>* q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
   q->rlink = p->rlink;
@@ -119,7 +119,7 @@ void attach_node_right(Node* p, Node* q) noexcept
   set_llink_null(q);
 
   if (!has_null_rlink(q)) {
-    Node* qs = inorder_successor(q);
+    bst_node<T>* qs = inorder_successor(q);
     qs->llink = q;
   }
 }
