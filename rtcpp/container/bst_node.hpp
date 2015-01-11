@@ -12,8 +12,7 @@ namespace rt {
 template <typename T>
 struct bst_node {
   typedef T value_type;
-  bst_node* llink;
-  bst_node* rlink;
+  bst_node* link[2];
   int tag;
   value_type key;
 };
@@ -35,27 +34,30 @@ void set_rlink_null(bst_node<T>* p) noexcept
   p->tag |= detail::rbit;
 }
 
-template <typename T>
-int has_null_llink(const bst_node<T>* p) noexcept
-{
-  return p->tag & detail::lbit;
-}
+template <std::size_t I>
+struct has_null_link;
 
-template <typename T>
-int has_null_rlink(const bst_node<T>* p) noexcept
-{
-  return p->tag & detail::rbit;
-}
+template <>
+struct has_null_link<0> {
+  template <typename T>
+  static int apply(const bst_node<T>* p) {return p->tag & detail::lbit;}
+};
+
+template <>
+struct has_null_link<1> {
+  template <typename T>
+  static int apply(const bst_node<T>* p) {return p->tag & detail::rbit;}
+};
 
 template <typename T>
 bst_node<T>* inorder_successor(const bst_node<T>* p) noexcept
 {
-  if (has_null_rlink(p))
-    return p->rlink;
+  if (has_null_link<1>::apply(p))
+    return p->link[1];
 
-  bst_node<T>* q = p->rlink;
-  while (!has_null_llink(q))
-    q = q->llink;
+  bst_node<T>* q = p->link[1];
+  while (!has_null_link<0>::apply(q))
+    q = q->link[0];
 
   return q;
 }
@@ -63,12 +65,12 @@ bst_node<T>* inorder_successor(const bst_node<T>* p) noexcept
 template <typename T>
 bst_node<T>* inorder_predecessor(const bst_node<T>* p) noexcept
 {
-  if (has_null_llink(p))
-    return p->llink;
+  if (has_null_link<0>::apply(p))
+    return p->link[0];
 
-  bst_node<T>* q = p->llink;
-  while (!has_null_rlink(q))
-    q = q->rlink;
+  bst_node<T>* q = p->link[0];
+  while (!has_null_link<1>::apply(q))
+    q = q->link[1];
 
   return q;
 }
@@ -76,34 +78,34 @@ bst_node<T>* inorder_predecessor(const bst_node<T>* p) noexcept
 template <typename T>
 bst_node<T>* preorder_successor(const bst_node<T>* p) noexcept
 {
-  if (!has_null_llink(p))
-    return p->llink;
+  if (!has_null_link<0>::apply(p))
+    return p->link[0];
 
-  if (!has_null_rlink(p))
-    return p->rlink;
+  if (!has_null_link<1>::apply(p))
+    return p->link[1];
 
   // This is a leaf node.
-  bst_node<T>* q = p->rlink;
-  while (has_null_rlink(q))
-    q = q->rlink;
+  bst_node<T>* q = p->link[1];
+  while (has_null_link<1>::apply(q))
+    q = q->link[1];
 
-  return q->rlink;
+  return q->link[1];
 }
 
 template <typename T>
 void attach_node_left(bst_node<T>* p, bst_node<T>* q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
-  q->llink = p->llink;
-  q->tag = has_null_rlink(q) | has_null_llink(p);
-  p->llink = q;
-  p->tag = has_null_rlink(p);
-  q->rlink = p;
+  q->link[0] = p->link[0];
+  q->tag = has_null_link<1>::apply(q) | has_null_link<0>::apply(p);
+  p->link[0] = q;
+  p->tag = has_null_link<1>::apply(p);
+  q->link[1] = p;
   set_rlink_null(q);
 
-  if (!has_null_llink(q)) {
+  if (!has_null_link<0>::apply(q)) {
     bst_node<T>* qs = inorder_predecessor(q);
-    qs->rlink = q;
+    qs->link[1] = q;
   }
 }
 
@@ -111,16 +113,16 @@ template <typename T>
 void attach_node_right(bst_node<T>* p, bst_node<T>* q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
-  q->rlink = p->rlink;
-  q->tag = has_null_llink(q) | has_null_rlink(p);
-  p->rlink = q;
-  p->tag = has_null_llink(p);
-  q->llink = p;
+  q->link[1] = p->link[1];
+  q->tag = has_null_link<0>::apply(q) | has_null_link<1>::apply(p);
+  p->link[1] = q;
+  p->tag = has_null_link<0>::apply(p);
+  q->link[0] = p;
   set_llink_null(q);
 
-  if (!has_null_rlink(q)) {
+  if (!has_null_link<1>::apply(q)) {
     bst_node<T>* qs = inorder_successor(q);
-    qs->llink = q;
+    qs->link[0] = q;
   }
 }
 

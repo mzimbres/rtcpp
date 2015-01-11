@@ -143,8 +143,8 @@ set<T, Compare, Allocator>::set(const set<T, Compare, Allocator>& rhs) noexcept
 , m_head(get_node())
 {
   // This ctor can fail if the allocator runs out of memory.
-  m_head->llink = m_head;
-  m_head->rlink = m_head;
+  m_head->link[0] = m_head;
+  m_head->link[1] = m_head;
   m_head->tag = detail::lbit;
   clear();
   rhs.copy(*this);
@@ -156,8 +156,8 @@ set<T, Compare, Allocator>::set(const Compare& comp, const Allocator& alloc)
 , m_head(get_node())
 , m_comp(comp)
 {
-  m_head->llink = m_head;
-  m_head->rlink = m_head;
+  m_head->link[0] = m_head;
+  m_head->link[1] = m_head;
   m_head->tag = detail::lbit;
 }
 
@@ -168,8 +168,8 @@ set<T, Compare, Allocator>::set(InputIt begin, InputIt end, const Compare& comp,
 , m_head(get_node())
 , m_comp(comp)
 {
-  m_head->llink = m_head;
-  m_head->rlink = m_head;
+  m_head->link[0] = m_head;
+  m_head->link[1] = m_head;
   m_head->tag = detail::lbit;
   insert(begin, end);
 }
@@ -188,8 +188,8 @@ void set<T, Compare, Allocator>::clear() noexcept
       break;
     p = q;
   }
-  m_head->llink = m_head;
-  m_head->rlink = m_head;
+  m_head->link[0] = m_head;
+  m_head->link[1] = m_head;
   m_head->tag = detail::lbit;
 }
 
@@ -207,7 +207,7 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
   node_pointer q = rhs.m_head;
 
   for (;;) {
-    if (!has_null_llink(p)) {
+    if (!has_null_link<0>::apply(p)) {
       node_pointer tmp = get_node();
       attach_node_left(q, tmp);
     }
@@ -218,7 +218,7 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
     if (p == m_head)
       break;
 
-    if (!has_null_rlink(p)) {
+    if (!has_null_link<1>::apply(p)) {
       node_pointer tmp = get_node();
       attach_node_right(q, tmp);
     }
@@ -250,18 +250,18 @@ template <typename T, typename Compare, typename Allocator>
 std::pair<typename set<T, Compare, Allocator>::iterator, bool>
 set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::value_type& key) noexcept
 {
-  if (has_null_llink(m_head)) { // The tree is empty
+  if (has_null_link<0>::apply(m_head)) { // The tree is empty
     node_pointer q = get_node();
     safe_construct(q, key);
     attach_node_left(m_head, q);
     return std::make_pair(const_iterator(q), true);
   }
 
-  node_pointer p = m_head->llink;
+  node_pointer p = m_head->link[0];
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p)) {
-        p = p->llink;
+      if (!has_null_link<0>::apply(p)) {
+        p = p->link[0];
       } else {
         node_pointer q = get_node();
         safe_construct(q, key);
@@ -269,8 +269,8 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
         return std::make_pair(q, true);
       }
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p)) {
-        p = p->rlink;
+      if (!has_null_link<1>::apply(p)) {
+        p = p->link[1];
       } else {
         node_pointer q = get_node();
         safe_construct(q, key);
@@ -288,19 +288,19 @@ template <typename K>
 typename set<T, Compare, Allocator>::size_type
 set<T, Compare, Allocator>::count(const K& key) const noexcept
 {
-  if (has_null_llink(m_head)) // The tree is empty
+  if (has_null_link<0>::apply(m_head)) // The tree is empty
     return 0;
 
-  node_pointer p = m_head->llink;
+  node_pointer p = m_head->link[0];
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p))
-        p = p->llink;
+      if (!has_null_link<0>::apply(p))
+        p = p->link[0];
       else
         return 0;
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p))
-        p = p->rlink;
+      if (!has_null_link<1>::apply(p))
+        p = p->link[1];
       else
         return 0;
     } else {
@@ -314,28 +314,28 @@ typename set<T, Compare, Allocator>::node_pointer
 set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::node_pointer q) noexcept
 {
   node_pointer t = q;
-  if (has_null_rlink(t)) {
-    q = t->llink;
+  if (has_null_link<1>::apply(t)) {
+    q = t->link[0];
     std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
     return q;
   }
 
-  node_pointer r = t->rlink;
-  if (has_null_llink(r)) {
-    r->llink = t->llink;
+  node_pointer r = t->link[1];
+  if (has_null_link<0>::apply(r)) {
+    r->link[0] = t->link[0];
     q = r;
     std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
     return q;
   }
 
-  node_pointer s = r->llink;
-  while (!has_null_llink(s)) {
+  node_pointer s = r->link[0];
+  while (!has_null_link<0>::apply(s)) {
     r = s;
-    s = r->llink;
+    s = r->link[0];
   }
-  s->llink = t->llink;
-  r->llink = s->rlink;
-  s->rlink = t->rlink;
+  s->link[0] = t->link[0];
+  r->link[0] = s->link[1];
+  s->link[1] = t->link[1];
   q = s;
   std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
   return q;
@@ -359,23 +359,23 @@ std::pair< typename set<T, Compare, Allocator>::const_node_pointer
          , const typename set<T, Compare, Allocator>::const_node_pointer*>
 set<T, Compare, Allocator>::find_parent(const K& key) const
 {
-  if (has_null_llink(m_head)) // The tree is empty
+  if (has_null_link<0>::apply(m_head)) // The tree is empty
     return std::make_pair(m_head, &m_head); // end iterator.
 
-  const_node_pointer p = m_head->llink;
-  const const_node_pointer* u = &m_head->llink; // pointer to the parent pointer.
+  const_node_pointer p = m_head->link[0];
+  const const_node_pointer* u = &m_head->link[0]; // pointer to the parent pointer.
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p)) {
-        u = &p->llink;
-        p = p->llink;
+      if (!has_null_link<0>::apply(p)) {
+        u = &p->link[0];
+        p = p->link[0];
       } else {
         return std::make_pair(m_head, &m_head);
       }
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p)) {
-        u = &p->rlink;
-        p = p->rlink;
+      if (!has_null_link<1>::apply(p)) {
+        u = &p->link[1];
+        p = p->link[1];
       } else {
         return std::make_pair(m_head, &m_head);
       }
