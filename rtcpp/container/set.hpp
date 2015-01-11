@@ -207,7 +207,7 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
   node_pointer q = rhs.m_head;
 
   for (;;) {
-    if (!has_null_llink(p->tag)) {
+    if (!has_null_llink(p)) {
       node_pointer tmp = get_node();
       attach_node_left(q, tmp);
     }
@@ -218,7 +218,7 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
     if (p == m_head)
       break;
 
-    if (!has_null_rlink(p->tag)) {
+    if (!has_null_rlink(p)) {
       node_pointer tmp = get_node();
       attach_node_right(q, tmp);
     }
@@ -250,7 +250,7 @@ template <typename T, typename Compare, typename Allocator>
 std::pair<typename set<T, Compare, Allocator>::iterator, bool>
 set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::value_type& key) noexcept
 {
-  if (has_null_llink(m_head->tag)) { // The tree is empty
+  if (has_null_llink(m_head)) { // The tree is empty
     node_pointer q = get_node();
     safe_construct(q, key);
     attach_node_left(m_head, q);
@@ -260,7 +260,7 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
   node_pointer p = m_head->llink;
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p->tag)) {
+      if (!has_null_llink(p)) {
         p = p->llink;
       } else {
         node_pointer q = get_node();
@@ -269,7 +269,7 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
         return std::make_pair(q, true);
       }
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p->tag)) {
+      if (!has_null_rlink(p)) {
         p = p->rlink;
       } else {
         node_pointer q = get_node();
@@ -288,18 +288,18 @@ template <typename K>
 typename set<T, Compare, Allocator>::size_type
 set<T, Compare, Allocator>::count(const K& key) const noexcept
 {
-  if (has_null_llink(m_head->tag)) // The tree is empty
+  if (has_null_llink(m_head)) // The tree is empty
     return 0;
 
   node_pointer p = m_head->llink;
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p->tag))
+      if (!has_null_llink(p))
         p = p->llink;
       else
         return 0;
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p->tag))
+      if (!has_null_rlink(p))
         p = p->rlink;
       else
         return 0;
@@ -314,14 +314,14 @@ typename set<T, Compare, Allocator>::node_pointer
 set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::node_pointer q) noexcept
 {
   node_pointer t = q;
-  if (has_null_rlink(t->tag)) {
+  if (has_null_rlink(t)) {
     q = t->llink;
     std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
     return q;
   }
 
   node_pointer r = t->rlink;
-  if (has_null_llink(r->tag)) {
+  if (has_null_llink(r)) {
     r->llink = t->llink;
     q = r;
     std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
@@ -329,7 +329,7 @@ set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::node_p
   }
 
   node_pointer s = r->llink;
-  while (!has_null_llink(s->tag)) {
+  while (!has_null_llink(s)) {
     r = s;
     s = r->llink;
   }
@@ -359,21 +359,21 @@ std::pair< typename set<T, Compare, Allocator>::const_node_pointer
          , const typename set<T, Compare, Allocator>::const_node_pointer*>
 set<T, Compare, Allocator>::find_parent(const K& key) const
 {
-  if (has_null_llink(m_head->tag)) // The tree is empty
+  if (has_null_llink(m_head)) // The tree is empty
     return std::make_pair(m_head, &m_head); // end iterator.
 
   const_node_pointer p = m_head->llink;
   const const_node_pointer* u = &m_head->llink; // pointer to the parent pointer.
   for (;;) {
     if (m_comp(key, p->key)) {
-      if (!has_null_llink(p->tag)) {
+      if (!has_null_llink(p)) {
         u = &p->llink;
         p = p->llink;
       } else {
         return std::make_pair(m_head, &m_head);
       }
     } else if (m_comp(p->key, key)) {
-      if (!has_null_rlink(p->tag)) {
+      if (!has_null_rlink(p)) {
         u = &p->rlink;
         p = p->rlink;
       } else {
