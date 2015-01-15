@@ -69,7 +69,7 @@ class set {
   ~set() noexcept;
   void clear() noexcept;
   std::pair<iterator, bool> insert(const value_type& key) noexcept;
-  const_iterator begin() const noexcept {return const_iterator(inorder_successor(m_head));}
+  const_iterator begin() const noexcept {return const_iterator(inorder<1>(m_head));}
   const_iterator end() const noexcept {return const_iterator(m_head);}
   const_reverse_iterator rbegin() const noexcept {return const_reverse_iterator(end());}
   const_reverse_iterator rend() const noexcept {return const_reverse_iterator(begin());}
@@ -179,7 +179,7 @@ void set<T, Compare, Allocator>::clear() noexcept
 {
   node_pointer p = m_head;
   for (;;) {
-    node_pointer q = inorder_successor(p);
+    node_pointer q = inorder<1>(p);
     if (p != m_head) {
       std::allocator_traits<inner_allocator_type>::destroy(m_inner_alloc, &q->key);
       std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, p, 1);
@@ -209,7 +209,7 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
   for (;;) {
     if (!has_null_link<0>::apply(p)) {
       node_pointer tmp = get_node();
-      attach_node_left(q, tmp);
+      attach_node<0>(q, tmp);
     }
 
     p = preorder_successor(p);
@@ -220,7 +220,7 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
 
     if (!has_null_link<1>::apply(p)) {
       node_pointer tmp = get_node();
-      attach_node_right(q, tmp);
+      attach_node<1>(q, tmp);
     }
 
     q->key = p->key;
@@ -253,7 +253,7 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
   if (has_null_link<0>::apply(m_head)) { // The tree is empty
     node_pointer q = get_node();
     safe_construct(q, key);
-    attach_node_left(m_head, q);
+    attach_node<0>(m_head, q);
     return std::make_pair(const_iterator(q), true);
   }
 
@@ -265,7 +265,7 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
       } else {
         node_pointer q = get_node();
         safe_construct(q, key);
-        attach_node_left(p, q);
+        attach_node<0>(p, q);
         return std::make_pair(q, true);
       }
     } else if (m_comp(p->key, key)) {
@@ -274,7 +274,7 @@ set<T, Compare, Allocator>::insert(const typename set<T, Compare, Allocator>::va
       } else {
         node_pointer q = get_node();
         safe_construct(q, key);
-        attach_node_right(p, q);
+        attach_node<1>(p, q);
         return std::make_pair(q, true);
       }
     } else {

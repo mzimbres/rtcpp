@@ -19,7 +19,7 @@ class bst_iterator : public std::iterator<std::bidirectional_iterator_tag, const
 
   bst_iterator& operator++() noexcept
   {
-    m_p = inorder_successor(m_p);
+    m_p = inorder<1>(m_p);
     return *this;
   }
 
@@ -32,7 +32,7 @@ class bst_iterator : public std::iterator<std::bidirectional_iterator_tag, const
 
   bst_iterator& operator--() noexcept
   {
-    m_p = inorder_predecessor(m_p);
+    m_p = inorder<0>(m_p);
     return *this;
   }
 
