@@ -86,16 +86,18 @@ class allocator<T, N, true> {
   std::size_t m_size;
   node_stack<sizeof (T)> m_stack;
   public:
+  allocator(char* data, std::size_t size)
+  : m_data(data)
+  , m_size(size)
+  {}
   // Stack is not linked in this ctor
-  template <std::size_t S>
-  explicit allocator(std::array<char, S>& arr) 
-  : m_data(&arr.front())
-  , m_size(arr.size())
+  template <std::size_t I>
+  explicit allocator(std::array<char, I>& arr)
+  : allocator(&arr.front(), arr.size())
   {}
   // Stack is not linked in this ctor
   explicit allocator(std::vector<char>& arr)
-  : m_data(&arr.front())
-  , m_size(arr.size())
+  : allocator(&arr.front(), arr.size())
   {}
   template<typename U>
   allocator(const allocator<U, sizeof (U), !(sizeof (U) < sizeof (char*))>& alloc)

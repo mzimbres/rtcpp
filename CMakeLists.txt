@@ -28,6 +28,7 @@ add_executable(test_reverse tests/test_reverse.cpp)
 add_executable(test_alloc tests/test_alloc.cpp)
 add_executable(example1 examples/example1.cpp)
 add_executable(example2 examples/example2.cpp)
+add_executable(example3 examples/example3.cpp)
 add_executable(bench_map benchmarks/bench_map.cpp)
 
 if (Boost_FOUND)
@@ -40,4 +41,5 @@ add_test(NAME test_align COMMAND test_align)
 add_test(NAME test_alloc COMMAND test_alloc)
 add_test(NAME example1 COMMAND example1)
 add_test(NAME example2 COMMAND example2)
+add_test(NAME example3 COMMAND example3)
 
