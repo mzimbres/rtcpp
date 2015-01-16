@@ -117,5 +117,26 @@ void attach_node(bst_node<T>* p, bst_node<T>* q) noexcept
   }
 }
 
+template <std::size_t I, typename T>
+bst_node<T>* erase_node(bst_node<T>* p, bst_node<T>* q) noexcept
+{
+  // p is parent of q. We do not handle the case p = q
+  // Returns the erased node to be released elsewhere.
+  // WARNING: Still unfinished.
+  typedef bst_node<T>* node_pointer;
+  if (has_null_link<0>(q)) {
+    if (has_null_link<1>(q)) {
+      p->link[0] = q->llink[0];
+      set_link_null<0>(p);
+      return q;
+    } else { // The other link is not null
+      node_pointer s = inorder<1>(q);
+      s->link[0] = q->link[0];
+      p->link[0] = s;
+      return q;
+    }
+  }
+}
+
 }
 

@@ -1,9 +1,7 @@
-#include <iostream>
-#include <iomanip>
 #include <array>
-#include <iterator>
 #include <set>
 
+#include <rtcpp/utility/print.hpp>
 #include <rtcpp/container/set.hpp>
 #include <rtcpp/memory/allocator.hpp>
 
@@ -24,16 +22,7 @@ int main()
     std::cout << "There is not enough memory." << std::endl;
   }
 
-  std::copy( std::begin(t1)
-           , std::end(t1)
-           , std::ostream_iterator<int>(std::cout, " "));
-
-  std::cout << std::endl;
-
-  std::copy( std::begin(t2)
-           , std::end(t2)
-           , std::ostream_iterator<int>(std::cout, " "));
-
-  std::cout << std::endl;
+  print(t1);
+  print(t2);
 }
 
