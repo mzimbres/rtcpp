@@ -35,8 +35,8 @@ int main()
   i2 = {4, 5, 6};
 
   typedef std::set<double, std::less<double>, rt::allocator<double>> double_set_type;
-  double_set_type d1(double_alloc);
-  double_set_type d2(double_alloc);
+  double_set_type d1(std::less<double>(), double_alloc);
+  double_set_type d2(std::less<double>(), double_alloc);
   d1 = {3.4, 1.2, 5.6};
   d2 = {10.11, 7.8, 9.10};
 
