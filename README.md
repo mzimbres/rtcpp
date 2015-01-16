@@ -20,17 +20,13 @@
   like any other allocator, for example:
 
 ```c++
-  typedef std::set<int, std::less<int>, rt::allocator<int>> rt_set_type;
-
-  std::array<char, 1000> buffer = {{}}; // 1000 bytes buffer.
+  std::array<char, 2000> buffer = {{}};
   rt::allocator<int> alloc(buffer);
-  rt_set_type t1(alloc);
-  rt_set_type t2(alloc);
 
-  t1 = {5, 3, 7, 20, 1};
-  t2 = {44, 22, 8, 44, 33};
+  std::list<int, rt::allocator<int>> t1(alloc);
+  t1 = {5, 3, 7, 20, 1, 44, 22, 8};
 
-  // Print t1 and t2 ...
+  print(t1);
 ```
 In the code snippet above, we see a 1000 bytes buffer being shared among t1 and
 t2.  All memory allocations happen inside the buffer and no call to operator

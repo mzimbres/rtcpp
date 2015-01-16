@@ -61,8 +61,11 @@ class allocator {
   explicit allocator(std::vector<char>& arr)
   : allocator(&arr.front(), arr.size())
   {}
-  pointer address(reference x) const noexcept { return std::addressof(x); }
-  const_pointer address(const_reference x) const noexcept { return std::addressof(x); }
+  template<typename U>
+  allocator(const allocator<U, sizeof (U), !(sizeof (U) < sizeof (char*))>& alloc)
+  : m_data(alloc.m_data)
+  , m_size(alloc.m_size)
+  {}
 };
 
 template <typename T, std::size_t N>

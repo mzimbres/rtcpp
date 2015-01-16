@@ -1,7 +1,8 @@
-#include <array>
 #include <set>
+#include <array>
+#include <list>
+#include <forward_list>
 
-#include <rtcpp/container/set.hpp>
 #include <rtcpp/memory/allocator.hpp>
 #include <rtcpp/utility/print.hpp>
 
@@ -12,39 +13,35 @@
 
 int main()
 {
-  // Sets that must be served with nodes of different sizes.
-  typedef std::set<char, std::less<char>, rt::allocator<char>> char_set_type;
-  typedef std::set<int, std::less<int>, rt::allocator<int>> int_set_type;
-  typedef std::set<double, std::less<double>, rt::allocator<double>> double_set_type;
-
-  // The buffer that will be shared among all sets.
+  // The buffer that will be shared among all lists.
   const std::size_t s = 3000;
   std::array<char, 3 * s> buffer = {{}};
 
   // Allocators to serve different node types.
-  // Alignment s handled automatically.
+  // Alignment is handled automatically.
   rt::allocator<char> char_alloc(&buffer.front(), s);
   rt::allocator<int> int_alloc(&buffer.front() + s, s);
   rt::allocator<double> double_alloc(&buffer.front() + 2 * s, s);
 
   // For each type lets handle two containers.
-  char_set_type c1(char_alloc);
-  char_set_type c2(char_alloc);
-  c1 = {'F', 'O', 'O'};
-  c2 = {'B', 'A', 'R'};
+  std::forward_list<char, rt::allocator<char>> c1(char_alloc);
+  std::forward_list<char, rt::allocator<char>> c2(char_alloc);
+  c1 = {'R', 'E', 'A', 'L', 'T', 'I', 'M', 'E'};
+  c2 = {'A', 'L', 'L', 'O', 'C', 'A', 'T', 'O', 'R'};
 
-  int_set_type i1(int_alloc);
-  int_set_type i2(int_alloc);
+  std::list<int, rt::allocator<int>> i1(int_alloc);
+  std::list<int, rt::allocator<int>> i2(int_alloc);
   i1 = {1, 2, 3};
   i2 = {4, 5, 6};
 
+  typedef std::set<double, std::less<double>, rt::allocator<double>> double_set_type;
   double_set_type d1(double_alloc);
   double_set_type d2(double_alloc);
-  d1 = {1.2, 3.4, 5.6};
-  d2 = {7.8, 9.10, 10.11};
+  d1 = {3.4, 1.2, 5.6};
+  d2 = {10.11, 7.8, 9.10};
 
-  print(c1);
-  print(c2);
+  print(c1, "");
+  print(c2, "");
   print(i1);
   print(i2);
   print(d1);
