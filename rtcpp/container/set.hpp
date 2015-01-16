@@ -48,7 +48,7 @@ class set {
   void copy(set& rhs) const noexcept;
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
-  node_pointer deletion(node_pointer q) noexcept;
+  //node_pointer deletion(node_pointer q) noexcept;
   public:
   static std::size_t reserve_to_alloc(std::size_t n) {return sizeof ((node_type) + 1) * n;}
   set(const Compare& comp, const Allocator& alloc = Allocator());
@@ -83,7 +83,7 @@ class set {
   template<typename K>
   const_iterator find(const K& x) const;
   template<typename K>
-  std::pair<const_node_pointer, const const_node_pointer*> find_parent(const K& x) const;
+  std::pair<const_node_pointer, const_node_pointer> find_parent(const K& x) const;
   size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
   template<typename InputIt>
   void insert(InputIt begin, InputIt end) noexcept;
@@ -101,7 +101,7 @@ set<T, Compare, Allocator>::erase(const K& key)
   if (p.first == m_head)
     return 0;
 
-  *const_cast<node_pointer*>(p.second) = deletion(const_cast<node_pointer>(p.first));
+  //*const_cast<node_pointer*>(p.second) = deletion(const_cast<node_pointer>(p.first));
   return 1;
 }
 
@@ -309,38 +309,38 @@ set<T, Compare, Allocator>::count(const K& key) const noexcept
   }
 }
 
-template <typename T, typename Compare, typename Allocator>
-typename set<T, Compare, Allocator>::node_pointer
-set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::node_pointer q) noexcept
-{
-  node_pointer t = q;
-  if (has_null_link<1>::apply(t)) {
-    q = t->link[0];
-    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
-    return q;
-  }
-
-  node_pointer r = t->link[1];
-  if (has_null_link<0>::apply(r)) {
-    r->link[0] = t->link[0];
-    q = r;
-    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
-    return q;
-  }
-
-  node_pointer s = r->link[0];
-  while (!has_null_link<0>::apply(s)) {
-    r = s;
-    s = r->link[0];
-  }
-  s->link[0] = t->link[0];
-  r->link[0] = s->link[1];
-  s->link[1] = t->link[1];
-  q = s;
-  std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
-  return q;
-}
-
+//template <typename T, typename Compare, typename Allocator>
+//typename set<T, Compare, Allocator>::node_pointer
+//set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::node_pointer q) noexcept
+//{
+//  node_pointer t = q;
+//  if (has_null_link<1>::apply(t)) {
+//    q = t->link[0];
+//    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
+//    return q;
+//  }
+//
+//  node_pointer r = t->link[1];
+//  if (has_null_link<0>::apply(r)) {
+//    r->link[0] = t->link[0];
+//    q = r;
+//    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
+//    return q;
+//  }
+//
+//  node_pointer s = r->link[0];
+//  while (!has_null_link<0>::apply(s)) {
+//    r = s;
+//    s = r->link[0];
+//  }
+//  s->link[0] = t->link[0];
+//  r->link[0] = s->link[1];
+//  s->link[1] = t->link[1];
+//  q = s;
+//  std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
+//  return q;
+//}
+//
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
 typename set<T, Compare, Allocator>::const_iterator
@@ -356,28 +356,28 @@ set<T, Compare, Allocator>::find(const K& key) const
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
 std::pair< typename set<T, Compare, Allocator>::const_node_pointer
-         , const typename set<T, Compare, Allocator>::const_node_pointer*>
+         , typename set<T, Compare, Allocator>::const_node_pointer>
 set<T, Compare, Allocator>::find_parent(const K& key) const
 {
   if (has_null_link<0>::apply(m_head)) // The tree is empty
-    return std::make_pair(m_head, &m_head); // end iterator.
+    return std::make_pair(m_head, m_head); // end iterator.
 
+  const_node_pointer u = m_head; // pointer to the parent pointer.
   const_node_pointer p = m_head->link[0];
-  const const_node_pointer* u = &m_head->link[0]; // pointer to the parent pointer.
   for (;;) {
     if (m_comp(key, p->key)) {
       if (!has_null_link<0>::apply(p)) {
-        u = &p->link[0];
+        u = p;
         p = p->link[0];
       } else {
-        return std::make_pair(m_head, &m_head);
+        return std::make_pair(m_head, m_head);
       }
     } else if (m_comp(p->key, key)) {
       if (!has_null_link<1>::apply(p)) {
-        u = &p->link[1];
+        u = p;
         p = p->link[1];
       } else {
-        return std::make_pair(m_head, &m_head);
+        return std::make_pair(m_head, m_head);
       }
     } else {
       return std::make_pair(p, u); // equivalent element.
