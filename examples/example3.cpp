@@ -8,12 +8,13 @@
 
   /*
   How to share the same buffer between containers that must be served with
-  nodes of different sizes.
+  nodes of different sizes. I use two objects of each one of std::forward_list,
+  std::list, std::set.
   */
 
 int main()
 {
-  // The buffer that will be shared among all lists.
+  // The buffer that will be shared among all containers.
   const std::size_t s = 3000;
   std::array<char, 3 * s> buffer = {{}};
 
