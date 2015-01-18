@@ -97,11 +97,29 @@ template <typename K>
 typename set<T, Compare, Allocator>::size_type
 set<T, Compare, Allocator>::erase(const K& key)
 {
-  auto p = find_parent(key);
-  if (p.first == m_head)
+  auto pair = find_parent(key);
+  node_pointer q = pair.first;
+  node_pointer pq = pair.second;
+  if (q == m_head)
     return 0;
 
-  //*const_cast<node_pointer*>(p.second) = deletion(const_cast<node_pointer>(p.first));
+  if (!has_null_link<0>::apply(q) && !has_null_link<1>::apply(q)) {
+    node_pointer u = inorder<1>(q);
+    node_pointer s = u->link[0];
+    node_pointer p = inorder<0>(q);
+    s->link[0] = q->link[0];;
+    unset_link_null<0>::apply(s);
+    p->link[1] = s;
+    if (has_null_link<1>::apply(s))
+      set_link_null<0>::apply(u);
+    else
+      u->link[0] = s->link[1];;
+    if (!has_null_link<1>::apply(s)) {
+      s->link[1] = q->link[1];;
+      unset_link_null<1>::apply(s);
+    }
+    pq = s;
+  }
   return 1;
 }
 

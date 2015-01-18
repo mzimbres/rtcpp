@@ -53,6 +53,23 @@ struct set_link_null<1> {
 };
 
 template <std::size_t I>
+struct unset_link_null;
+
+template <>
+struct unset_link_null<0> {
+  template <typename T>
+  static void apply(bst_node<T>* p) noexcept
+  { p->tag &= ~detail::lbit; }
+};
+
+template <>
+struct unset_link_null<1> {
+  template <typename T>
+  static void apply(bst_node<T>* p) noexcept
+  { p->tag &= ~detail::rbit; }
+};
+
+template <std::size_t I>
 struct has_null_link;
 
 template <>
@@ -81,6 +98,23 @@ bst_node<T>* inorder(const bst_node<T>* p) noexcept
     q = q->link[index_helper<I>::other];
 
   return q;
+}
+
+template <std::size_t I, typename T> 
+bst_node<T>* inorder_parent(const bst_node<T>* p) noexcept
+{
+  // I = 0: predecessor. I = 1: sucessor.
+  if (has_null_link<I>::apply(p))
+    return p->link[I];
+
+  bst_node<T>* pq = p;
+  bst_node<T>* q = p->link[I];
+  while (!has_null_link<index_helper<I>::other>::apply(q)) {
+    pq = q;
+    q = q->link[index_helper<I>::other];
+  }
+
+  return pq;
 }
 
 template <typename T>
