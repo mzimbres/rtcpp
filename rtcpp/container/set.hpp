@@ -103,23 +103,8 @@ set<T, Compare, Allocator>::erase(const K& key)
   if (q == m_head)
     return 0;
 
-  if (!has_null_link<0>::apply(q) && !has_null_link<1>::apply(q)) {
-    node_pointer u = inorder<1>(q);
-    node_pointer s = u->link[0];
-    node_pointer p = inorder<0>(q);
-    s->link[0] = q->link[0];;
-    unset_link_null<0>::apply(s);
-    p->link[1] = s;
-    if (has_null_link<1>::apply(s))
-      set_link_null<0>::apply(u);
-    else
-      u->link[0] = s->link[1];;
-    if (!has_null_link<1>::apply(s)) {
-      s->link[1] = q->link[1];;
-      unset_link_null<1>::apply(s);
-    }
-    pq = s;
-  }
+  node_pointer r = erase_node(pq, q);
+  std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, r, 1);
   return 1;
 }
 
