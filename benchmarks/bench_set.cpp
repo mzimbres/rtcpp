@@ -33,14 +33,11 @@ void print_bench(C& c, Iter begin, std::size_t n)
   {
     rt::timer t;
     c.insert(begin, begin + n);
-    //for (std::size_t i = 0; i < n; ++i) {
-    //  auto it = c.find(begin[n - i - 1]);
-    //  if (it != c.end())
-    //    c.erase(it);
-    //}
+    for (std::size_t i = 0; i < n; ++i)
+      c.erase(begin[n - i - 1]);
   }
-  //if (!c.empty())
-  //  throw std::runtime_error("");
+  if (!c.empty())
+    throw std::runtime_error("");
 }
 
 namespace rt {

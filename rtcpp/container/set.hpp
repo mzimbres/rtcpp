@@ -98,12 +98,12 @@ typename set<T, Compare, Allocator>::size_type
 set<T, Compare, Allocator>::erase(const K& key)
 {
   auto pair = find_parent(key);
-  node_pointer q = pair.first;
-  node_pointer pq = pair.second;
+  const_node_pointer q = pair.first;
+  const_node_pointer pq = pair.second;
   if (q == m_head)
     return 0;
 
-  node_pointer r = erase_node(pq, q);
+  node_pointer r = erase_node(const_cast<node_pointer>(pq), const_cast<node_pointer>(q));
   std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, r, 1);
   return 1;
 }
