@@ -157,6 +157,9 @@ bst_node<T>* erase_node(bst_node<T>* pq, bst_node<T>* q) noexcept
   // p is parent of q. We do not handle the case p = q
   // Returns the erased node to be released elsewhere.
   // WARNING: Still unfinished.
+  bst_node<T>** linker = &pq->link[0];
+  if (pq->link[1] == q)
+    linker = &pq->link[1];
   typedef bst_node<T>* node_pointer;
   if (!has_null_link<0>::apply(q) && !has_null_link<1>::apply(q)) {
     node_pointer u = const_cast<node_pointer>(inorder_parent<1>(q));
@@ -175,21 +178,26 @@ bst_node<T>* erase_node(bst_node<T>* pq, bst_node<T>* q) noexcept
       s->link[1] = q->link[1];;
       unset_link_null<1>::apply(s);
     }
-    pq = s;
+    *linker = s;
     return q;
   }
 
-  if (has_null_link<0>::apply(q)) {
-    if (has_null_link<1>::apply(q)) {
-      pq->link[0] = q->link[0];
-      //set_link_null<0>(pq);
-      return q;
-    } else { // The other link is not null
-      node_pointer s = inorder<1>(q);
-      s->link[0] = q->link[0];
-      pq->link[0] = s;
-      return q;
+  if (has_null_link<0>::apply(q) && !has_null_link<1>::apply(q)) {
+    node_pointer u = const_cast<node_pointer>(inorder_parent<1>(q));
+    node_pointer s = q->link[1];
+    if (u != q)
+      s = u->link[0];
+    s->link[0] = q->link[0];;
+    if (has_null_link<1>::apply(s))
+      set_link_null<0>::apply(u);
+    else
+      u->link[0] = s->link[1];;
+    if (u != q) {
+      s->link[1] = q->link[1];;
+      unset_link_null<1>::apply(s);
     }
+    *linker = s;
+    return q;
   }
   return q;
 }
