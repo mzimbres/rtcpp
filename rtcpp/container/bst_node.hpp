@@ -199,6 +199,33 @@ bst_node<T>* erase_node(bst_node<T>* pq, bst_node<T>* q) noexcept
     *linker = s;
     return q;
   }
+
+  if (!has_null_link<0>::apply(q) && has_null_link<1>::apply(q)) {
+    node_pointer u = const_cast<node_pointer>(inorder_parent<0>(q));
+    node_pointer s = q->link[0];
+    if (u != q)
+      s = u->link[1];
+    s->link[1] = q->link[1];;
+    if (has_null_link<0>::apply(s))
+      set_link_null<1>::apply(u);
+    else
+      u->link[1] = s->link[0];;
+    if (u != q) {
+      s->link[0] = q->link[0];;
+      unset_link_null<0>::apply(s);
+    }
+    *linker = s;
+    return q;
+  }
+  // Both links are null
+  if (pq->link[0] == q) {
+    set_link_null<0>::apply(pq);
+    pq->link[0] = q->link[0];
+  } else {
+    set_link_null<1>::apply(pq);
+    pq->link[1] = q->link[1];
+  }
+
   return q;
 }
 
