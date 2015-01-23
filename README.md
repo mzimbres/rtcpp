@@ -16,7 +16,8 @@
   6. `boost::constainer::node_allocator<int, N, 1>`.
   7. `boost::constainer::node_allocator<int, N, 2>`.
 
-  The real-time allocator seems to be the fastest so far.  It can be use just
+  **I highly recommend you to see the graphs below before continuing**
+  On all my benchmarks, the real-time allocators was the fastest.  It can be use just
   like any other allocator, for example:
 
 ```c++
@@ -30,7 +31,7 @@
 ```
 In the code snippet above, we see a 1000 bytes buffer being shared among t1 and
 t2.  All memory allocations happen inside the buffer and no call to operator
-new is made. It makes the most efficient use of memory as all nodes are
+new is made. It makes the most efficient memory usage as all nodes are
 allocated sequentially, that means you can easily fit them all on the cache.
 For more example see the examples directory.
 
@@ -91,15 +92,15 @@ implementation of it `rt::set. Each one is tested with five allocators:
   3. `__gnu_cxx::__pool_alloc`.
   4. `__gnu_cxx::bitmap_alloc`.
   5. `__gnu_cxx::__mt_alloc`.
-  6. `boost::constainer::node_allocator<int, 10000, 1>`.
-  7. `boost::constainer::node_allocator<int, 10000, 2>`.
+  6. `boost::constainer::node_allocator<int, 100000, 1>`.
+  7. `boost::constainer::node_allocator<int, 100000, 2>`.
 
   The benchmarks are performed on a scenario with a fragmented heap, where I
   dynamically allocate many `char`'s on the heap and leave some holes for the nodes
   that will be allocated by the container. 
 
-  It is noteworthy that simply changing the allocator can lead to more than 50%
-  performance improvement. Follow the links below.
+  It is impressive how much performance improvement one can have by just
+  changing the allocator.
 
 ![std::set insertion time](fig/std_set_insertion.png), ![rt::set insertion time](fig/rt_set_insertion.png),
 
