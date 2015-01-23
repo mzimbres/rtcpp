@@ -16,7 +16,7 @@
   6. `boost::constainer::node_allocator<int, N, 1>`.
   7. `boost::constainer::node_allocator<int, N, 2>`.
 
-  **I highly recommend you to see the graphs below before continuing**
+  **I highly recommend you to see the graphs below before continuing**.
   On all my benchmarks, the real-time allocators was the fastest.  It can be use just
   like any other allocator, for example:
 
