@@ -1,7 +1,6 @@
 #include <array>
 #include <list>
 
-#include <rtcpp/container/set.hpp>
 #include <rtcpp/memory/allocator.hpp>
 #include <rtcpp/utility/print.hpp>
 
