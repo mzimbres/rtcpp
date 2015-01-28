@@ -68,14 +68,28 @@ template <typename C>
 bool test_erase(C& t1, const std::vector<typename C::value_type>& arr)
 {
   t1.clear();
+
   t1.insert(std::begin(arr), std::end(arr));
-  for (auto v : arr) {
+  for (auto v : arr) { // Removes forward
     t1.erase(v);
     if (t1.find(v) != std::end(t1))
       return false;
   }
+
   if (!t1.empty())
     return false;
+
+  t1.insert(std::begin(arr), std::end(arr));
+  for (std::size_t i = 0; i < arr.size(); ++i) { // Removes backwards.
+    const auto v = arr[arr.size() - i - 1];
+    t1.erase(v);
+    if (t1.find(v) != std::end(t1))
+      return false;
+  }
+
+  if (!t1.empty())
+    return false;
+
   return true;
 }
 
@@ -171,7 +185,7 @@ bool run_tests(C& t1, const std::vector<typename C::value_type>& tmp)
 template <typename T>
 bool run_tests_all()
 {
-  const T size = 500;
+  const T size = 10000;
   const int a = 1;
   const int b = std::numeric_limits<int>::max();
 
