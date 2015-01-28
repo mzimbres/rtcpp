@@ -103,7 +103,7 @@ set<T, Compare, Allocator>::erase(const K& key)
   if (q == m_head)
     return 0;
 
-  node_pointer r = erase_node(const_cast<node_pointer>(pq), const_cast<node_pointer>(q));
+  node_pointer r = erase_node<1>(const_cast<node_pointer>(pq), const_cast<node_pointer>(q));
   std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, r, 1);
   return 1;
 }

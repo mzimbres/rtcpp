@@ -90,12 +90,13 @@ template <std::size_t I, typename T>
 bst_node<T>* inorder(const bst_node<T>* p) noexcept
 {
   // I = 0: predecessor. I = 1: sucessor.
+  const std::size_t O = index_helper<I>::other;
   if (has_null_link<I>::apply(p))
     return p->link[I];
 
   bst_node<T>* q = p->link[I];
-  while (!has_null_link<index_helper<I>::other>::apply(q))
-    q = q->link[index_helper<I>::other];
+  while (!has_null_link<O>::apply(q))
+    q = q->link[O];
 
   return q;
 }
@@ -104,14 +105,15 @@ template <std::size_t I, typename T>
 const bst_node<T>* inorder_parent(const bst_node<T>* p) noexcept
 {
   // I = 0: predecessor. I = 1: sucessor.
+  const std::size_t O = index_helper<I>::other;
   if (has_null_link<I>::apply(p))
     return p->link[I];
 
   const bst_node<T>* pq = p;
   const bst_node<T>* q = p->link[I];
-  while (!has_null_link<index_helper<I>::other>::apply(q)) {
+  while (!has_null_link<O>::apply(q)) {
     pq = q;
-    q = q->link[index_helper<I>::other];
+    q = q->link[O];
   }
 
   return pq;
@@ -138,38 +140,42 @@ template <std::size_t I, typename T>
 void attach_node(bst_node<T>* p, bst_node<T>* q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
+  const std::size_t O = index_helper<I>::other;
   q->link[I] = p->link[I];
-  q->tag = has_null_link<index_helper<I>::other>::apply(q) | has_null_link<I>::apply(p);
+  q->tag = has_null_link<O>::apply(q) | has_null_link<I>::apply(p);
   p->link[I] = q;
-  p->tag = has_null_link<index_helper<I>::other>::apply(p);
-  q->link[index_helper<I>::other] = p;
-  set_link_null<index_helper<I>::other>::apply(q);
+  p->tag = has_null_link<O>::apply(p);
+  q->link[O] = p;
+  set_link_null<O>::apply(q);
 
   if (!has_null_link<I>::apply(q)) {
     bst_node<T>* qs = inorder<I>(q);
-    qs->link[index_helper<I>::other] = q;
+    qs->link[O] = q;
   }
 }
 
-template <typename T>
+template <std::size_t I, typename T>
 bst_node<T>* erase_node_lr_non_null(bst_node<T>** linker, bst_node<T>* q) noexcept
 {
+  // I = 0: The inorder predecessor replaces the erased node.
+  // I = 1: The inorder sucessor replaces the erased node.
+  const std::size_t O = index_helper<I>::other;
   typedef bst_node<T>* node_pointer;
-  node_pointer u = const_cast<node_pointer>(inorder_parent<1>(q));
-  node_pointer s = q->link[1];
+  node_pointer u = const_cast<node_pointer>(inorder_parent<I>(q));
+  node_pointer s = q->link[I];
   if (u != q)
-    s = u->link[0];
-  node_pointer p = inorder<0>(q);
-  s->link[0] = q->link[0];;
-  unset_link_null<0>::apply(s);
-  p->link[1] = s;
-  if (has_null_link<1>::apply(s))
-    set_link_null<0>::apply(u);
+    s = u->link[O];
+  node_pointer p = inorder<O>(q);
+  s->link[O] = q->link[O];;
+  unset_link_null<O>::apply(s);
+  p->link[I] = s;
+  if (has_null_link<I>::apply(s))
+    set_link_null<O>::apply(u);
   else
-    u->link[0] = s->link[1];;
+    u->link[O] = s->link[I];;
   if (u != q) {
-    s->link[1] = q->link[1];;
-    unset_link_null<1>::apply(s);
+    s->link[I] = q->link[I];;
+    unset_link_null<I>::apply(s);
   }
   *linker = s;
   return q;
@@ -178,49 +184,50 @@ bst_node<T>* erase_node_lr_non_null(bst_node<T>** linker, bst_node<T>* q) noexce
 template <std::size_t I, typename T>
 bst_node<T>* erase_node_one_null(bst_node<T>** linker, bst_node<T>* q) noexcept
 {
+  const std::size_t O = index_helper<I>::other;
   typedef bst_node<T>* node_pointer;
-  node_pointer u = const_cast<node_pointer>(inorder_parent<index_helper<I>::other>(q));
-  node_pointer s = q->link[index_helper<I>::other];
+  node_pointer u = const_cast<node_pointer>(inorder_parent<O>(q));
+  node_pointer s = q->link[O];
   if (u != q)
     s = u->link[I];
   s->link[I] = q->link[I];;
-  if (has_null_link<index_helper<I>::other>::apply(s))
+  if (has_null_link<O>::apply(s))
     set_link_null<I>::apply(u);
   else
-    u->link[I] = s->link[index_helper<I>::other];;
+    u->link[I] = s->link[O];;
   if (u != q) {
-    s->link[index_helper<I>::other] = q->link[index_helper<I>::other];;
-    unset_link_null<index_helper<I>::other>::apply(s);
+    s->link[O] = q->link[O];;
+    unset_link_null<O>::apply(s);
   }
   *linker = s;
   return q;
 }
 
-template <typename T>
+template <std::size_t I, typename T>
 bst_node<T>* erase_node(bst_node<T>* pq, bst_node<T>* q) noexcept
 {
   // p is parent of q. We do not handle the case p = q
   // Returns the erased node to be released elsewhere.
   // WARNING: Still unfinished.
-  bst_node<T>** linker = &pq->link[0];
-  if (pq->link[1] == q)
-    linker = &pq->link[1];
-  typedef bst_node<T>* node_pointer;
-  if (!has_null_link<0>::apply(q) && !has_null_link<1>::apply(q))
-    return erase_node_lr_non_null(linker, q);
+  const std::size_t O = index_helper<I>::other;
+  bst_node<T>** linker = &pq->link[O];
+  if (pq->link[I] == q)
+    linker = &pq->link[I];
+  if (!has_null_link<O>::apply(q) && !has_null_link<I>::apply(q))
+    return erase_node_lr_non_null<I>(linker, q);
 
-  if (has_null_link<0>::apply(q) && !has_null_link<1>::apply(q))
-    return erase_node_one_null<0>(linker, q);
+  if (has_null_link<O>::apply(q) && !has_null_link<I>::apply(q))
+    return erase_node_one_null<O>(linker, q);
 
-  if (!has_null_link<0>::apply(q) && has_null_link<1>::apply(q))
-    return erase_node_one_null<1>(linker, q);
+  if (!has_null_link<O>::apply(q) && has_null_link<I>::apply(q))
+    return erase_node_one_null<I>(linker, q);
 
-  if (pq->link[0] == q) { // Both links are null
-    set_link_null<0>::apply(pq);
-    pq->link[0] = q->link[0];
+  if (pq->link[O] == q) { // Both links are null
+    set_link_null<O>::apply(pq);
+    pq->link[O] = q->link[O];
   } else {
-    set_link_null<1>::apply(pq);
-    pq->link[1] = q->link[1];
+    set_link_null<I>::apply(pq);
+    pq->link[I] = q->link[I];
   }
 
   return q;
