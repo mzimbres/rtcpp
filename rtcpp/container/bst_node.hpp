@@ -152,6 +152,51 @@ void attach_node(bst_node<T>* p, bst_node<T>* q) noexcept
 }
 
 template <typename T>
+bst_node<T>* erase_node_lr_non_null(bst_node<T>** linker, bst_node<T>* q) noexcept
+{
+  typedef bst_node<T>* node_pointer;
+  node_pointer u = const_cast<node_pointer>(inorder_parent<1>(q));
+  node_pointer s = q->link[1];
+  if (u != q)
+    s = u->link[0];
+  node_pointer p = inorder<0>(q);
+  s->link[0] = q->link[0];;
+  unset_link_null<0>::apply(s);
+  p->link[1] = s;
+  if (has_null_link<1>::apply(s))
+    set_link_null<0>::apply(u);
+  else
+    u->link[0] = s->link[1];;
+  if (u != q) {
+    s->link[1] = q->link[1];;
+    unset_link_null<1>::apply(s);
+  }
+  *linker = s;
+  return q;
+}
+
+template <std::size_t I, typename T>
+bst_node<T>* erase_node_one_null(bst_node<T>** linker, bst_node<T>* q) noexcept
+{
+  typedef bst_node<T>* node_pointer;
+  node_pointer u = const_cast<node_pointer>(inorder_parent<index_helper<I>::other>(q));
+  node_pointer s = q->link[index_helper<I>::other];
+  if (u != q)
+    s = u->link[I];
+  s->link[I] = q->link[I];;
+  if (has_null_link<index_helper<I>::other>::apply(s))
+    set_link_null<I>::apply(u);
+  else
+    u->link[I] = s->link[index_helper<I>::other];;
+  if (u != q) {
+    s->link[index_helper<I>::other] = q->link[index_helper<I>::other];;
+    unset_link_null<index_helper<I>::other>::apply(s);
+  }
+  *linker = s;
+  return q;
+}
+
+template <typename T>
 bst_node<T>* erase_node(bst_node<T>* pq, bst_node<T>* q) noexcept
 {
   // p is parent of q. We do not handle the case p = q
@@ -161,64 +206,16 @@ bst_node<T>* erase_node(bst_node<T>* pq, bst_node<T>* q) noexcept
   if (pq->link[1] == q)
     linker = &pq->link[1];
   typedef bst_node<T>* node_pointer;
-  if (!has_null_link<0>::apply(q) && !has_null_link<1>::apply(q)) {
-    node_pointer u = const_cast<node_pointer>(inorder_parent<1>(q));
-    node_pointer s = q->link[1];
-    if (u != q)
-      s = u->link[0];
-    node_pointer p = inorder<0>(q);
-    s->link[0] = q->link[0];;
-    unset_link_null<0>::apply(s);
-    p->link[1] = s;
-    if (has_null_link<1>::apply(s))
-      set_link_null<0>::apply(u);
-    else
-      u->link[0] = s->link[1];;
-    if (u != q) {
-      s->link[1] = q->link[1];;
-      unset_link_null<1>::apply(s);
-    }
-    *linker = s;
-    return q;
-  }
+  if (!has_null_link<0>::apply(q) && !has_null_link<1>::apply(q))
+    return erase_node_lr_non_null(linker, q);
 
-  if (has_null_link<0>::apply(q) && !has_null_link<1>::apply(q)) {
-    node_pointer u = const_cast<node_pointer>(inorder_parent<1>(q));
-    node_pointer s = q->link[1];
-    if (u != q)
-      s = u->link[0];
-    s->link[0] = q->link[0];;
-    if (has_null_link<1>::apply(s))
-      set_link_null<0>::apply(u);
-    else
-      u->link[0] = s->link[1];;
-    if (u != q) {
-      s->link[1] = q->link[1];;
-      unset_link_null<1>::apply(s);
-    }
-    *linker = s;
-    return q;
-  }
+  if (has_null_link<0>::apply(q) && !has_null_link<1>::apply(q))
+    return erase_node_one_null<0>(linker, q);
 
-  if (!has_null_link<0>::apply(q) && has_null_link<1>::apply(q)) {
-    node_pointer u = const_cast<node_pointer>(inorder_parent<0>(q));
-    node_pointer s = q->link[0];
-    if (u != q)
-      s = u->link[1];
-    s->link[1] = q->link[1];;
-    if (has_null_link<0>::apply(s))
-      set_link_null<1>::apply(u);
-    else
-      u->link[1] = s->link[0];;
-    if (u != q) {
-      s->link[0] = q->link[0];;
-      unset_link_null<0>::apply(s);
-    }
-    *linker = s;
-    return q;
-  }
-  // Both links are null
-  if (pq->link[0] == q) {
+  if (!has_null_link<0>::apply(q) && has_null_link<1>::apply(q))
+    return erase_node_one_null<1>(linker, q);
+
+  if (pq->link[0] == q) { // Both links are null
     set_link_null<0>::apply(pq);
     pq->link[0] = q->link[0];
   } else {
