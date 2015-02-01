@@ -48,7 +48,6 @@ class set {
   void copy(set& rhs) const noexcept;
   node_pointer get_node() const;
   void safe_construct(node_pointer p, const value_type& key) const;
-  //node_pointer deletion(node_pointer q) noexcept;
   public:
   static std::size_t reserve_to_alloc(std::size_t n) {return sizeof ((node_type) + 1) * n;}
   set(const Compare& comp, const Allocator& alloc = Allocator());
@@ -312,38 +311,6 @@ set<T, Compare, Allocator>::count(const K& key) const noexcept
   }
 }
 
-//template <typename T, typename Compare, typename Allocator>
-//typename set<T, Compare, Allocator>::node_pointer
-//set<T, Compare, Allocator>::deletion(typename set<T, Compare, Allocator>::node_pointer q) noexcept
-//{
-//  node_pointer t = q;
-//  if (has_null_link<1>::apply(t)) {
-//    q = t->link[0];
-//    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
-//    return q;
-//  }
-//
-//  node_pointer r = t->link[1];
-//  if (has_null_link<0>::apply(r)) {
-//    r->link[0] = t->link[0];
-//    q = r;
-//    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
-//    return q;
-//  }
-//
-//  node_pointer s = r->link[0];
-//  while (!has_null_link<0>::apply(s)) {
-//    r = s;
-//    s = r->link[0];
-//  }
-//  s->link[0] = t->link[0];
-//  r->link[0] = s->link[1];
-//  s->link[1] = t->link[1];
-//  q = s;
-//  std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, t, 1);
-//  return q;
-//}
-//
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
 typename set<T, Compare, Allocator>::const_iterator
