@@ -10,8 +10,8 @@
 
   /*
 
-  Implements an std::set as an unbalanced binary search tree. That means it
-  does not guarantee logarithmic search time. It is however often faster than a
+  Implements an std::set as a threaded binary search tree. That means it does
+  not guarantee logarithmic search time. It is however often faster than a
   balanced implementation as a degenerate tree is very rare and there is no
   balancing overhead.
 
@@ -24,24 +24,24 @@ template < typename T
          , typename Allocator = std::allocator<T>>
 class set {
   public:
-  typedef T key_type;
-  typedef T value_type;
-  typedef std::size_t size_type;
-  typedef Compare key_compare;
-  typedef Compare value_compare;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef typename std::allocator_traits<Allocator>::pointer pointer;
-  typedef typename std::allocator_traits<Allocator>::const_pointer const_pointer;
-  typedef std::ptrdiff_t difference_type;
-  typedef bst_iterator<T> const_iterator;
-  typedef const_iterator iterator;
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+  using key_type = T;
+  using value_type = T;
+  using size_type = std::size_t ;
+  using key_compare = Compare;
+  using value_compare = Compare;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = typename std::allocator_traits<Allocator>::pointer;
+  using const_pointer = typename std::allocator_traits<Allocator>::const_pointer;
+  using difference_type = std::ptrdiff_t;
+  using const_iterator = bst_iterator<T>;
+  using iterator = const_iterator;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   private:
-  typedef bst_node<T> node_type;
-  typedef typename std::allocator_traits<Allocator>::template rebind_alloc<node_type> inner_allocator_type;
-  typedef typename inner_allocator_type::pointer node_pointer;
-  typedef const node_type* const_node_pointer;
+  using node_type = bst_node<T>;
+  using inner_allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<node_type>;
+  using node_pointer = typename inner_allocator_type::pointer;
+  using const_node_pointer = const node_type*;
   mutable inner_allocator_type m_inner_alloc;
   node_pointer m_head;
   Compare m_comp;
