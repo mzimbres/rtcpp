@@ -14,17 +14,17 @@ struct index_helper;
 
 template <>
 struct index_helper<0> {
-  static const std::size_t other = 1;
+  static constexpr std::size_t other = 1;
 };
 
 template <>
 struct index_helper<1> {
-  static const std::size_t other = 0;
+  static constexpr std::size_t other = 0;
 };
 
 namespace detail {
-  static const int rbit = 1;
-  static const int lbit = 2;
+  constexpr int rbit = 1;
+  constexpr int lbit = 2;
 }
 
 template <typename T>
@@ -75,14 +75,14 @@ struct has_null_link;
 template <>
 struct has_null_link<0> {
   template <typename T>
-  static int apply(const bst_node<T>* p)
+  static constexpr int apply(const bst_node<T>* p) noexcept
   {return p->tag & detail::lbit;}
 };
 
 template <>
 struct has_null_link<1> {
   template <typename T>
-  static int apply(const bst_node<T>* p)
+  static constexpr int apply(const bst_node<T>* p) noexcept
   {return p->tag & detail::rbit;}
 };
 
