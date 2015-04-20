@@ -65,6 +65,7 @@ class set {
   : set(std::begin(init), std::end(init), comp, alloc) {}
   set(std::initializer_list<T> init, const Allocator& alloc = Allocator())
   : set(init, Compare(), alloc) {}
+  set(set&& rhs);
   ~set() noexcept;
   void clear() noexcept;
   std::pair<iterator, bool> insert(const value_type& key) noexcept;
@@ -90,6 +91,19 @@ class set {
   template <typename K>
   size_type erase(const K& key);
 };
+
+template <typename T, typename Compare, typename Allocator>
+set<T, Compare, Allocator>::set(set<T, Compare, Allocator>&& rhs)
+: m_inner_alloc(rhs.m_inner_alloc)
+, m_head(get_node())
+, m_comp(std::move(rhs.m_comp))
+{
+  m_head->link[0] = m_head;
+  m_head->link[1] = m_head;
+  m_head->tag = detail::lbit;
+  std::swap(m_inner_alloc, rhs.m_inner_alloc);
+  std::swap(m_head, rhs.m_head);
+}
 
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
@@ -144,7 +158,6 @@ set<T, Compare, Allocator>::set(const set<T, Compare, Allocator>& rhs) noexcept
 : m_inner_alloc(std::allocator_traits<inner_allocator_type>::select_on_container_copy_construction(rhs.m_inner_alloc))
 , m_head(get_node())
 {
-  // This ctor can fail if the allocator runs out of memory.
   m_head->link[0] = m_head;
   m_head->link[1] = m_head;
   m_head->tag = detail::lbit;

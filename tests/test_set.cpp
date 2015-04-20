@@ -15,7 +15,21 @@
 #include <rtcpp/container/set.hpp>
 #include <rtcpp/memory/allocator.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
+#include <rtcpp/utility/print.hpp>
 
+bool test_move()
+{
+  rt::set<int> t1 = {1, 2, 3, 4, 5};
+  rt::set<int> t2(std::move(t1));
+
+  if (!t1.empty())
+    return false;
+
+  //print(t1);
+  //print(t2);
+
+  return true;
+}
 template <typename T>
 bool test_iterator()
 {
@@ -62,7 +76,6 @@ bool test_swap(const std::vector<T>& arr)
 
   return true;
 }
-
 
 template <typename C>
 bool test_erase(C& t1, const std::vector<typename C::value_type>& arr)
@@ -177,6 +190,9 @@ bool run_tests(C& t1, const std::vector<typename C::value_type>& tmp)
     return false;
 
   if (!test_iterator<value_type>())
+    return false;
+
+  if (!test_move())
     return false;
 
   return true;
