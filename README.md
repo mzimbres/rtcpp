@@ -9,15 +9,14 @@
   allocators:
 
   1. `std::allocator`.
-  2. `rt::allocator`. (The real-time allocator.)
+  2. `rt::allocator`. (**The real-time allocator.**)
   3. `__gnu_cxx::__pool_alloc`.
   4. `__gnu_cxx::bitmap_alloc`.
   5. `__gnu_cxx::__mt_alloc`.
   6. `boost::constainer::node_allocator<int, N, 1>`.
   7. `boost::constainer::node_allocator<int, N, 2>`.
 
-  **I highly recommend you to see the graphs below before continuing**.
-  On all my benchmarks, the real-time allocators was the fastest.  It can be use just
+  I recommend you to see the graphs below before continuing. It can be use just
   like any other allocator, for example:
 
 ```c++
@@ -29,11 +28,11 @@
 
   print(t1);
 ```
-In the code snippet above, we see a 1000 bytes buffer being shared among t1 and
-t2.  All memory allocations happen inside the buffer and no call to operator
-new is made. It makes the most efficient memory usage as all nodes are
-allocated sequentially, that means you can easily fit them all on the cache.
-For more example see the examples directory.
+In the code snippet above, the all insertions made on the `std::list` will be
+placed inside the 1000 bytes buffer. All memory allocations happen inside the
+buffer and no call to operator new is made. It makes the most efficient memory
+usage as all nodes are allocated sequentially, that means you can easily fit
+them all on the cache.  For more example see the examples directory.
 
 ## Real-time C++
 
