@@ -13,11 +13,7 @@ typedef matrix<double, 6, 6> mat6;
 template <typename T>
 matrix<T, 2, 2> gen_mat()
 {
-  matrix<T, 2, 2> mat;
-  mat(0, 0) = static_cast<T>(1);
-  mat(0, 1) = static_cast<T>(2);
-  mat(1, 0) = static_cast<T>(3);
-  mat(1, 1) = static_cast<T>(4);
+  matrix<T, 2, 2> mat = {1, 2, 3, 4};
   return mat;
 }
 
