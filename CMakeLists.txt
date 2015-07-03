@@ -32,6 +32,7 @@ add_executable(example1 examples/example1.cpp)
 add_executable(example2 examples/example2.cpp)
 add_executable(example3 examples/example3.cpp)
 add_executable(example4 examples/example4.cpp)
+add_executable(example5 examples/matrix_example1.cpp)
 
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
@@ -46,4 +47,5 @@ add_test(NAME example1 COMMAND example1)
 add_test(NAME example2 COMMAND example2)
 add_test(NAME example3 COMMAND example3)
 add_test(NAME example4 COMMAND example4)
+add_test(NAME matrix_example COMMAND example5)
 
