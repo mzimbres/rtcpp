@@ -10,23 +10,6 @@
 
 #include "row_major_idx.hpp"
 
-  /*
-  The class below is used to represent vectors and matrices with static sizes
-  in a very efficient and safe way. Vectors are represented by a a matrix with
-  one column. For example matrix<double, 3, 1> vec is a vector. Since the size
-  of the vector is embedded on the type, addition, multiplication of vector and
-  matrices with incompatible sizes are detected at compile type.
-
-  Another feature of this class is that it uses lazy evaluation (via expression
-  templates) to provide a very convenient syntax for matrix algebra without
-  loosing performace. For example
-
-   matrix<double, 3, 1> vec = vec1 + vec2 - vec3 * a
-
-  does not generate many temporaries.
-  */
-
-
 namespace rtcpp {
 
 template <typename Derived>
@@ -35,8 +18,8 @@ struct matrix_traits;
 template <typename E>
 class matrix_expr {
   public:
-  typedef typename matrix_traits<E>::value_type value_type;
-  typedef typename matrix_traits<E>::size_type size_type;
+  using value_type = typename matrix_traits<E>::value_type;
+  using size_type = typename matrix_traits<E>::size_type;
   static const std::size_t rows = matrix_traits<E>::rows;
   static const std::size_t cols = matrix_traits<E>::cols;
   value_type operator()(size_type i, size_type j) const {return static_cast<const E&>(*this)(i, j);}
@@ -51,14 +34,14 @@ public:
   static const std::size_t cols = N;
   static const std::size_t data_size = rows * cols;
 private:
-  typedef std::array<T, rows * cols> data_type;
+  using data_type = std::array<T, rows * cols>;
 public:
-  typedef typename data_type::value_type value_type;
-  typedef typename data_type::size_type size_type;
-  typedef typename data_type::iterator iterator;
-  typedef typename data_type::const_iterator const_iterator;
-  typedef typename data_type::reference reference;
-  typedef typename data_type::const_reference const_reference;
+  using value_type = typename data_type::value_type;
+  using size_type = typename data_type::size_type;
+  using iterator = typename data_type::iterator;
+  using const_iterator = typename data_type::const_iterator;
+  using reference = typename data_type::reference;
+  using const_reference = typename data_type::const_reference;
 private:
   data_type m_data;
 public:
@@ -104,14 +87,14 @@ public:
 
 template <typename T, std::size_t M, std::size_t N>
 struct matrix_traits<matrix<T, M, N> > {
-  typedef std::array<T, M * N> container_type;
-  typedef typename container_type::value_type value_type;
-  typedef typename container_type::reference reference;
-  typedef typename container_type::const_reference const_reference;
-  typedef typename container_type::size_type size_type;
-  typedef typename container_type::iterator iterator;
-  typedef typename container_type::const_iterator const_iterator;
-  typedef typename container_type::difference_type difference_type;
+  using container_type = std::array<T, M * N>;
+  using value_type = typename container_type::value_type;
+  using reference = typename container_type::reference;
+  using const_reference = typename container_type::const_reference;
+  using size_type = typename container_type::size_type;
+  using iterator = typename container_type::iterator;
+  using const_iterator = typename container_type::const_iterator;
+  using difference_type = typename container_type::difference_type;
   static const size_type rows = M;
   static const size_type cols = N;
 };
@@ -121,8 +104,8 @@ class matrix_diff : public matrix_expr<matrix_diff<E1, E2> > {
   const E1& m_u;
   const E2& m_v;
   public:
-  typedef typename E1::size_type size_type;
-  typedef typename E1::value_type value_type;
+  using size_type = typename E1::size_type;
+  using value_type = typename E1::value_type;
   static const size_type rows = E1::rows;
   static const size_type cols = E1::cols;
   matrix_diff(const matrix_expr<E1>& u, const matrix_expr<E2>& v)
@@ -134,8 +117,8 @@ class matrix_diff : public matrix_expr<matrix_diff<E1, E2> > {
 
 template <typename E1, typename E2>
 struct matrix_traits<matrix_diff<E1, E2> > {
-  typedef typename E1::value_type value_type;
-  typedef typename E1::size_type size_type;
+  using value_type = typename E1::value_type;
+  using size_type = typename E1::size_type;
   static const size_type rows = E1::rows;
   static const size_type cols = E1::cols;
 };
@@ -149,8 +132,8 @@ class matrix_sum : public matrix_expr<matrix_sum<E1, E2> > {
   const E1& m_u;
   const E2& m_v;
   public:
-  typedef typename E1::size_type size_type;
-  typedef typename E1::value_type value_type;
+  using size_type = typename E1::size_type;
+  using value_type = typename E1::value_type;
   static const size_type rows = E1::rows;
   static const size_type cols = E1::cols;
   matrix_sum(const matrix_expr<E1>& u, const matrix_expr<E2>& v)
@@ -162,8 +145,8 @@ class matrix_sum : public matrix_expr<matrix_sum<E1, E2> > {
 
 template <typename E1, typename E2>
 struct matrix_traits<matrix_sum<E1, E2> > {
-  typedef typename E1::value_type value_type;
-  typedef typename E1::size_type size_type;
+  using value_type = typename E1::value_type;
+  using size_type = typename E1::size_type;
   static const size_type rows = E1::rows;
   static const size_type cols = E1::cols;
 };
@@ -175,8 +158,8 @@ matrix_sum<E1, E2> const operator+(const matrix_expr<E1>& u, const matrix_expr<E
 template <typename E>
 class matrix_scaled : public matrix_expr<matrix_scaled<E> > {
   public:
-  typedef typename E::value_type value_type; 
-  typedef typename E::size_type size_type; 
+  using value_type = typename E::value_type; 
+  using size_type = typename E::size_type; 
   static const size_type rows = E::rows;
   static const size_type cols = E::cols;
   private:
@@ -192,8 +175,8 @@ class matrix_scaled : public matrix_expr<matrix_scaled<E> > {
 
 template <typename E>
 struct matrix_traits<matrix_scaled<E> > {
-  typedef typename E::value_type value_type;
-  typedef typename E::size_type size_type;
+  using value_type = typename E::value_type;
+  using size_type = typename E::size_type;
   static const size_type rows = E::rows;
   static const size_type cols = E::cols;
 };
@@ -209,7 +192,7 @@ matrix_scaled<E> const operator*(const matrix_expr<E>& v, typename E::value_type
 template <typename E>
 matrix_scaled<E> const operator/(const matrix_expr<E>& v, typename E::value_type val)
 {
-  typedef typename E::value_type value_type;
+  using value_type = typename E::value_type;
   const double tmp = static_cast<double>(1) / val;
   return matrix_scaled<E>(tmp, v);
 }
@@ -221,8 +204,8 @@ class matrix_prod : public matrix_expr<matrix_prod<E1, E2> > {
   const E1& m_u;
   const E2& m_v;
   public:
-  typedef typename E1::size_type size_type;
-  typedef typename E1::value_type value_type;
+  using size_type = typename E1::size_type;
+  using value_type = typename E1::value_type;
   static const size_type rows = E1::rows;
   static const size_type cols = E2::cols;
   matrix_prod(const matrix_expr<E1>& u, const matrix_expr<E2>& v)
@@ -241,8 +224,8 @@ class matrix_prod : public matrix_expr<matrix_prod<E1, E2> > {
 
 template <typename E1, typename E2>
 struct matrix_traits<matrix_prod<E1, E2> > {
-  typedef typename E1::value_type value_type;
-  typedef typename E1::size_type size_type;
+  using value_type = typename E1::value_type;
+  using size_type = typename E1::size_type;
   static const size_type rows = E1::rows;
   static const size_type cols = E2::cols;
 };
