@@ -69,8 +69,8 @@ public:
   template <typename E>
   matrix(const matrix_expr<E>& mat)
   {
-    static_assert(E::rows == rows, "Incompatible matrix sizes.");
-    static_assert(E::cols == cols, "Incompatible matrix sizes.");
+    static_assert(E::rows == rows, "Matrix with incompatibel number of rows.");
+    static_assert(E::cols == cols, "Matrix with incompatibel number of columns.");
     for (size_type i = 0; i < rows; ++i)
       for (size_type j = 0; j < cols; ++j)
         m_data[row_major_idx(i, j, cols)] = mat(i, j);
@@ -207,7 +207,7 @@ matrix_scaled<E> const operator/(const matrix_expr<E>& v, typename E::value_type
 template <typename E1, typename E2>
 class matrix_prod : public matrix_expr<matrix_prod<E1, E2> > {
   private:
-  static_assert(E1::cols == E2::rows, "Incompatible matrix sizes.");
+  static_assert(E1::cols == E2::rows, "Incompatible number of rows and columns.");
   const E1& m_u;
   const E2& m_v;
   public:
