@@ -69,8 +69,8 @@ public:
   template <typename E>
   matrix(const matrix_expr<E>& mat)
   {
-    static_assert(E::rows == rows, "Matrix with incompatibel number of rows.");
-    static_assert(E::cols == cols, "Matrix with incompatibel number of columns.");
+    static_assert(E::rows == rows, "Matrix with incompatible number of rows.");
+    static_assert(E::cols == cols, "Matrix with incompatible number of columns.");
     for (size_type i = 0; i < rows; ++i)
       for (size_type j = 0; j < cols; ++j)
         m_data[row_major_idx(i, j, cols)] = mat(i, j);
