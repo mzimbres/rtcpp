@@ -28,11 +28,12 @@
 
   print(t1);
 ```
-In the code snippet above, the all insertions made on the `std::list` will be
-placed inside the 2000 bytes buffer. All memory allocations happen inside the
-buffer and no call to operator new is made. It makes the most efficient memory
-usage as all nodes are allocated sequentially, that means you can easily fit
-them all on the cache.  For more example see the examples directory.
+In the code snippet above, the all insertions made on the `std::list`
+will be placed inside the 2000 bytes buffer. All memory allocations
+happen inside the buffer and no call to operator new is made. It makes
+the most efficient memory usage as all nodes are allocated
+sequentially, that means you can easily fit them all on the cache.
+For more example see the examples directory.
 
 ## Real-time C++
 
