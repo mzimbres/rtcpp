@@ -3,8 +3,8 @@
 
 int main()
 {
-  using vec3 = rtcpp::matrix<int, 3, 1>;
-  using mat3 = rtcpp::matrix<int, 3, 3>;
+  using vec3 = rt::matrix<int, 3, 1>;
+  using mat3 = rt::matrix<int, 3, 3>;
 
   const vec3 v = {2, 4, 6};
   const mat3 m = {1, 2, 3, 4, 5, 6, 7, 8, 9};

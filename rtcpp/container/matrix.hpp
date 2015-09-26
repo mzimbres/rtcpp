@@ -11,7 +11,7 @@
 
 #include "row_major_idx.hpp"
 
-namespace rtcpp {
+namespace rt {
 
 template <typename Derived>
 struct matrix_traits;

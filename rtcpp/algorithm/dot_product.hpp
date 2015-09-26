@@ -2,7 +2,7 @@
 
 #include <iterator>
 
-namespace rtcpp {
+namespace rt {
   template <std::size_t n>
   struct dot_product_impl {
     template <typename RIter1, typename RIter2> // P is a random access iter.

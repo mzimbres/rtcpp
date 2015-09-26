@@ -1,6 +1,6 @@
 #include <rtcpp/container/matrix.hpp>
 
-using namespace rtcpp;
+using namespace rt;
 
 typedef matrix<double, 3, 1> vec3;
 typedef matrix<double, 4, 1> vec4;
