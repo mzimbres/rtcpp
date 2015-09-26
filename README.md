@@ -1,23 +1,84 @@
-## RTCPP
+## Real-time allocators.
 
-  The goal of this project is to make real-time use of STL containers by
-  means of *real-time allocators*.  *real-time* here means a guarantee that the
-  program will execute a particular task in at most n steps (or processor
-  cycles).
-  
-  In the benchmarks section below I compare the performance of the following
-  allocators:
+### Table of contents
 
-  1. `std::allocator`.
-  2. `rt::allocator`. (**The real-time allocator.**)
-  3. `__gnu_cxx::__pool_alloc`.
-  4. `__gnu_cxx::bitmap_alloc`.
-  5. `__gnu_cxx::__mt_alloc`.
-  6. `boost::constainer::node_allocator<int, N, 1>`.
-  7. `boost::constainer::node_allocator<int, N, 2>`.
+* [Introduction](#introduction)
+* [Motivation and scope](#motivation-and-scope)
+* [What prevents realtime node allocation in current c++?] (#What-prevents-realtime-node-allocation-in-current-c++?)
+* [Impact on the Standard](#impact-on-the-standard)
+* [Sample implementation](#Sample-implementation)
+* [Benchmarks](#Benchmarks)
+* [Building the project](#Building-the-project)
+* [References](#references)
 
-  I recommend you to see the graphs below before continuing. It can be use just
-  like any other allocator, for example:
+### Introduction
+
+The importance of linked data structures like trees and linked lists
+in computer science cannot be over-emphasised, however, it has become
+a common trend in the last years to move away from such data
+structures in C++. The motivation for this move is not due to the
+memory overhead of storing links in each node, but on the fact that
+they are not cache friendly. As matter of fact, many people today
+prefer too use the flat alternatives and pay linear "insertion in the
+middle" complexities than constant time complexity at the cost of
+memory fragmentation and unpredictable performance loss.
+
+On some domains, like realtime applications or systems that aim 24/7
+the unpredictability introduced by memory fragmentation and is simply
+not affordable.
+
+Even though the sub-optimal access patterns are inherent to linked
+data structures, in the c++ node-based containers it is worser than it
+should due to the design of allocators. This proposal concerns itself
+with a small non-breaking addition to the standard, that could
+strongly improve performance and render c++ node-based containers
+usable in hard-real-time contexts.
+
+The idea is to work with a preallocated buffer of nodes and link them
+as a stack.  When an element is inserted in the container we pop one
+node from the stack, when an element is removed we push it back into
+the stack.  Pushing and popping from a stack are simple
+operations, only some pointers are changed, or in other words, only a
+couple of instructions are used, regardless of how fragmented the
+heap is.
+
+### Motivation
+
+* We can achieve platform independent node allocation and do not
+have to rely on unstandardized allocation algorithms and system calls
+like when using malloc.
+
+* It is rather common to know in advance how many elements we want to
+insert in the container or have at least a reasonable upper bound of
+this value. That means we are paying for a flexibility we do not need,
+when using the std::allocator.
+
+* Keeping all nodes in sequential memory addresses improve
+data locality and reduces fragmentation.
+
+* Most node-based containers implementations seems to already
+support this kind of allocation.
+
+### What prevents realtime node allocation in current c++?
+
+The idea is to make node-based containers support allocators whose
+allocate function can return only one node at once.
+
+```c++
+std::allocator::allocate(n) // Supported today
+std::allocator::allocate() // Desired
+```
+
+A realtime node-based allocator cannot return more
+than one consecutive node at once.
+
+### Impact on the Standard
+
+This proposal does not require any breaking change.
+
+### Sample implementation
+
+Please see the example directory for examples of use.
 
 ```c++
   std::array<char, 2000> buffer = {{}};
@@ -28,61 +89,8 @@
 
   print(t1);
 ```
-In the code snippet above, the all insertions made on the `std::list`
-will be placed inside the 2000 bytes buffer. All memory allocations
-happen inside the buffer and no call to operator new is made. It makes
-the most efficient memory usage as all nodes are allocated
-sequentially, that means you can easily fit them all on the cache.
-For more example see the examples directory.
 
-## Real-time C++
-
-  When the C++ standard places a guarantee that a given operation, like
-  constant time complexity on an `std::list::insert`, it means operations
-  inside the list and does not account for the complexity of each node
-  allocation, which may not be constant and usually depends on the allocation
-  algorithm and external things like heap fragmentation.
-
-  This unpredictability is very undesirable in many applications like 24/7,
-  real-time and safe critical systems.
-
-  To make a real-time guarantee on a given operation, we have to get rid of all
-  sources of unpredictable behaviour, some of them are.
-  
-  1. Dynamic allocations of the heap.
-  2. Heap fragmentation.
-  3. Use of exceptions.
-
-  It is debatable whether use of exceptions is really important, therefore I
-  will not focus on it.
-
-## Rationale
-
-In this section I will try to give the user an overview of the design
-of the real-time allocator `rt::allocator`.
-
-The first important thing is: **it is designed for node-based containers**
-and should not be used with other containers.
-
-It is designed as a stack. To allocate a node one pop's from the stack,
-to deallocate you  push on it. Something like.
-
-```c++
-  pointer allocate(size_type) { return m_stack.pop(); }
-  void deallocate(pointer p, size_type) { m_stack.push(p); }
-```
-
-There are many difficulties for writing such an allocator. I will try to list
-them here.
-
-1. On node-based containers, the allocator is rebound to serve nodes instead
-of the allocator `value_type`. That makes it difficult to link the stack, since
-the container node type is not exposed to the user.
-
-2. The use of `::allocate(n)` with `n != 1` cannot be achieved since the nodes
-are linked together and there is no guarantee that they are sequential.
-
-## Benchmarks
+### Benchmarks
 
 The links below shows the time taken to fill a `std::set` and my own
 implementation of it `rt::set. Each one is tested with five allocators:
@@ -95,16 +103,14 @@ implementation of it `rt::set. Each one is tested with five allocators:
   6. `boost::constainer::node_allocator<int, 100000, 1>`.
   7. `boost::constainer::node_allocator<int, 100000, 2>`.
 
-  The benchmarks are performed on a scenario with a fragmented heap, where I
-  dynamically allocate many `char`'s on the heap and leave some holes for the nodes
-  that will be allocated by the container. 
+The benchmarks are performed on a scenario with a fragmented heap,
+where I dynamically allocate many `char`'s on the heap and leave
+some holes for the nodes that will be allocated by the container. 
 
-  It is impressive how much performance improvement one can have by just
-  changing the allocator.
+![std::set insertion time](fig/std_set_insertion.png),
+![rt::set insertion time](fig/rt_set_insertion.png),
 
-![std::set insertion time](fig/std_set_insertion.png), ![rt::set insertion time](fig/rt_set_insertion.png),
-
-##Compilation
+### Building the project
 
   To compile you will need a C++11 compiler and CMake. This is the command I
   use on cmake (maybe without all the optimization flags):
@@ -120,8 +126,7 @@ implementation of it `rt::set. Each one is tested with five allocators:
   GCC 5.0
   Clang 3.4
 
-##Credits
+### References
 
-Most of what is implemented here was taken from the book "The Art of Computer
-Programming Vol. 1 and 3".
+* [Knuth](The Art of Computer Programming)
 
