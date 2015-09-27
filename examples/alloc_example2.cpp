@@ -7,7 +7,9 @@
 
 int main()
 {
-  typedef std::set<int, std::less<int>, rt::node_allocator<int>> rt_set_type;
+  using rt_set_type = std::set< int
+                              , std::less<int>
+                              , rt::node_allocator<int>>;
 
   std::array<char, 300> buffer = {{}};
   rt::node_allocator<int> alloc(buffer);
