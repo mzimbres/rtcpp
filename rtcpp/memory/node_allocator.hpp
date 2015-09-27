@@ -114,12 +114,16 @@ class node_allocator<T, N, true> {
   , m_size(alloc.m_size)
   , m_stack(m_data, m_size)
   {}
-  pointer allocate(size_type)
+  pointer allocate()
   {
     char* p = m_stack.pop(); 
     if (!p)
       throw std::bad_alloc();
     return reinterpret_cast<pointer>(p); 
+  }
+  pointer allocate(size_type)
+  {
+    return allocate();
   }
   void deallocate(pointer p, size_type)
   { m_stack.push(reinterpret_cast<char*>(p)); }
