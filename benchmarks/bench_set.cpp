@@ -13,7 +13,7 @@
 
 #include <rtcpp/container/bst_node.hpp>
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/to_number.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
 #include <rtcpp/utility/timer.hpp>
@@ -47,7 +47,7 @@ void bench_allocators(Iter begin, std::size_t n)
 {
   // The different sets we will benchmark.
   typedef Set<int, std::less<int>, std::allocator<int>> set_type1;
-  typedef Set<int, std::less<int>, rt::allocator<int>> set_type2; // Uses a vector as buffer.
+  typedef Set<int, std::less<int>, rt::node_allocator<int>> set_type2; // Uses a vector as buffer.
   typedef Set<int, std::less<int>, __gnu_cxx::__pool_alloc<int>> set_type3;
   typedef Set<int, std::less<int>, __gnu_cxx::bitmap_allocator<int>> set_type4;
   typedef Set<int, std::less<int>, __gnu_cxx::__mt_alloc<int>> set_type5;
@@ -62,7 +62,7 @@ void bench_allocators(Iter begin, std::size_t n)
   }
   { // (2)
     std::vector<char> buffer((n + 2) * 40, 0);
-    rt::allocator<int> alloc(buffer);
+    rt::node_allocator<int> alloc(buffer);
     set_type2 s(std::less<int>(), alloc); // Uses a vector as buffer.
     print_bench(s, begin, n);
   }

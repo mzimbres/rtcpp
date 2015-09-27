@@ -3,14 +3,14 @@
 
 #include <rtcpp/utility/print.hpp>
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 
 int main()
 {
-  typedef std::set<int, std::less<int>, rt::allocator<int>> rt_set_type;
+  typedef std::set<int, std::less<int>, rt::node_allocator<int>> rt_set_type;
 
   std::array<char, 300> buffer = {{}};
-  rt::allocator<int> alloc(buffer);
+  rt::node_allocator<int> alloc(buffer);
 
   rt_set_type t1(std::less<int>(), alloc);
   rt_set_type t2(std::less<int>(), alloc);

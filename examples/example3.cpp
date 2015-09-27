@@ -3,7 +3,7 @@
 #include <list>
 #include <forward_list>
 
-#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/print.hpp>
 
   /*
@@ -20,22 +20,22 @@ int main()
 
   // Allocators to serve different node types.
   // Alignment is handled automatically.
-  rt::allocator<char> char_alloc(&buffer.front(), s);
-  rt::allocator<int> int_alloc(&buffer.front() + s, s);
-  rt::allocator<double> double_alloc(&buffer.front() + 2 * s, s);
+  rt::node_allocator<char> char_alloc(&buffer.front(), s);
+  rt::node_allocator<int> int_alloc(&buffer.front() + s, s);
+  rt::node_allocator<double> double_alloc(&buffer.front() + 2 * s, s);
 
   // For each type lets handle two containers.
-  std::forward_list<char, rt::allocator<char>> c1(char_alloc);
-  std::forward_list<char, rt::allocator<char>> c2(char_alloc);
+  std::forward_list<char, rt::node_allocator<char>> c1(char_alloc);
+  std::forward_list<char, rt::node_allocator<char>> c2(char_alloc);
   c1 = {'R', 'E', 'A', 'L', 'T', 'I', 'M', 'E'};
   c2 = {'A', 'L', 'L', 'O', 'C', 'A', 'T', 'O', 'R'};
 
-  std::list<int, rt::allocator<int>> i1(int_alloc);
-  std::list<int, rt::allocator<int>> i2(int_alloc);
+  std::list<int, rt::node_allocator<int>> i1(int_alloc);
+  std::list<int, rt::node_allocator<int>> i2(int_alloc);
   i1 = {1, 2, 3};
   i2 = {4, 5, 6};
 
-  typedef std::set<double, std::less<double>, rt::allocator<double>> double_set_type;
+  typedef std::set<double, std::less<double>, rt::node_allocator<double>> double_set_type;
   double_set_type d1(std::less<double>(), double_alloc);
   double_set_type d2(std::less<double>(), double_alloc);
   d1 = {3.4, 1.2, 5.6};

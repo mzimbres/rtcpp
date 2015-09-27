@@ -13,7 +13,7 @@
 
 #include <rtcpp/container/bst_node.hpp>
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/to_number.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
 #include <rtcpp/utility/timer.hpp>
@@ -50,7 +50,7 @@ void bench_allocators(Iter begin, std::size_t n)
 {
   // The different lists we will benchmark.
   typedef std::list<int, std::allocator<int>> list_type1;
-  typedef std::list<int, rt::allocator<int>> list_type2; // Uses a vector as buffer.
+  typedef std::list<int, rt::node_allocator<int>> list_type2; // Uses a vector as buffer.
   typedef std::list<int, __gnu_cxx::__pool_alloc<int>> list_type3;
   typedef std::list<int, __gnu_cxx::bitmap_allocator<int>> list_type4;
   typedef std::list<int, __gnu_cxx::__mt_alloc<int>> list_type5;
@@ -65,7 +65,7 @@ void bench_allocators(Iter begin, std::size_t n)
   }
   { // (2)
     std::vector<char> buffer((n + 2) * 40, 0);
-    rt::allocator<int> alloc(buffer);
+    rt::node_allocator<int> alloc(buffer);
     list_type2 s(alloc); // Uses a vector as buffer.
     print_bench(s, begin, n);
   }

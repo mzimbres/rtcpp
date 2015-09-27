@@ -13,7 +13,7 @@
 #include <ext/mt_allocator.h>
 
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
 #include <rtcpp/utility/print.hpp>
 
@@ -214,19 +214,19 @@ bool run_tests_all()
   std::vector<char> buffer1(2 * bsize);
   std::vector<char> buffer2(4 * bsize);
 
-  rt::allocator<T> alloc1(buffer1);
-  rt::allocator<T> alloc2(buffer2);
+  rt::node_allocator<T> alloc1(buffer1);
+  rt::node_allocator<T> alloc2(buffer2);
 
   rt::set<T> t1;
-  rt::set<T, std::less<T>, rt::allocator<T>> t2(std::less<T>(), alloc1);
-  rt::set<T, std::less<T>, rt::allocator<T>> t3(std::less<T>(), alloc1);
+  rt::set<T, std::less<T>, rt::node_allocator<T>> t2(std::less<T>(), alloc1);
+  rt::set<T, std::less<T>, rt::node_allocator<T>> t3(std::less<T>(), alloc1);
   rt::set<T, std::less<T>, __gnu_cxx::__pool_alloc<T>> t4;
   rt::set<T, std::less<T>, __gnu_cxx::bitmap_allocator<T>> t5;
   rt::set<T, std::less<T>, __gnu_cxx::__mt_alloc<T>> t6;
 
   std::set<T> t7;
-  std::set<T, std::less<T>, rt::allocator<T>> t8(std::less<T>(), alloc2);
-  std::set<T, std::less<T>, rt::allocator<T>> t9(std::less<T>(), alloc2);
+  std::set<T, std::less<T>, rt::node_allocator<T>> t8(std::less<T>(), alloc2);
+  std::set<T, std::less<T>, rt::node_allocator<T>> t9(std::less<T>(), alloc2);
   std::set<T, std::less<T>, __gnu_cxx::__pool_alloc<T>> t10;
   std::set<T, std::less<T>, __gnu_cxx::bitmap_allocator<T>> t11;
   std::set<T, std::less<T>, __gnu_cxx::__mt_alloc<T>> t12;

@@ -6,15 +6,15 @@
 #include <algorithm>
 #include <list>
 
-#include <rtcpp/memory/allocator.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/container/set.hpp>
 
 bool test_buffer_size()
 {
   std::array<char, 1> buffer = {{}};
-  rt::allocator<int> alloc(buffer);
+  rt::node_allocator<int> alloc(buffer);
   try {
-    std::set<int, std::less<int>, rt::allocator<int>> t1(std::less<int>(), alloc);
+    std::set<int, std::less<int>, rt::node_allocator<int>> t1(std::less<int>(), alloc);
   } catch (const std::exception& e) {
     std::cout << e.what() << std::endl;
     return true;
@@ -25,10 +25,10 @@ bool test_buffer_size()
 bool test_link_diff_node_size()
 {
   std::array<char, 900> buffer = {{}};
-  rt::allocator<int> alloc(buffer);
+  rt::node_allocator<int> alloc(buffer);
   try {
-    std::set<int, std::less<int>, rt::allocator<int>> t1(std::less<int>(), alloc);
-    rt::set<int, std::less<int>, rt::allocator<int>> t2(alloc);
+    std::set<int, std::less<int>, rt::node_allocator<int>> t1(std::less<int>(), alloc);
+    rt::set<int, std::less<int>, rt::node_allocator<int>> t2(alloc);
   } catch (const std::exception& e) {
     std::cout << e.what() << std::endl;
     return true;
@@ -42,11 +42,11 @@ bool test_list()
 
   std::array<char, 5000> buffer = {{}};
 
-  rt::allocator<int> alloc(buffer);
+  rt::node_allocator<int> alloc(buffer);
 
-  std::list<int, rt::allocator<int>> t1(std::begin(data), std::end(data), alloc);
-  std::list<int, rt::allocator<int>> t2(std::begin(data), std::end(data), alloc);
-  std::list<int, rt::allocator<int>> t3(std::begin(data), std::end(data), alloc);
+  std::list<int, rt::node_allocator<int>> t1(std::begin(data), std::end(data), alloc);
+  std::list<int, rt::node_allocator<int>> t2(std::begin(data), std::end(data), alloc);
+  std::list<int, rt::node_allocator<int>> t3(std::begin(data), std::end(data), alloc);
 
   if (!std::equal(std::begin(data), std::end(data), std::begin(t1)))
     return false;
@@ -66,8 +66,8 @@ bool test_deallocate()
   const std::size_t data_size = sizeof (std::size_t);
   std::array<char, 3 * ptr_size + 2 * data_size> buffer = {{}};
 
-  rt::allocator<int> alloc1(buffer);
-  rt::allocator<std::size_t> alloc2(alloc1); // links the allocator.
+  rt::node_allocator<int> alloc1(buffer);
+  rt::node_allocator<std::size_t> alloc2(alloc1); // links the node_allocator.
 
   std::size_t* p1 = alloc2.allocate(1);
   *p1 = 10; // To avoid a warning.
