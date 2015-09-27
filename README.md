@@ -1,4 +1,4 @@
-## Allocators for node-based containers in C++
+## Node allocators in C++
 
 ### Table of contents
 
@@ -12,80 +12,90 @@
 
 ### Introduction
 
-The importance of linked data structures in computer
-science, like trees and linked lists, cannot be
-over-emphasised, yet, in the last couple of years it has
-become a common trend in C++ to move away from such data
-structures. The motivation for this move is not due to the
-memory overhead of storing links in each node, but on the
-fact that the memory access patterns associated with them,
-are not optimal. As matter of fact, many people today prefer
-too use the flat alternatives and pay linear insertion time
-complexities than constant time complexity at the cost of
-memory fragmentation and unpredictable performance loss.
+The importance of linked data structures in computer science,
+like trees and linked lists, cannot be over-emphasised, yet, in
+the last couple of years it has become a common trend in C++ to
+move away from such data structures due to their sub-optimal
+memory access patterns.  In fact, many people today prefer too
+use the flat alternatives and pay O(n) insertion time than O(1)
+at the cost of memory fragmentation and unpredictable performance
+loss.
 
-On some domains, like realtime applications or systems that
-aim 24/7 the unpredictability introduced by memory
-fragmentation is simply unaffordable.
+On some domains, like realtime applications or systems that aim
+24/7 the unpredictability introduced by memory fragmentation is
+simply unaffordable.
 
 Even though the sub-optimal access patterns are inherent to
 linked data structures, we think that a small non-breaking
-addition on the C++ standard could strongly improve
-performance and render c++ node-based containers usable
-even hard-real-time contexts.
+addition on the C++ standard could strongly improve performance
+and render c++ node-based containers usable even hard-real-time
+contexts.
 
-The core of the idea is to make node-based containers
-support allocators that use pre-allocated and stack-like
-pre-linked nodes. When an element is inserted in the
-container the allocator pops one node from the stack,
-when an element is removed the allocator pushes it back
-into the stack.  Pushing and popping
-from a stack are cheap operations that do not depend how
-fragmented the memory is.
+The core of the idea is to make node-based containers support
+allocators that use pre-allocated nodes and use their link fields
+to link them as a stack. When an element is inserted in the
+container the allocator pops one node from the stack, when an
+element is removed the allocator pushes it back into the stack.
+Pushing and popping from a stack are O(1) operations that do not
+depend how fragmented the memory is.
 
-The allocate and deallocate member functions look like this
-in node-based containers.
+The allocate and deallocate member functions look like this in
+node-based allocators.
 
 ```c++
 pointer allocate()
 {
-  char* p = m_stack.pop(); 
+  pointer p = m_stack.pop(); 
   if (!p)
     throw std::bad_alloc();
   return p; 
 }
+
 void deallocate(pointer p)
 {
   m_stack.push(p);
 }
 ```
 
-As the reader may have noticed, these functions differ from
-their standard definitions by the fact that they do not have
-an argument to inform the size to be allocated or
-deallocated. It is not possible for the allocate member
-function to allocate more than one consecutive node.
+As the reader may have noticed, these functions differ from their
+standard definitions by the fact that they do not have an
+argument to inform the size to be allocated or deallocated. It is
+not possible for the allocate member function to allocate more
+than one consecutive node.
 
 ### Motivation
 
-* We can achieve platform independent node allocation and do not
-have to rely on unstandardized allocation algorithms and system calls
-like when using malloc.
+* Keep all nodes in sequential memory addresses improving
+  data locality and reducing memory fragmentation.
 
-* It is rather common to know in advance how many elements we want to
-insert in the container or have at least a reasonable upper bound of
-this value. That means we are paying for a flexibility we do not need,
-when using the std::allocator.
+* Support the most natural allocation scheme for linked data
+  structures.
 
-* Keeping all nodes in sequential memory addresses improves
-data locality and reduces fragmentation.
+* Achieve platform independent and hard realtime node allocation
+  since it does not rely on any algorithm.
 
 * Most node-based container implementations seems to already
-support this kind of allocation.
+  support this kind of allocation. In fact it seems that allowing
+  allocate(n) t be called with n != 1 is an unused flexibility we
+  are paying for.
 
 ### Impact on the Standard
 
-This proposal does not require any breaking change.
+This proposal does not require any breaking change. We require
+node-based containers to support the following additional member
+functions
+
+```c++
+pointer allocator_type::allocate()
+void allocator_type::deallocate(pointer p)
+```
+It is also necessary to add a compile time in
+std::allocator_traits so that container implementors can know
+which function is to be used.
+
+```c++
+std::allocator_traits<>::use_node_allocator
+```
 
 ### Sample implementation
 
