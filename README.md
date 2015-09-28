@@ -22,8 +22,8 @@ at the cost of memory fragmentation and unpredictable performance
 loss.
 
 On some domains, like realtime applications or systems that aim
-24/7 the unpredictability introduced by memory fragmentation is
-simply unaffordable.
+24/7 availability, the unpredictability introduced by memory
+fragmentation is simply unaffordable.
 
 Even though the sub-optimal access patterns are inherent to
 linked data structures, we think that a small non-breaking
@@ -63,6 +63,19 @@ argument to inform the size to be allocated or deallocated. It is
 not possible for the allocate member function to allocate more
 than one consecutive node.
 
+The node_based allocators proposed here can be used just like any
+other allocator, for exmple
+
+```c++
+  std::array<char, 2000> buffer = {{}};
+  rt::node_allocator<int> alloc(buffer);
+
+  std::list<int, rt::node_allocator<int>> t1(alloc);
+  t1 = {5, 3, 7, 20, 1, 44, 22, 8};
+
+  print(t1);
+```
+
 ### Motivation
 
 * Keep all nodes in sequential memory addresses improving
@@ -90,26 +103,17 @@ pointer allocator_type::allocate()
 void allocator_type::deallocate(pointer p)
 ```
 It is also necessary to add a compile time in
-std::allocator_traits so that container implementors can know
-which function is to be used.
+std::allocator_traits so that container implementors have means
+to know which function has to be used.
 
 ```c++
-std::allocator_traits<>::use_node_allocator
+std::allocator_traits<node_allocator<node_type>>::use_node_allocator
 ```
-
 ### Sample implementation
 
-Please see the rtcpp project on github.
-
-```c++
-  std::array<char, 2000> buffer = {{}};
-  rt::allocator<int> alloc(buffer);
-
-  std::list<int, rt::allocator<int>> t1(alloc);
-  t1 = {5, 3, 7, 20, 1, 44, 22, 8};
-
-  print(t1);
-```
+An example implementation is available on the project rtcpp on
+github. It has been tested with std::list, std::forward_list,
+std::set and std::map.
 
 ### Benchmarks
 
