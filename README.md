@@ -32,12 +32,12 @@ and render c++ node-based containers usable even hard-real-time
 contexts.
 
 The core of the idea is to make node-based containers support
-allocators that use pre-allocated nodes and use their link fields
-to link them as a stack. When an element is inserted in the
-container the allocator pops one node from the stack, when an
-element is removed the allocator pushes it back into the stack.
-Pushing and popping from a stack are O(1) operations that do not
-depend how fragmented the memory is.
+allocators that use pre-allocated nodes that are linked as a
+stack. When an element is inserted in the container the allocator
+pops one node from the stack, when an element is removed the
+allocator pushes it back into the stack.  Pushing and popping
+from a stack are O(1) operations that do not depend how
+fragmented the memory is.
 
 The allocate and deallocate member functions look like this in
 node-based allocators.
@@ -60,11 +60,10 @@ void deallocate(pointer p)
 As the reader may have noticed, these functions differ from their
 standard definitions by the fact that they do not have an
 argument to inform the size to be allocated or deallocated. It is
-not possible for the allocate member function to allocate more
-than one consecutive node.
+not possible to allocate more than one consecutive node.
 
 The node_based allocators proposed here can be used just like any
-other allocator, for exmple
+other allocator, for example
 
 ```c++
   std::array<char, 2000> buffer = {{}};
@@ -102,18 +101,18 @@ functions
 pointer allocator_type::allocate()
 void allocator_type::deallocate(pointer p)
 ```
-It is also necessary to add a compile time in
+It is also necessary to add a compile time constant in
 std::allocator_traits so that container implementors have means
 to know which function has to be used.
 
 ```c++
-std::allocator_traits<node_allocator<node_type>>::use_node_allocator
+std::allocator_traits<node_allocator<node_type>>::use_allocate_no_arg
 ```
 ### Sample implementation
 
-An example implementation is available on the project rtcpp on
-github. It has been tested with std::list, std::forward_list,
-std::set and std::map.
+An example implementation is available in this project. It has
+been tested with std::list, std::forward_list, std::set and
+std::map.
 
 ### Benchmarks
 
