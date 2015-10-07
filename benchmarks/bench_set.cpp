@@ -30,14 +30,20 @@
 template <typename C, typename Iter>
 void print_bench(C& c, Iter begin, std::size_t n)
 {
+  // Insert half of the data in the set.
+  const std::size_t s = n / 2;
+  c.insert(begin, begin + s);
   {
     rt::timer t;
-    c.insert(begin, begin + n);
-    for (std::size_t i = 0; i < n; ++i)
+    for (std::size_t i = 0; i <= s; ++i) {
+      c.erase(begin[i]);
+      c.insert(begin[n - i - 1]);
+    }
+    for (std::size_t i = 0; i <= s; ++i) {
       c.erase(begin[n - i - 1]);
+      c.insert(begin[i]);
+    }
   }
-  if (!c.empty())
-    throw std::runtime_error("");
 }
 
 namespace rt {

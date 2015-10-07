@@ -2,13 +2,13 @@
 
 ### Table of contents
 
-* [Introduction](##introduction)
-* [Motivation and scope](##motivation-and-scope)
-* [Impact on the Standard](##impact-on-the-standard)
-* [Sample implementation](##Sample-implementation)
-* [Benchmarks](##Benchmarks)
-* [Building the project](##Building-the-project)
-* [References](##references)
+* [Introduction](#introduction)
+* [Motivation and scope](#motivation-and-scope)
+* [Impact on the Standard](#impact-on-the-standard)
+* [Sample implementation](#Sample-implementation)
+* [Benchmarks](#Benchmarks)
+* [Building the project](#Building-the-project)
+* [References](#references)
 
 ### Introduction
 
@@ -121,7 +121,7 @@ and my own implementation of it `rt::set. Each one is tested
 with five allocators:
 
   1. `std::allocator`.
-  2. `rt::allocator`. (The real-time allocator.)
+  2. `rt::allocator`. (The node allocator.)
   3. `__gnu_cxx::__pool_alloc`.
   4. `__gnu_cxx::bitmap_alloc`.
   5. `__gnu_cxx::__mt_alloc`.
