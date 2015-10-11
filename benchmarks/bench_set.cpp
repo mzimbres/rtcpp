@@ -26,25 +26,7 @@
 #endif
 
 #include "heap_frag.hpp"
-
-template <typename C, typename Iter>
-void print_bench(C& c, Iter begin, std::size_t n)
-{
-  // Insert half of the data in the set.
-  const std::size_t s = n / 2;
-  c.insert(begin, begin + s);
-  {
-    rt::timer t;
-    for (std::size_t i = 0; i <= s; ++i) {
-      c.erase(begin[i]);
-      c.insert(begin[n - i - 1]);
-    }
-    for (std::size_t i = 0; i <= s; ++i) {
-      c.erase(begin[n - i - 1]);
-      c.insert(begin[i]);
-    }
-  }
-}
+#include "print_set_bench.hpp"
 
 namespace rt {
 
@@ -64,34 +46,34 @@ void bench_allocators(Iter begin, std::size_t n)
   std::cout << n << " ";
   { // (1)
     set_type1 s;
-    print_bench(s, begin, n);
+    print_set_bench(s, begin, n);
   }
   { // (2)
     std::vector<char> buffer((n + 2) * 40, 0);
     rt::node_allocator<int> alloc(buffer);
     set_type2 s(std::less<int>(), alloc); // Uses a vector as buffer.
-    print_bench(s, begin, n);
+    print_set_bench(s, begin, n);
   }
   { // (3)
     set_type3 s;
-    print_bench(s, begin, n);
+    print_set_bench(s, begin, n);
   }
   { // (4)
     set_type4 s;
-    print_bench(s, begin, n);
+    print_set_bench(s, begin, n);
   }
   { // (5)
     set_type5 s;
-    print_bench(s, begin, n);
+    print_set_bench(s, begin, n);
   }
 #ifdef Boost_FOUND
   { // (6)
     set_type6 s;
-    print_bench(s, begin, n);
+    print_set_bench(s, begin, n);
   }
   { // (7)
     set_type7 s;
-    print_bench(s, begin, n);
+    print_set_bench(s, begin, n);
   }
 #endif
 }
@@ -132,9 +114,7 @@ int main(int argc, char* argv[])
   const std::size_t S = to_number<std::size_t>(argv[2]);
   const std::size_t K = to_number<std::size_t>(argv[3]);
   const std::size_t B = to_number<std::size_t>(argv[4]);
-  bool frag = true;
-  if (argc == 6)
-    frag = false;
+  const bool frag = !(argc == 6);
 
   if (S > N) {
     std::cout << "S must be less than N." << std::endl;
@@ -183,7 +163,7 @@ int main(int argc, char* argv[])
       boost::container::flat_set<int> s;
       s.reserve(ss);
       std::cout << ss << " ";
-      print_bench(s, std::begin(data), ss);
+      print_set_bench(s, std::begin(data), ss);
       std::cout << std::endl;
     }
   }
