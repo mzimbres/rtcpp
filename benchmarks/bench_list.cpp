@@ -26,10 +26,11 @@ template <typename Iter>
 void bench_allocators(Iter begin, std::size_t n)
 {
   typedef std::list<int, std::allocator<int>> list_type1;
-  typedef std::list<int, rt::node_allocator<int>> list_type2; // Uses a vector as buffer.
+  typedef std::list<int, rt::node_allocator<int>> list_type2;
   typedef std::list<int, __gnu_cxx::__pool_alloc<int>> list_type3;
   typedef std::list<int, __gnu_cxx::bitmap_allocator<int>> list_type4;
   typedef std::list<int, __gnu_cxx::__mt_alloc<int>> list_type5;
+  //typedef std::vector<int> list_type6;
   std::cout << n << " ";
   { // (1)
     list_type1 s;
@@ -53,6 +54,10 @@ void bench_allocators(Iter begin, std::size_t n)
     list_type5 s;
     print_list_bench(s, begin, n);
   }
+  //{ // (6)
+  //  list_type6 s;
+  //  print_list_bench(s, begin, n);
+  //}
 }
 
 }
@@ -80,8 +85,7 @@ int main(int argc, char* argv[])
     "(3)  std::list<__gnu_cxx::__pool_alloc>\n"
     "(4)  std::list<__gnu_cxx::bitmap_alloc>\n"
     "(5)  std::list<__mt_alloc>\n"
-    "(6)  std::list<boost::node_allocator<v1>>\n"
-    "(7)  std::list<boost::node_allocator<v2>>\n"
+    //"(6)  std::vector<>\n"
     << std::endl;
 
     return 0;

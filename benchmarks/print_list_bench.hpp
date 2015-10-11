@@ -17,7 +17,7 @@ void print_list_bench(C& c, Iter begin, std::size_t n)
                            , begin[i]);
       if (iter != std::end(c))
         c.erase(iter);
-      c.push_back(begin[n - i - 1]);
+      c.push_front(begin[n - i - 1]);
     }
     for (std::size_t i = 0; i <= s; ++i) {
       auto iter = std::find( std::begin(c)
@@ -25,7 +25,7 @@ void print_list_bench(C& c, Iter begin, std::size_t n)
                            , begin[n - i - 1]);
       if (iter != std::end(c))
         c.erase(iter);
-      c.push_back(begin[i]);
+      c.push_front(begin[i]);
     }
   }
 }
