@@ -1,22 +1,19 @@
+#include <set>
+#include <vector>
 #include <iostream>
 #include <iterator>
-#include <random>
-#include <limits>
-#include <functional>
 #include <algorithm>
-#include <set>
-#include <list>
-#include <vector>
+#include <functional>
+
+#include <ext/mt_allocator.h>
 #include <ext/pool_allocator.h>
 #include <ext/bitmap_allocator.h>
-#include <ext/mt_allocator.h>
 
-#include <rtcpp/container/bst_node.hpp>
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/to_number.hpp>
+#include <rtcpp/container/bst_node.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
-#include <rtcpp/utility/timer.hpp>
 
 #include <config.h>
 

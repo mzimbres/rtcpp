@@ -1,96 +1,58 @@
-#include <iostream>
-#include <iterator>
-#include <random>
-#include <limits>
-#include <functional>
-#include <algorithm>
-#include <set>
 #include <list>
 #include <vector>
+#include <iostream>
+#include <iterator>
+#include <algorithm>
+#include <functional>
+
+#include <ext/mt_allocator.h>
 #include <ext/pool_allocator.h>
 #include <ext/bitmap_allocator.h>
-#include <ext/mt_allocator.h>
 
-#include <rtcpp/container/bst_node.hpp>
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/to_number.hpp>
+#include <rtcpp/container/bst_node.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
-#include <rtcpp/utility/timer.hpp>
 
 #include <config.h>
 
-#ifdef Boost_FOUND
-#include <boost/container/flat_set.hpp>
-#include <boost/container/node_allocator.hpp>
-#endif
-
 #include "heap_frag.hpp"
-
-template <typename C, typename Iter>
-void print_bench(C& c, Iter begin, std::size_t n)
-{
-  {
-    rt::timer t;
-    c.insert(std::end(c), begin, begin + n);
-    for (std::size_t i = 0; i < n; ++i) {
-      auto iter = std::find(std::begin(c), std::end(c), begin[n - i - 1]);
-      if (iter != std::end(c))
-        c.erase(iter);
-    }
-  }
-  if (!c.empty())
-    throw std::runtime_error("");
-}
+#include "print_list_bench.hpp"
 
 namespace rt {
 
 template <typename Iter>
 void bench_allocators(Iter begin, std::size_t n)
 {
-  // The different lists we will benchmark.
   typedef std::list<int, std::allocator<int>> list_type1;
   typedef std::list<int, rt::node_allocator<int>> list_type2; // Uses a vector as buffer.
   typedef std::list<int, __gnu_cxx::__pool_alloc<int>> list_type3;
   typedef std::list<int, __gnu_cxx::bitmap_allocator<int>> list_type4;
   typedef std::list<int, __gnu_cxx::__mt_alloc<int>> list_type5;
-//#ifdef Boost_FOUND
-//  typedef std::list<int, boost::container::node_allocator<int, 100000, 1>> list_type6;
-//  typedef std::list<int, boost::container::node_allocator<int, 100000, 2>> list_type7;
-//#endif
   std::cout << n << " ";
   { // (1)
     list_type1 s;
-    print_bench(s, begin, n);
+    print_list_bench(s, begin, n);
   }
   { // (2)
     std::vector<char> buffer((n + 2) * 40, 0);
     rt::node_allocator<int> alloc(buffer);
     list_type2 s(alloc); // Uses a vector as buffer.
-    print_bench(s, begin, n);
+    print_list_bench(s, begin, n);
   }
   { // (3)
     list_type3 s;
-    print_bench(s, begin, n);
+    print_list_bench(s, begin, n);
   }
   { // (4)
     list_type4 s;
-    print_bench(s, begin, n);
+    print_list_bench(s, begin, n);
   }
   { // (5)
     list_type5 s;
-    print_bench(s, begin, n);
+    print_list_bench(s, begin, n);
   }
-//#ifdef Boost_FOUND
-//  { // (6)
-//    list_type6 s;
-//    print_bench(s, begin, n);
-//  }
-//  { // (7)
-//    list_type7 s;
-//    print_bench(s, begin, n);
-//  }
-//#endif
 }
 
 }
