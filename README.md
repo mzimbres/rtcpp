@@ -116,9 +116,10 @@ std::map.
 
 ### Benchmarks
 
-The links below shows the time taken to fill a `std::set`
-and my own implementation of it `rt::set. Each one is tested
-with five allocators:
+The figures below show the bencharks I have made to
+compare the performance of std::set and std::list with
+various allocators. They are
+
 
   1. `std::allocator`.
   2. `rt::allocator`. (The node allocator.)
@@ -134,7 +135,10 @@ and leave some holes for the nodes that will be allocated by
 the container. 
 
 ![std::set insertion time](fig/std_set_insertion.png),
-![rt::set insertion time](fig/rt_set_insertion.png),
+![std::list insertion time](fig/std_list_bench.png),
+
+As the reader can see, the node allocator was never slower
+the all other allocators. This shows efficient they are.
 
 ### Building the project
 
