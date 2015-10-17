@@ -5,7 +5,7 @@
 namespace rt {
 
 template <typename C, typename Iter>
-void print_list_bench(C& c, Iter begin, std::size_t n)
+void print_list_bench(C c, Iter begin, std::size_t n)
 {
   const std::size_t s = n / 2;
   c.insert(std::end(c), begin, begin + s);
