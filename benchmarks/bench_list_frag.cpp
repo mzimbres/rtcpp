@@ -1,21 +1,9 @@
 #include <list>
-#include <vector>
 #include <iostream>
-#include <iterator>
 #include <algorithm>
-#include <functional>
 
-#include <ext/mt_allocator.h>
-#include <ext/pool_allocator.h>
-#include <ext/bitmap_allocator.h>
-
-#include <rtcpp/container/set.hpp>
 #include <rtcpp/utility/to_number.hpp>
-#include <rtcpp/container/bst_node.hpp>
-#include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
-
-#include <config.h>
 
 #include "heap_frag.hpp"
 #include "print_list_bench.hpp"
@@ -51,7 +39,7 @@ int main(int argc, char* argv[])
   const bool frag = !(argc == 6);
 
   const std::vector<int> data =
-    make_rand_data<int>( N + K * S
+    make_rand_data<int>( N + (K - 1) * S
                        , 1
                        , std::numeric_limits<int>::max());
 
@@ -59,11 +47,13 @@ int main(int argc, char* argv[])
   if (frag) 
     pointers = heap_frag_list(B, data); // Fragments the heap.
 
+  std::cout << data.size() << " " << frag << " " << B << std::endl;
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t n = N + i * S;
     std::cout << n << " ";
-    std::list<int> s;
-    print_list_bench<std::list<int>>(s, std::begin(data), n);
+    print_list_bench<std::list<int>>( std::list<int>()
+                                    , std::begin(data)
+                                    , n);
     std::cout << std::endl;
   }
   std::for_each( std::begin(pointers)

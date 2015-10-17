@@ -40,8 +40,9 @@ std::vector<char*> heap_frag_list(std::size_t n_between, const std::vector<T>& d
     holes.push_back(*iter);
   }
 
-  for (auto iter = std::begin(holes2); iter != std::end(holes2); ++iter)
-    delete *iter;
+  std::for_each( std::begin(holes2)
+               , std::end(holes2)
+               , [](char* p){ delete p;});
 
   return data2; // s2 are destructed leaving many holes in the heap.
 }

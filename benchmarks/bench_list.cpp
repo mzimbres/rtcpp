@@ -20,50 +20,6 @@
 #include "heap_frag.hpp"
 #include "print_list_bench.hpp"
 
-namespace rt {
-
-template <typename Iter>
-void bench_allocators(Iter begin, std::size_t n)
-{
-  typedef std::list<int, std::allocator<int>> list_type1;
-  typedef std::list<int, rt::node_allocator<int>> list_type2;
-  typedef std::list<int, __gnu_cxx::__pool_alloc<int>> list_type3;
-  typedef std::list<int, __gnu_cxx::bitmap_allocator<int>> list_type4;
-  typedef std::list<int, __gnu_cxx::__mt_alloc<int>> list_type5;
-  //typedef std::vector<int> list_type6;
-  std::cout << n << " ";
-  { // (1)
-    list_type1 s;
-    print_list_bench(s, begin, n);
-  }
-  { // (2)
-    std::vector<char> buffer((n + 2) * 40, 0);
-    rt::node_allocator<int> alloc(buffer);
-    list_type2 s(alloc); // Uses a vector as buffer.
-    print_list_bench(s, begin, n);
-  }
-  { // (3)
-    list_type3 s;
-    print_list_bench(s, begin, n);
-  }
-  { // (4)
-    list_type4 s;
-    print_list_bench(s, begin, n);
-  }
-  { // (5)
-    list_type5 s;
-    print_list_bench(s, begin, n);
-  }
-  //{ // (6)
-  //  list_type6 s;
-  //  print_list_bench(s, begin, n);
-  //}
-}
-
-}
-
-using namespace rt;
-
 int main(int argc, char* argv[])
 {
   if ((argc != 5) && (argc != 6)) {
@@ -91,39 +47,75 @@ int main(int argc, char* argv[])
     return 0;
   }
 
+  using namespace rt;
+
   const std::size_t N = to_number<std::size_t>(argv[1]);
   const std::size_t S = to_number<std::size_t>(argv[2]);
   const std::size_t K = to_number<std::size_t>(argv[3]);
   const std::size_t B = to_number<std::size_t>(argv[4]);
-  bool frag = true;
-  if (argc == 6)
-    frag = false;
+  const bool frag = !(argc == 6);
 
-  if (S > N) {
-    std::cout << "S must be less than N." << std::endl;
-    return 1;
+  const std::vector<int> data =
+    rt::make_rand_data<int>( N + (K - 1) * S
+                           , 1
+                           , std::numeric_limits<int>::max());
+
+  std::vector<char*> pointers;
+  if (frag) 
+    pointers = heap_frag_list(B, data); // Fragments the heap.
+
+  std::cout << "std::list<int>" << std::endl;
+  for (std::size_t i = 0; i < K; ++i) {
+    const std::size_t n = N + i * S;
+    std::cout << n << " ";
+    print_list_bench<std::list<int>>( std::list<int>()
+                                    , std::begin(data)
+                                    , n); // (1)
+    std::cout << std::endl;
   }
 
-  const int a = 1;
-  const int b = std::numeric_limits<int>::max();
-
-  const std::size_t size = N + K * S;
-  const std::vector<int> data = rt::make_rand_data<int>(size, a, b);
-
-  {
-    std::cout << "---- std::list ----" << std::endl;
-    std::vector<char*> pointers;
-    if (frag) 
-      pointers = heap_frag_list(B, data); // Fragments the heap.
-
-    for (std::size_t i = 0; i < K; ++i) {
-      const std::size_t ss = N + i * S;
-      bench_allocators(std::begin(data), ss);
-      std::cout << std::endl;
+  std::cout << "std::list<int, rt::node_allocator<int>>" << std::endl;
+  for (std::size_t i = 0; i < K; ++i) {
+    const std::size_t n = N + i * S;
+    std::cout << n << " ";
+    {
+      std::vector<char> buffer((n + 2) * 40, 0);
+      rt::node_allocator<int> alloc(buffer);
+      std::list<int, rt::node_allocator<int>> s(alloc);
+      print_list_bench(s, std::begin(data), n); // (2)
     }
-    for (auto iter = std::begin(pointers); iter != std::end(pointers); ++iter)
-      delete *iter;
+    std::cout << std::endl;
   }
+  std::cout << "std::list<int, __gnu_cxx::__pool_alloc<int>>()" << std::endl;
+  for (std::size_t i = 0; i < K; ++i) {
+    const std::size_t n = N + i * S;
+    std::cout << n << " ";
+    print_list_bench( std::list<int, __gnu_cxx::__pool_alloc<int>>()
+                    , std::begin(data)
+                    , n); // (3)
+    std::cout << std::endl;
+  }
+  std::cout << "std::list<int, __gnu_cxx::bitmap_allocator<int>>()" << std::endl;
+  for (std::size_t i = 0; i < K; ++i) {
+    const std::size_t n = N + i * S;
+    std::cout << n << " ";
+    print_list_bench( std::list<int, __gnu_cxx::bitmap_allocator<int>>()
+                    , std::begin(data)
+                    , n); // (4)
+    std::cout << std::endl;
+  }
+  std::cout << "std::list<int, __gnu_cxx::__mt_alloc<int>>()" << std::endl;
+  for (std::size_t i = 0; i < K; ++i) {
+    const std::size_t n = N + i * S;
+    std::cout << n << " ";
+    print_list_bench( std::list<int, __gnu_cxx::__mt_alloc<int>>()
+                    , std::begin(data)
+                    , n); // (5)
+    std::cout << std::endl;
+  }
+  std::for_each( std::begin(pointers)
+               , std::end(pointers)
+               , [](char* p){ delete p;});
   std::cout << std::endl;
   return 0;
 }
