@@ -3,7 +3,7 @@
 ### Table of contents
 
 * [Introduction](#introduction)
-* [Motivation and scope](#motivation-and-scope)
+* [Motivatione](#motivation)
 * [Impact on the Standard](#impact-on-the-standard)
 * [Sample implementation](#Sample-implementation)
 * [Benchmarks](#Benchmarks)
@@ -57,10 +57,10 @@ void deallocate(pointer p)
 }
 ```
 
-As the reader may have noticed, these functions differ from their
-standard definitions by the fact that they do not have an
-argument to inform the size to be allocated or deallocated. It is
-not possible to allocate more than one consecutive node.
+The alert reader may have noticed, that these functions differ
+from their standard definitions by the fact that they do not have
+an argument to inform the size to be allocated or deallocated. It
+is not possible to allocate more than one consecutive node.
 
 The node_based allocators proposed here can be used just like any
 other allocator, for example
@@ -90,6 +90,25 @@ other allocator, for example
   support this kind of allocation. In fact it seems that allowing
   allocate(n) t be called with n != 1 is an unused flexibility we
   are paying for.
+
+To give the reader an idea of how bad memory fragmentation can
+affect performance, I have made benchmarks for std::list and
+std::set. The benchmark is make inside of a pure function, say
+foo. Since the function is pure, we expect it to behave the
+same way, regardless of global state. However, with fragmentation
+I noticed I can degrade its performance up to one order of
+magnitude. For example
+
+```c++
+  fragments_heap();
+  foo(std::list<int>());
+```
+
+The following graphs show how the function fragments_heap
+influence the performance of foo.
+
+![std::set fragmentation](fig/set_frag_effect.png),
+![std::list fragmentation](fig/list_frag_effect.png),
 
 ### Impact on the Standard
 
@@ -134,8 +153,8 @@ heap, where I dynamically allocate many `char`'s on the heap
 and leave some holes for the nodes that will be allocated by
 the container. 
 
-![std::set insertion time](fig/std_set_bench.png),
-![std::list insertion time](fig/std_list_bench.png),
+![std::set benchmark](fig/std_set_bench.png),
+![std::list benchmark](fig/std_list_bench.png),
 
 As the reader can see, the node allocator was never slower
 the all other allocators. This shows efficient they are.
