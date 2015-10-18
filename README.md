@@ -134,7 +134,7 @@ heap, where I dynamically allocate many `char`'s on the heap
 and leave some holes for the nodes that will be allocated by
 the container. 
 
-![std::set insertion time](fig/std_set_insertion.png),
+![std::set insertion time](fig/std_set_bench.png),
 ![std::list insertion time](fig/std_list_bench.png),
 
 As the reader can see, the node allocator was never slower
