@@ -5,7 +5,7 @@
 namespace rt {
 
 template <typename C, typename Iter>
-void print_set_bench(C& c, Iter begin, std::size_t n)
+void print_set_bench(C c, Iter begin, std::size_t n)
 {
   // This function is designed to benchmark an std::set.  Insertions
   // and deletions are made toguether to maximize cache misses.
