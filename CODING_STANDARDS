@@ -1,0 +1,286 @@
+Compiling - Debugging
+=============================
+
+Before commits you must guarantee your code compiles with "-Wall -Wextra
+-Werror" on gcc. Use cmake as follows
+
+$ cmake ${FOO} \
+       -DCMAKE_INSTALL_PREFIX=${BAR} \
+       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror " \
+       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_CXX_COMPILER=g++
+$ make
+
+If you are on windows there is no "make" so you can use
+
+$ cmake --build . # Build all targets
+$ cmake --build . --target tpn_prop_tool # Build a specific target.
+
+To generate the dependency graph:
+
+$ cmake --graphviz=foo.graph ${FOO}
+$ dot -Tpng foo.graph.foo > fig.png 
+
+* Run valgrind, clang/gcc sanitizers, static analysers etc. often.
+
+Coding Standards
+=============================
+
+* Use two spaces for indentation. Tabs are not allowed.
+* Do not end a line with spaces.
+* All files must end with a newline.
+* Limit line length to 79 characters.
+* Avoid use multiple inheritance.
+* Avoid use non-public inheritance.
+* Think thrice before using object oriented programming (avoid). They make
+  code difficult to understand and reason about due to object state.
+* Avoid RTTI.
+* Avoid dynamic memory allocations, specially for small blocks of memory.
+* Non POD function parameters are passed as const ref.
+* Use one file per class/function and name it the same as the class/function.
+  this way we can track changes easily on svn.
+* Non template code gets a header (.hpp) and an implementation file (.cpp). The
+  later goes into a lib. Do not make it header only using inline.
+* Separate class declaration from its definition even on class templates.
+* Use standard c++ naming convention.
+* Use short names and abbreviations.
+* Avoid global variables.
+* Prefer non-member functions.
+
+Classes
+=============================
+  
+  Braces
+
+    class foo { // Open braces in the same line you declare the class.
+    ...
+    };
+
+    class foo {
+      private: // put the private here, do not omit it.
+      int a;
+    };
+
+  Commenting Right:
+
+    class foo {
+      private:
+      int v; // velocity.
+      int k; // Keep it one line, long descriptions go elsewhere.
+    };
+
+  Commenting Wrong:
+
+    class foo {
+      private:
+      /*
+       * This is the wrong way.
+       */
+      int d;
+
+      /*
+       * Wastes space.
+       */
+      int v;
+    };
+
+Initializer list.
+=============================
+
+ - Use the right data member ordering, otherwise compilers raises annoying
+   warnings and you are doing something wrong.
+
+ - Indentation is done this way:
+   
+     foo::foo(int a, int b, int c)
+     : data1(a)
+     , data1(b)
+     , data2(c)
+     {}
+
+  Putting the comma on the left is useful for easily add / remove lines.
+
+Functions
+=============================
+
+  Different from classes, we do not open braces in the same line.
+
+    void function()
+    {
+      // code
+    }
+
+  There is no space between function names and ():
+
+    function(); // <=== rigth
+    function (); // <=== wrong
+
+  Mind the spaces between arguments:
+
+    foo(a, b, c, e); // Right.
+    foo(a,b,c,e); // Wrong.
+
+  The same reasoning applies to templates:
+
+    std::pair<double, double> foo; // Right.
+    std::pair<double,double> foo; // Wrong.
+
+if - else
+=============================
+
+  One line if's do not get braces:
+
+    if (condition)
+      do_something();
+    else
+      another_thing();
+
+  If you need to open braces for one "if", then all get braces too.
+
+    if (condition) {
+      one();
+      two();
+    } else if (condition2) {
+      three();
+    } else {
+      four();
+    }
+
+  There is a space between if and ():
+
+  if (condition) // right
+  if(condition) // wrong
+  
+
+for, while, do - while
+=============================
+
+  for (condition) // right
+  for(condition)  // wrong
+
+  for (condition) { // right
+  }
+
+  for (condition) // wrong
+  {
+  }
+
+  The same reasoning above applies for while loops.
+
+  If you need an infinite loop, use
+
+  for (;;) { // right
+  }
+
+  while (1) { // wrong
+  }
+
+  Prefer for loops over while loops when you have a counter, this way you do
+  not have to add the counter in function scope:
+
+  Right:
+    for (int i = 0; i < 10; ++i) // i scope is restricted to the for loop.
+      do_something();
+
+  Wrong:
+    int i = 0; // i is in the outer scope
+    while (i < 10) {
+      do_something();
+      ++i;
+    }
+
+Pointers
+=============================
+
+    int* a = 0;
+
+    if (a) // right
+
+    if (a != 0) // wrong
+
+    if (a != NULL) // wrong
+
+  But if a is not a pointer or a boolean variable prefer
+
+    if (a == value) // It makes sense for the reader to know the value.
+
+POD (Plain Old Data)
+=============================
+
+  POD data types are initialized this way:
+
+    double i = 0; // Right
+    double i(0); // Wrong, uses more characters and is not easier to read.
+
+Equations:
+=============================
+
+  Use space with "*" "/" etc:
+
+    const double a = b * c / std::pow(d, e); // Right
+    const double a = b*c/std::pow(d,e); // Wrong
+
+From the kernel coding style:
+=============================
+
+  Encoding the type of a function into the name (so-called Hungarian
+  notation) is brain damaged - the compiler knows the types anyway and can
+  check those, and it only confuses the programmer.  No wonder MicroSoft
+  makes buggy programs.
+
+  LOCAL variable names should be short, and to the point.  If you have
+  some random integer loop counter, it should probably be called "i".
+  Calling it "loop_counter" is non-productive, if there is no chance of it
+  being mis-understood.  Similarly, "tmp" can be just about any type of
+  variable that is used to hold a temporary value.
+
+From fftw coding style:
+=============================
+
+  " NAMES: keep them short.  Shorter than you think.  The Bible was written
+  without vowels.  Don't outsmart the Bible. 
+
+  Leave that hungarian crap to MS.
+
+Getters and Setters:
+=============================
+
+  Getters and setters are sometimes a (big) waste of time and can also
+  hide bad program design.
+
+  For example:
+
+    class foo {
+      private:
+      int m_a;
+      public:
+      void set(int a) {m_a = a;}
+      int get() const {return m_a;}
+    };
+
+  is generaly not better than
+
+    struct foo {
+      int a;
+    };
+
+  The advantages of the later are:
+  1 - It uses 3 lines of code instead of 7.
+  2 - It does not pretend variable a is encapsulated.
+
+  Now some people would argue that it is easier to add code to check inside
+  setter, but fail to say that such changes can break the contract assumed by
+  the programmer when he used it and the code has to be reviewed anyway.  The
+  lesson is to make variables private if they are really encapsulated.
+  Otherwise, make it public and evolve the design.
+
+
+State:
+=============================
+
+  Write stateless code as much as possible, adhere to the principles of
+  functional programming when possible. Most important thing are:
+
+  Use pure functions and functors with no state. Multi-threaded programming
+  becomes a lot easier this way.
+
