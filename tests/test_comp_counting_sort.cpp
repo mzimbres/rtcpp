@@ -11,7 +11,7 @@ int main()
                            , 1
                            , std::numeric_limits<int>::max());
 
-  comp_counting_sort(std::begin(data), std::end(data));
+  rt::comp_counting_sort(std::begin(data), std::end(data));
 
   return std::is_sorted(std::begin(data), std::end(data)) ? 0 : 1;
 }

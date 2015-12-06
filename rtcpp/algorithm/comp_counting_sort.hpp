@@ -9,6 +9,9 @@
    This is a O(n^2) algorithm.
 */
 
+namespace rt
+{
+
 template <typename Iter>
 void comp_counting_sort(Iter begin, Iter end)
 {
@@ -27,5 +30,7 @@ void comp_counting_sort(Iter begin, Iter end)
     buffer2[buffer[i]] = begin[i];
 
   std::copy(buffer2.begin(), buffer2.end(), begin);
+}
+
 }
 

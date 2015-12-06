@@ -5,7 +5,8 @@
 #include <functional>
 #include <vector>
 
-#include "comp_counting_sort.hpp"
+namespace rt
+{
 
 template <typename Iter>
 void dist_counting_sort( Iter begin
@@ -35,4 +36,7 @@ void dist_counting_sort( Iter begin
 
   std::copy(std::begin(out), std::end(out), begin);
 }
+
+}
+
 
