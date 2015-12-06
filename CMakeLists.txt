@@ -36,6 +36,7 @@ add_executable(alloc_example2 examples/alloc_example2.cpp)
 add_executable(alloc_example3 examples/alloc_example3.cpp)
 add_executable(matrix_example1 examples/matrix_example1.cpp)
 add_executable(bench_list_frag benchmarks/bench_list_frag.cpp)
+add_executable(bench_find benchmarks/bench_find.cpp)
 
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})

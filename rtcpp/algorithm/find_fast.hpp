@@ -10,6 +10,8 @@ Iter find_fast(Iter begin, Iter end, const T& v)
   // is reserved to the algoithm. The range therefore contains at least one
   // element.
 
+  // TODO: Remove this assignment from here. It prevents
+  // me from using const iterators in this algorithm.
   *--end = v;
   if (begin == end) // Empty range.
     return ++end;
