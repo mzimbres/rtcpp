@@ -7,8 +7,8 @@
 int main()
 {
   const std::size_t N = 2000000;
-  const std::size_t A = 0;
-  const std::size_t B = 200;
+  const int A = -20;
+  const int B = 200;
   std::vector<int> data = rt::make_rand_data<int>(N ,A ,B);
 
   dist_counting_sort(std::begin(data), N, A, B);

@@ -10,8 +10,8 @@
 template <typename Iter>
 void dist_counting_sort( Iter begin
                        , std::size_t N
-                       , std::size_t A
-                       , std::size_t B)
+                       , typename std::iterator_traits<Iter>::value_type A
+                       , typename std::iterator_traits<Iter>::value_type B)
 {
   const std::size_t count_size = B - A + 1;
   std::vector<std::size_t> count(count_size, 0);
