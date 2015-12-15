@@ -3,7 +3,7 @@
 ### Table of contents
 
 * [Introduction](#introduction)
-* [Motivatione](#motivation)
+* [Motivation](#motivation)
 * [Impact on the Standard](#impact-on-the-standard)
 * [Sample implementation](#Sample-implementation)
 * [Benchmarks](#Benchmarks)
@@ -21,15 +21,16 @@ use the flat alternatives and pay O(n) insertion time than O(1)
 at the cost of memory fragmentation and unpredictable performance
 loss.
 
-On some domains, like realtime applications or systems that aim
-24/7 availability, the unpredictability introduced by memory
-fragmentation is simply unaffordable.
+On some domains, like **realtime applications**, **embedded
+systems** or systems that aim 24/7 availability, the
+unpredictability introduced by memory fragmentation is simply
+unaffordable.
 
 Even though the sub-optimal access patterns are inherent to
 linked data structures, we think that a small non-breaking
 addition on the C++ standard could strongly improve performance
-and render c++ node-based containers usable even hard-real-time
-contexts.
+and render c++ node-based containers usable even
+**hard-real-time** contexts.
 
 The core of the idea is to make node-based containers support
 allocators that use pre-allocated nodes that are linked as a
@@ -77,14 +78,13 @@ other allocator, for example
 
 ### Motivation
 
+* Achieve platform independent and hard-realtime allocation.
+
 * Keep all nodes in sequential memory addresses improving
   data locality and reducing memory fragmentation.
 
 * Support the most natural allocation scheme for linked data
   structures.
-
-* Achieve platform independent and hard realtime node allocation
-  since it does not rely on any algorithm.
 
 * Most node-based container implementations seems to already
   support this kind of allocation. In fact it seems that allowing
@@ -93,14 +93,14 @@ other allocator, for example
 
 To give the reader an idea of how bad memory fragmentation can
 affect performance, I have made benchmarks for std::list and
-std::set. The benchmark is make inside of a pure function, say
+std::set. The benchmark is made inside of a pure function, say
 foo. Since the function is pure, we expect it to behave the
 same way, regardless of global state. However, with fragmentation
 I noticed I can degrade its performance up to one order of
 magnitude. For example
 
 ```c++
-  fragments_heap();
+  fragments_heap(); // Comment this for non-fragmented scenario.
   foo(std::list<int>());
 ```
 
@@ -120,13 +120,15 @@ functions
 pointer allocator_type::allocate()
 void allocator_type::deallocate(pointer p)
 ```
-It is also necessary to add a compile time constant in
-std::allocator_traits so that container implementors have means
-to know which function has to be used.
+To do so, it is necessary to add a new member to
+```std::allocator_traits``` so that container implementors have means
+to know which function has to be used i.e. call allocate(n) or
+allocate().
 
 ```c++
 std::allocator_traits<node_allocator<node_type>>::use_allocate_no_arg
 ```
+
 ### Sample implementation
 
 An example implementation is available in this project. It has
@@ -135,18 +137,13 @@ std::map.
 
 ### Benchmarks
 
-The figures below show the bencharks I have made to
-compare the performance of std::set and std::list with
-various allocators. They are
+The figures below show the bencharks I have made to compare the
+performance of of the rt::node_allocator against the standard
+allocator.
 
 
   1. `std::allocator`.
   2. `rt::allocator`. (The node allocator.)
-  3. `__gnu_cxx::__pool_alloc`.
-  4. `__gnu_cxx::bitmap_alloc`.
-  5. `__gnu_cxx::__mt_alloc`.
-  6. `boost::constainer::node_allocator<int, 100000, 1>`.
-  7. `boost::constainer::node_allocator<int, 100000, 2>`.
 
 The benchmarks are performed on a scenario with a fragmented
 heap, where I dynamically allocate many `char`'s on the heap
@@ -157,16 +154,15 @@ the container.
 ![std::list benchmark](fig/std_list_bench.png),
 
 As the reader can see, the node allocator was never slower
-the all other allocators. This shows efficient they are.
+the all other allocators.
 
 ### Building the project
 
   To compile you will need a C++11 compiler and CMake. This
-  is the command I use on cmake (maybe without all the
-  optimization flags):
+  is the command I use on cmake:
 
   cmake ../../rtcpp/ \
-  -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -std=c++0x" \
+  -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -std=c++11" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=g++ -DBOOST_ROOT=${BOOST}
 

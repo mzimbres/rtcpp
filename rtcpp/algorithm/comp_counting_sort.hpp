@@ -7,6 +7,7 @@
 /*
    This is an implementation of the comparison counting sort.
    This is a O(n^2) algorithm.
+   WARNING: Still not suitable for hard-real-time.
 */
 
 namespace rt

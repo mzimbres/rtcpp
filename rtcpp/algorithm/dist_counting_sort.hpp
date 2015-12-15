@@ -8,6 +8,8 @@
 namespace rt
 {
 
+// WARNING: Still not suitable for hard-real-time.
+
 template <typename Iter>
 void dist_counting_sort( Iter begin
                        , std::size_t N

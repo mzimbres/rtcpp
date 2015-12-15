@@ -14,7 +14,7 @@ $ make
 If you are on windows there is no "make" so you can use
 
 $ cmake --build . # Build all targets
-$ cmake --build . --target tpn_prop_tool # Build a specific target.
+$ cmake --build . --target foo # Build a specific target.
 
 To generate the dependency graph:
 

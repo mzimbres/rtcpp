@@ -3,6 +3,9 @@
 namespace rt
 {
 
+// Faster than std::find.
+// TODO: rename to find_intrusive.
+
 template <typename Iter, typename T>
 Iter find_fast(Iter begin, Iter end, const T& v)
 {
