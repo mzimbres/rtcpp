@@ -4,10 +4,11 @@
 #include <rtcpp/utility/print.hpp>
 #include <rtcpp/container/set.hpp>
 #include <rtcpp/memory/node_allocator.hpp>
+#include <rtcpp/memory/node_allocator_traits.hpp>
 
 int main()
 {
-  using rt_set_type = std::set< int
+  using rt_set_type = rt::set< int
                               , std::less<int>
                               , rt::node_allocator<int>>;
 
