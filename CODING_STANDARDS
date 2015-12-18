@@ -1,27 +1,52 @@
-Compiling - Debugging
-=============================
+Some motivation for the code standards.
+=======================================
 
-Before commits you must guarantee your code compiles with "-Wall -Wextra
--Werror" on gcc. Use cmake as follows
+* Simplicity is the ultimate sophistication.
+  (Leonardo da Vinci)
 
-$ cmake ${FOO} \
-       -DCMAKE_INSTALL_PREFIX=${BAR} \
-       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror " \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_CXX_COMPILER=g++
-$ make
+* Simplicity is prerequisite for reliability.
+  (Dijkstra)
 
-If you are on windows there is no "make" so you can use
+* The unavoidable price of reliability is simplicity.
+  (Hoare)
 
-$ cmake --build . # Build all targets
-$ cmake --build . --target foo # Build a specific target.
+* The computing scientist’s main challenge is not to get
+  confused by the complexities of his own making.
+  (Dijkstra)
 
-To generate the dependency graph:
+* Controlling complexity is the essence of computer
+  programming.
+  (Brian Kernighan)
 
-$ cmake --graphviz=foo.graph ${FOO}
-$ dot -Tpng foo.graph.foo > fig.png 
+* The central enemy of reliability is complexity.
+  (Geer et al.)
 
-* Run valgrind, clang/gcc sanitizers, static analysers etc. often.
+* Simplicity carried to the extreme becomes elegance.
+  (Jon Franklin)
+
+* Complexity has nothing to do with intelligence, simplicity
+  does.  
+  (Larry Bossidy)
+
+* Object-oriented design is the roman numerals of computing.
+  (Rob Pike)
+
+* The object-oriented model makes it easy to build up programs
+  by accretion. What this often means, in practice, is that it
+  provides a structured way to write spaghetti code.
+  (Paul Graham)
+
+* Increasingly, people seem to misinterpret complexity as
+  sophistication, which is baffling—the incomprehensible should
+  cause suspicion rather than admiration.  
+  (Niklaus Wirth)
+
+* I will, in fact, claim that the difference between a bad
+  programmer and a good one is whether he considers his code or
+  his data structures more important. Bad programmers worry about
+  the code. Good programmers worry about data structures and
+  their relationships.
+  (Linus Torvalds)
 
 Coding Standards
 =============================
@@ -32,18 +57,13 @@ Coding Standards
 * Limit line length to 79 characters.
 * Avoid use multiple inheritance.
 * Avoid use non-public inheritance.
-* Think thrice before using object oriented programming (avoid). They make
-  code difficult to understand and reason about due to object state.
+* Avoid object oriented programming. They make code difficult to
+  understand and reason about.
 * Avoid RTTI.
-* Avoid dynamic memory allocations, specially for small blocks of memory.
-* Non POD function parameters are passed as const ref.
-* Use one file per class/function and name it the same as the class/function.
-  this way we can track changes easily on svn.
-* Non template code gets a header (.hpp) and an implementation file (.cpp). The
-  later goes into a lib. Do not make it header only using inline.
+* Avoid dynamic memory allocations for small blocks of memory.
 * Separate class declaration from its definition even on class templates.
 * Use standard c++ naming convention.
-* Use short names and abbreviations.
+* Keep names short and do use abbreviations.
 * Avoid global variables.
 * Prefer non-member functions.
 
@@ -98,8 +118,6 @@ Initializer list.
      , data2(c)
      {}
 
-  Putting the comma on the left is useful for easily add / remove lines.
-
 Functions
 =============================
 
@@ -152,8 +170,10 @@ if - else
   if(condition) // wrong
   
 
-for, while, do - while
+for, while, do - while 
 =============================
+
+You usually do not need this in modern C++, but if you do.
 
   for (condition) // right
   for(condition)  // wrong
@@ -191,6 +211,8 @@ for, while, do - while
 
 Pointers
 =============================
+
+You usually do not need this in modern C++, but if you do.
 
     int* a = 0;
 
@@ -283,4 +305,29 @@ State:
 
   Use pure functions and functors with no state. Multi-threaded programming
   becomes a lot easier this way.
+
+Compiling - Debugging
+=============================
+
+Before commits ensure your code compiles with "-Wall -Wextra
+-Werror" on gcc. Use cmake as follows
+
+$ cmake ${FOO} \
+       -DCMAKE_INSTALL_PREFIX=${BAR} \
+       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror " \
+       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_CXX_COMPILER=g++
+$ make
+
+If you are on windows there is no "make" so you can use
+
+$ cmake --build . # Build all targets
+$ cmake --build . --target foo # Build a specific target.
+
+To generate the dependency graph:
+
+$ cmake --graphviz=foo.graph ${FOO}
+$ dot -Tpng foo.graph.foo > fig.png 
+
+* Run valgrind, clang/gcc sanitizers, static analysers etc. often.
 
