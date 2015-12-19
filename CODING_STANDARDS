@@ -1,5 +1,8 @@
-Some motivation for the code standards.
-=======================================
+Some motivation for the coding standards
+
+
+Simplicity
+==========
 
 * Simplicity is the ultimate sophistication.
   (Leonardo da Vinci)
@@ -28,18 +31,40 @@ Some motivation for the code standards.
   does.  
   (Larry Bossidy)
 
+* Increasingly, people seem to misinterpret complexity as
+  sophistication, which is baffling—the incomprehensible should
+  cause suspicion rather than admiration.  
+  (Niklaus Wirth)
+
+Object oientation
+=============================
+
 * Object-oriented design is the roman numerals of computing.
   (Rob Pike)
+
+* Object-oriented programming is an exceptionally bad idea which could
+  only have originated in California.
+  (Edsger Dijkstra)
+
+* The phrase "object-oriented” means a lot of things. Half are
+  obvious, and the other half are mistakes.
+  (Paul Graham)
+
+* Sometimes, the elegant implementation is just a function. Not a
+  method. Not a class. Not a framework. Just a function.
+  (John Carmack)
+
+* And, at least in it’s most popular forms, it can be extremely
+  harmful and dramatically increase complexity.
+
+* State is the root of all evil. In particular functions with side
+  effects should be avoided.
+  (Joe Armstrong)
 
 * The object-oriented model makes it easy to build up programs
   by accretion. What this often means, in practice, is that it
   provides a structured way to write spaghetti code.
   (Paul Graham)
-
-* Increasingly, people seem to misinterpret complexity as
-  sophistication, which is baffling—the incomprehensible should
-  cause suspicion rather than admiration.  
-  (Niklaus Wirth)
 
 * I will, in fact, claim that the difference between a bad
   programmer and a good one is whether he considers his code or
@@ -57,8 +82,7 @@ Coding Standards
 * Limit line length to 79 characters.
 * Avoid use multiple inheritance.
 * Avoid use non-public inheritance.
-* Avoid object oriented programming. They make code difficult to
-  understand and reason about.
+* Avoid object oriented programming.
 * Avoid RTTI.
 * Avoid dynamic memory allocations for small blocks of memory.
 * Separate class declaration from its definition even on class templates.
