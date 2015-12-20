@@ -2,7 +2,9 @@
 
 #include <array>
 #include <utility>
+#include <memory>
 #include <exception>
+#include <type_traits>
 
 #include <rtcpp/memory/node_stack.hpp>
 
@@ -153,6 +155,40 @@ class node_allocator<T, N, true> {
 }
 
 namespace std {
+
+template <typename T>
+struct allocator_traits<rt::node_allocator<T>> {
+  using use_node_alloc = std::true_type;
+  using allocator_type = typename rt::node_allocator<T>;
+  using size_type = typename allocator_type::size_type;
+  using pointer = typename allocator_type::pointer;
+  using value_type = typename allocator_type::value_type;
+  using difference_type = typename allocator_type::difference_type;
+  using const_pointer = typename allocator_type::const_pointer;
+  using propagate_on_container_copy_assignment = std::false_type; // TODO: Review this.
+  using propagate_on_container_move_assignment = std::false_type; // TODO: Review this.
+  using void_pointer = typename std::pointer_traits<pointer>::template rebind<void>;
+  using const_void_pointer = typename std::pointer_traits<pointer>::template rebind<const void>;
+  using propagate_on_container_swap = std::false_type;
+  template<typename U>
+  using rebind_alloc =
+    typename allocator_type::template rebind<U>::other;
+  static allocator_type
+    select_on_container_copy_construction(const allocator_type& a)
+    {return a;}
+  static pointer allocate(allocator_type& a, size_type)
+  {return a.allocate();}
+  static pointer allocate(allocator_type& a)
+  {return a.allocate();}
+  static void deallocate( allocator_type& a
+                        , pointer p
+                        , size_type) {a.deallocate(p);}
+  template<class U>
+  static void destroy(allocator_type& a, U* p) {a.destroy(p);}
+  template<class U, class... Args >
+  static void construct(allocator_type& a, U* p, Args&&... args)
+  {a.construct(p, std::forward<Args>(args)...);}
+};
 
 template <typename T>
 void swap(rt::node_allocator<T>& s1, rt::node_allocator<T>& s2)

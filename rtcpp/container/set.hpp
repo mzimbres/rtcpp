@@ -1,21 +1,20 @@
-#include <initializer_list>
-#include <utility>
-#include <iterator>
-#include <functional>
-#include <algorithm>
 #include <memory>
 #include <limits>
+#include <utility>
+#include <iterator>
+#include <algorithm>
+#include <functional>
+#include <type_traits>
+#include <initializer_list>
 
 #include "bst_iterator.hpp"
 
-  /*
-
+/*
   Implements an std::set as a threaded binary search tree. That means it does
   not guarantee logarithmic search time. It is however often faster than a
   balanced implementation as a degenerate tree is very rare and there is no
   balancing overhead.
-
-  */
+*/
 
 namespace rt {
 
@@ -242,9 +241,46 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
   }
 }
 
+namespace detail
+{
+
+template<class T, class R = void>  
+struct enable_if_type { using type = R; };
+
+template<class T, class Enable = void>
+struct test_use_node_alloc : std::false_type {};
+
+template<class T>
+struct test_use_node_alloc< T
+                          , typename enable_if_type<typename T::use_node_alloc>::type
+                          > : std::true_type {};
+
+
+template <typename Alloc>
+typename
+std::enable_if< detail::test_use_node_alloc<std::allocator_traits<Alloc>>::value
+              , typename std::allocator_traits<Alloc>::pointer>::type
+get_node_free(Alloc& alloc)
+{
+  return std::allocator_traits<Alloc>::allocate(alloc);
+}
+
+template <typename Alloc>
+typename
+std::enable_if< !detail::test_use_node_alloc<std::allocator_traits<Alloc>>::value
+              , typename std::allocator_traits<Alloc>::pointer>::type
+get_node_free(Alloc& alloc)
+{
+  return std::allocator_traits<Alloc>::allocate(alloc, 1);
+}
+
+}
+
 template <typename T, typename Compare, typename Allocator>
 typename set<T, Compare, Allocator>::node_pointer set<T, Compare, Allocator>::get_node() const
-{ return std::allocator_traits<inner_allocator_type>::allocate(m_inner_alloc, 1); }
+{ 
+  return detail::get_node_free(m_inner_alloc);
+}
 
 template <typename T, typename Compare, typename Allocator>
 void

@@ -4,7 +4,6 @@
 #include <rtcpp/utility/print.hpp>
 #include <rtcpp/container/set.hpp>
 #include <rtcpp/memory/node_allocator.hpp>
-#include <rtcpp/memory/node_allocator_traits.hpp>
 
 int main()
 {
