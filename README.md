@@ -7,7 +7,6 @@
 * [Impact on the Standard](#impact-on-the-standard)
 * [Sample implementation](#Sample-implementation)
 * [Benchmarks](#Benchmarks)
-* [Building the project](#Building-the-project)
 * [References](#references)
 
 ### Introduction
@@ -155,23 +154,6 @@ the container.
 
 As the reader can see, the node allocator was never slower
 the all other allocators.
-
-### Building the project
-
-  To compile you will need a C++11 compiler and CMake. This
-  is the command I use on cmake:
-
-  cmake ../../rtcpp/ \
-  -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -std=c++11" \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=g++ -DBOOST_ROOT=${BOOST}
-
-  I have tested the code with the following compilers.
-
-  GCC 4.7.3
-  GCC 4.8.2
-  GCC 5.0
-  Clang 3.4
 
 ### References
 

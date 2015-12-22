@@ -1,0 +1,79 @@
+
+Introduction to c++ containers and allocators
+===========================================================
+
+
+Memory in a program (simplified)
+===========================================================
+
+  There are two main "places" in a program where we can store our data
+  during program execution:
+  
+  A) The Stack. Grows towards lower memory addresses.
+  B) The Heap. Grows towards higher memory addresses.
+
+  Diagram:
+
+  |         Heap                                        Stack        | 
+  |     ---------->                                  <----------     |  
+  |__________________________________________________________________|
+  0                                                               192873
+                       Program address space
+
+
+Memory allocation on the stack and heap
+===========================================================
+
+  A) Stack.
+
+  - Allocation and deallocation is automatic and simple.
+  - Only a pointer is adjusted.
+  - Limited capacity.
+
+  Example:
+
+  int a; // This allocates space for a on the stack.
+
+  B) Heap.
+  
+  - Explicitly requested by the programmer through operator new or malloc.
+  - The algorithm used to find space is not standardized (platform dependent).
+  - Space is requested to the operating system through system calls.
+  - Even though the whole complexity is hidden from the programmer,
+    behind his back there are many things going on.
+  - Usually unpredictable performance. Depends on things like fragmentation.
+
+  Example:
+
+  T* t = new T; // find space for sizeof (T) on the heap.
+
+
+Back to c++ containers
+===========================================================
+
+There are two main types of container in c++.
+
+  A) Sequential allocation.
+
+    Consecutive elements are in consecutive memory addresses.
+
+    Example:
+
+    int a[10];             // Built in the language.
+    std::array<int, 10> a; // Library container. 
+    std::vector<int> a;    // Library container. 
+
+  B) Linked allocation.
+
+  All other containers. There is no ordering regarding memory addresses.  They
+  can be divided in many categories according to operations and complexity
+  guarantees they provide.
+
+Where do containers store their elements?
+===========================================================
+
+  - Built-in arrays and std::array use exclusively the stack.
+  - All other containers request memory from their allocator.
+
+  std::vector<int, std::allocator<int>> a;
+
