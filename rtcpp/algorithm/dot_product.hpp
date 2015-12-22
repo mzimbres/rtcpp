@@ -2,6 +2,8 @@
 
 #include <iterator>
 
+// Loop unroll by means of meta-programming.
+
 namespace rt {
   template <std::size_t n>
   struct dot_product_impl {

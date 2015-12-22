@@ -26,13 +26,15 @@ Memory allocation on the stack and heap
 
   A) Stack.
 
-  - Allocation and deallocation is automatic and simple.
+  - Allocation and deallocation is automatic and have no overhead.
   - Only a pointer is adjusted.
   - Limited capacity.
+  - Lifetime limited to the function scope where the variable was
+    allocated (declared).
 
   Example:
 
-  int a; // This allocates space for a on the stack.
+  int a; // This allocates space for an intefer on the stack.
 
   B) Heap.
   
@@ -47,7 +49,6 @@ Memory allocation on the stack and heap
 
   T* t = new T; // find space for sizeof (T) on the heap.
 
-
 Back to c++ containers
 ===========================================================
 
@@ -60,8 +61,8 @@ There are two main types of container in c++.
     Example:
 
     int a[10];             // Built in the language.
-    std::array<int, 10> a; // Library container. 
-    std::vector<int> a;    // Library container. 
+    std::array<int, 10> a; // Library container. Fixed size.
+    std::vector<int> a;    // Library container. Variable size. 
 
   B) Linked allocation.
 

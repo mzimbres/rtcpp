@@ -14,6 +14,9 @@
   not guarantee logarithmic search time. It is however often faster than a
   balanced implementation as a degenerate tree is very rare and there is no
   balancing overhead.
+
+  NEWS: It supports allocators that can serve only one object at a time:
+  allocator_type::allocate();
 */
 
 namespace rt {
