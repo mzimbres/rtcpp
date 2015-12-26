@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <functional>
 
-#include <rtcpp/algorithm/find_fast.hpp>
+#include <rtcpp/algorithm/find_intrusive.hpp>
 #include <rtcpp/utility/to_number.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
 #include <rtcpp/utility/timer.hpp>
@@ -28,13 +28,14 @@ int main(int argc, char* argv[])
                            , std::numeric_limits<int>::min()
                            , std::numeric_limits<int>::max());
 
-  std::cout << "rt::find_fast" << std::endl;
+  std::cout << "rt::find_intrusive" << std::endl;
   {
     const auto a = std::begin(data);
     const auto b = std::end(data);
     rt::timer t;
     for (std::size_t i = 0; i < n; ++i) {
-      auto iter = rt::find_fast(a, b, data[i]);
+      data.back() = data[i];
+      auto iter = rt::find_intrusive(a, b, data[i]);
       if (iter == b) {
         std::cout << "Something wrong ..." << std::endl;
         return 1;
@@ -49,6 +50,7 @@ int main(int argc, char* argv[])
     --b;
     rt::timer t;
     for (std::size_t i = 0; i < n; ++i) {
+      data.back() = data[i];
       auto iter = std::find(a, b, data[i]);
       if (iter == b) {
         std::cout << "Something wrong ..." << std::endl;
