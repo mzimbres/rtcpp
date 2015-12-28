@@ -10,7 +10,7 @@
 /*
   In this example I use the rt::node_allocator to serve all standard node-based
   containers (and additionally my own implementation of std::set) from a single
-  allocator ainstance. The allocator is optimal to serve std::set nodes, since
+  allocator instance. The allocator is optimal to serve std::set nodes, since
   it was the first to construct the rebound instance, but since the other
   containers rebind to smaller types, the allocators can also serve them,
   although not optimally, since it can only provide blocks with size equal to

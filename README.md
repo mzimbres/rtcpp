@@ -1,5 +1,8 @@
 ## Node allocators in C++
 
+"Size management adds undue difficulties and inefficiencies to
+any allocator design" (Alexandrescu)
+
 ### Table of contents
 
 * [Introduction](#introduction)
@@ -20,7 +23,7 @@ the cost of memory fragmentation and unpredictable performance
 loss.
 
 On some domains, like **realtime applications**, **embedded
-systems** or systems that aim 24/7 availability, the
+systems** or **systems that aim 24/7 availability**, the
 unpredictability introduced by memory fragmentation is simply
 unaffordable.
 
@@ -30,7 +33,7 @@ addition on the C++ standard could strongly improve performance
 and render c++ node-based containers usable even
 **hard-real-time** contexts.
 
-The core of the idea is to make ordered node-based containers
+The core of the idea is to make ordered associative containers
 (std::list, std::forward_list, std::set, std::multiset, std::map
 and std::multimap) support allocators that can serve only one size
 of memory blocks.  With that support, we could introduce
@@ -39,10 +42,10 @@ stack. When an element is inserted in the container the allocator
 pops one node from the stack, when an element is removed the
 allocator pushes it back into the stack.  Pushing and popping
 from a stack are O(1) operations that do not depend
-fragmentations or any fancy allocation algorithm.
+fragmentation or any fancy allocation algorithm.
 
 The allocate and deallocate member functions look like this in
-this allocators.
+these allocators.
 
 ```c++
 pointer allocate()
@@ -79,41 +82,46 @@ allcators. For example
 
 In this example the array buffer will serve as arena for all
 allocations made by the list t1 i.e. all elements inserted in the
-list will be stored in buffer. The size of the memory allocated
-fits exactly what is requested by the list i.e. the size of its
-node type, that is known when the list rebinds the allocator.
-This way there is no waste of memory.
+list will be stored in buffer. The size of the memory returned by
+::allocate fits exactly what is requested by the list i.e. the
+size of its node type, that is known when the list rebinds the
+allocator.  This way there is no waste of memory.
 
 ### Motivation
 
 Some of the motivations behind node_allocators are:
 
-* Support the most natural and fastest non-trivial allocation
-  scheme for linked data structures. In libstd++ for example,
-  this is already somehow supported, there n is always
-  equal to 1 on calls to allocator_type::allocate(n).
+* Support the most natural and fastest allocation scheme for
+  linked data structures. In libstd++ for example, it is already
+  possible to use this allocation technique, since n is always
+  equal to 1 on calls of allocator_type::allocate(n).
 
-* Achieve platform independent and hard-realtime allocation.
-  Most allocators found in the literature use fancy algorithms and
-  are overly complicated as a result of having to handle blocks
-  of different size.
+* Support hard-realtime allocation for node-based containers.
+
+* Most allocators found in the literature are overly complicated
+  as a result of having to handle blocks of different size. In
+  ordered associative containers this is unnecessary since the
+  requested memory have always the same size.
+
+* The user should not *have to* provide allocators that
+  handle different allocation sizes when containers do not make
+  use of this feature. Users pay for a feature that is not used.
 
 * Avoid wasted space behind allocations. It is pretty common that
   allocators allocate more memory than requested to store
-  informations like the size of the allocated block, but since in
-  this case all allocations have the same size, this is
-  unnecessary.
+  informations like the size of the allocated block.
 
-* Keep nodes in as compatible as possible buffers, either on the
-  stack or heap.
+* Keep nodes in as-compact-as-possible buffers, either on the
+  stack or heap, improving cache locality and making them
+  specially usefull for embedded programming.
 
-To give the reader an idea of how baddly memory fragmentation can
-affect performance, I have made benchmarks for std::list and
-std::set. The benchmark is made inside of a pure function, say
-foo. Since the function is pure, we expect it to behave the
-same way, regardless of global state. However, with fragmentation
-I noticed I can degrade its performance up to one order of
-magnitude. For example
+To give the reader a rough idea of how baddly memory
+fragmentation can affect performance, I have made benchmarks for
+std::list and std::set. The benchmark is made inside of a pure
+function, say foo. Since the function is pure, we expect it to
+behave the same way, regardless of global state. However, with
+fragmentation I noticed I can degrade its performance up to one
+order of magnitude. For example
 
 ```c++
   fragments_heap(); // Comment this for non-fragmented scenario.
@@ -129,9 +137,8 @@ influence the performance of foo.
 ### Impact on the Standard
 
 This proposal does not require any breaking change. We require
-node-based containers to support the following additional
-overloads
-
+ordered associative containers to support the following
+additional allocator overload
 ```c++
 pointer allocator_type::allocate()
 void allocator_type::deallocate(pointer p)
@@ -163,7 +170,7 @@ the container.
 ![std::list benchmark](fig/std_list_bench.png),
 
 As the reader can see, the node allocator was never slower
-then the standard allocators.
+then the standard allocator.
 
 ### References
 
