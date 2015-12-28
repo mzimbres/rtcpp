@@ -23,6 +23,10 @@ if (UNIX)
   add_test(NAME test_set COMMAND test_set)
 endif (UNIX)
 
+
+install( DIRECTORY ${PROJECT_SOURCE_DIR}/rtcpp
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+
 add_executable(test_flist tests/test_flist.cpp)
 add_executable(test_align tests/test_align.cpp)
 add_executable(test_reverse tests/test_reverse.cpp)
