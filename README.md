@@ -1,12 +1,17 @@
-## Node allocators in C++
+### Node allocators in C++
 
 "Size management adds undue difficulties and inefficiencies to
 any allocator design" (Alexandrescu)
 
+**Abstract**: This is a non-breaking proposal to the c++ standard
+that aims to reduce allocator complexity, support realtime
+allocation and improve memory access patterns on associative
+ordered containers.
+
 ### Table of contents
 
 * [Introduction](#introduction)
-* [Motivation](#motivation)
+* [Motivation and scope](#motivation-and-scope)
 * [Impact on the Standard](#impact-on-the-standard)
 * [Benchmarks](#Benchmarks)
 * [References](#references)
@@ -87,7 +92,7 @@ list will be stored in buffer. The size of the memory returned by
 size of its node type, that is known when the list rebinds the
 allocator.  This way there is no waste of memory.
 
-### Motivation
+### Motivation and scope
 
 Some of the motivations behind node_allocators are:
 
