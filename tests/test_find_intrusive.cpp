@@ -6,13 +6,24 @@
 
 int main()
 {
-  std::vector<int> data = rt::make_rand_data<int>(100 + 1, 0 , 100);
+  const int s = 100;
+  std::vector<int> data = rt::make_rand_data<int>(s + 1, 0 , s);
 
-  const int n = 10;
-  data[33] = n;
-  data.back() = n;
-  auto iter = rt::find_intrusive(std::begin(data), std::end(data), n);
+  for (int i = 0; i < s; ++i) {
+    data.back() = data[i];
+    auto iter = rt::find_intrusive( std::begin(data)
+                                  , std::end(data), data[i]);
+    if (iter == std::end(data))
+      return 1;
+  }
 
-  return iter != std::end(data) ? 0 : 1;
+  // Searches for a number that is not in the array.
+  data.back() = s + 1;
+  auto iter = rt::find_intrusive( std::begin(data)
+                                , std::end(data), s + 1);
+  if (iter != std::end(data))
+    return 1;
+
+  return 0;
 }
 
