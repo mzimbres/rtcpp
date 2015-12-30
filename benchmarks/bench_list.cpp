@@ -5,17 +5,19 @@
 #include <algorithm>
 #include <functional>
 
+#include <config.h>
+
+#ifdef GNU_FOUND
 #include <ext/mt_allocator.h>
 #include <ext/pool_allocator.h>
 #include <ext/bitmap_allocator.h>
+#endif
 
 #include <rtcpp/container/set.hpp>
 #include <rtcpp/utility/to_number.hpp>
 #include <rtcpp/container/bst_node.hpp>
 #include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
-
-#include <config.h>
 
 #include "heap_frag.hpp"
 #include "print_list_bench.hpp"
@@ -86,6 +88,7 @@ int main(int argc, char* argv[])
     }
     std::cout << std::endl;
   }
+#ifdef GNU_FOUND
   std::cout << "std::list<int, __gnu_cxx::__pool_alloc<int>>()" << std::endl;
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t n = N + i * S;
@@ -113,6 +116,7 @@ int main(int argc, char* argv[])
                     , n); // (5)
     std::cout << std::endl;
   }
+#endif
   std::for_each( std::begin(pointers)
                , std::end(pointers)
                , [](char* p){ delete p;});

@@ -4,6 +4,10 @@ project(rtcpp)
 
 find_package(Boost "1.57.0" COMPONENTS container)
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+ set(GNU_FOUND true)
+endif()
+
 configure_file(
   ${PROJECT_SOURCE_DIR}/config.h.in
   ${PROJECT_BINARY_DIR}/config.h
@@ -22,7 +26,6 @@ if (UNIX)
   add_executable(test_set tests/test_set.cpp)
   add_test(NAME test_set COMMAND test_set)
 endif (UNIX)
-
 
 install( DIRECTORY ${PROJECT_SOURCE_DIR}/rtcpp
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include)

@@ -145,8 +145,8 @@ This proposal does not require any breaking change. We require
 ordered associative containers to support the following
 additional allocator overload
 ```c++
-pointer allocator_type::allocate()
-void allocator_type::deallocate(pointer p)
+pointer allocate()
+void deallocate(pointer p)
 ```
 To do so, it is necessary to add a new member to
 ```std::allocator_traits``` so that container implementors have means

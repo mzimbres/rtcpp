@@ -5,15 +5,17 @@
 #include <algorithm>
 #include <functional>
 
+#include <config.h>
+
+#ifdef GNU_FOUND
 #include <ext/mt_allocator.h>
 #include <ext/pool_allocator.h>
 #include <ext/bitmap_allocator.h>
+#endif
 
 #include <rtcpp/utility/to_number.hpp>
 #include <rtcpp/memory/node_allocator.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
-
-#include <config.h>
 
 #include "heap_frag.hpp"
 #include "print_set_bench.hpp"
@@ -80,6 +82,7 @@ int main(int argc, char* argv[])
     print_set_bench(s, std::begin(data), n);
     std::cout << std::endl;
   }
+#ifdef GNU_FOUND
   std::cout << "(3)" << std::endl;
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t n = N + i * S;
@@ -107,6 +110,7 @@ int main(int argc, char* argv[])
     print_set_bench(s, std::begin(data), n);
     std::cout << std::endl;
   }
+#endif
   std::cout << std::endl;
   std::for_each( std::begin(pointers)
                , std::end(pointers)
