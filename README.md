@@ -3,18 +3,19 @@
 "Size management adds undue difficulties and inefficiencies to
 any allocator design" (Alexandrescu)
 
-**Abstract**: This is a non-breaking proposal to the c++ standard
+**Abstract**: This is a non-breaking proposal to the C++ standard
 that aims to reduce allocator complexity, support realtime
 allocation and improve memory access patterns on associative
-ordered containers.
+ordered containers. An example implementation is provided
+together with benchmarks.
 
 ### Table of contents
 
-* [Introduction](#introduction)
-* [Motivation and scope](#motivation-and-scope)
-* [Impact on the Standard](#impact-on-the-standard)
+* [Introduction](#Introduction)
+* [Motivation and scope](#Motivation-and-scope)
+* [Impact on the Standard](#Impact-on-the-standard)
 * [Benchmarks](#Benchmarks)
-* [References](#references)
+* [References](#References)
 
 ### Introduction
 
@@ -35,8 +36,7 @@ unaffordable.
 Even though the sub-optimal access patterns are inherent to
 linked data structures, we think that a small non-breaking
 addition on the C++ standard could strongly improve performance
-and render c++ node-based containers usable even
-**hard-real-time** contexts.
+and render them usable even **hard-real-time** contexts.
 
 The core of the idea is to make ordered associative containers
 (std::list, std::forward_list, std::set, std::multiset, std::map
@@ -47,7 +47,7 @@ stack. When an element is inserted in the container the allocator
 pops one node from the stack, when an element is removed the
 allocator pushes it back into the stack.  Pushing and popping
 from a stack are O(1) operations that do not depend
-fragmentation or any fancy allocation algorithm.
+fragmentation or any allocation algorithm.
 
 The allocate and deallocate member functions look like this in
 these allocators.
@@ -66,14 +66,13 @@ void deallocate(pointer p)
   m_stack.push(p);
 }
 ```
-
 The alert reader may have noticed, that these functions differ
 from their standard definitions by the fact that they do not have
 an argument to inform the size to be allocated or deallocated. It
 is not possible to allocate more than one consecutive node.
 
 This repository contains an example implementation of these
-allcators. For example
+allocators. For example
 
 ```c++
   std::array<char, 2000> buffer = {{}};
@@ -97,11 +96,13 @@ allocator.  This way there is no waste of memory.
 Some of the motivations behind node_allocators are:
 
 * Support the most natural and fastest allocation scheme for
-  linked data structures. In libstd++ for example, it is already
-  possible to use this allocation technique, since n is always
-  equal to 1 on calls of allocator_type::allocate(n).
+  linked data structures. In libstd++ and libc++ for example, it
+  is already possible to use this allocation technique, since n
+  is always equal to 1 on calls of allocator_type::allocate(n).
 
 * Support hard-realtime allocation for node-based containers.
+  This is highly desirable to improve C++ use in embedded
+  systems.
 
 * Most allocators found in the literature are overly complicated
   as a result of having to handle blocks of different size. In
@@ -125,14 +126,13 @@ fragmentation can affect performance, I have made benchmarks for
 std::list and std::set. The benchmark is made inside of a pure
 function, say foo. Since the function is pure, we expect it to
 behave the same way, regardless of global state. However, with
-fragmentation I noticed I can degrade its performance up to one
+fragmentation I noticed I can degrade performance up to one
 order of magnitude. For example
 
 ```c++
   fragments_heap(); // Comment this for non-fragmented scenario.
   foo(std::list<int>());
 ```
-
 The following graphs show how the function fragments_heap
 influence the performance of foo.
 
