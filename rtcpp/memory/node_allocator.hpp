@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <vector>
 #include <utility>
 #include <memory>
 #include <exception>
@@ -158,6 +159,7 @@ namespace std {
 
 template <typename T>
 struct allocator_traits<rt::node_allocator<T>> {
+  using is_always_equal = std::false_type;
   using use_node_alloc = std::true_type;
   using allocator_type = typename rt::node_allocator<T>;
   using size_type = typename allocator_type::size_type;
