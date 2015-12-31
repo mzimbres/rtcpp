@@ -105,6 +105,10 @@ Some of the motivations behind node_allocators are:
   ordered associative containers this is unnecessary since the
   requested memory have always the same size.
 
+* State of the art allocators like boost::node_allocator already
+  tries to optimize when allocate(n) happens to be called with
+  n = 1. 
+
 * The user should not *have to* provide allocators that
   handle different allocation sizes when containers do not make
   use of this feature. Users pay for a feature that is not used.
