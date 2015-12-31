@@ -5,16 +5,15 @@ any allocator design" (Alexandrescu)
 
 **Abstract**: This is a non-breaking proposal to the C++ standard
 that aims to reduce allocator complexity, support realtime
-allocation and improve memory access patterns on associative
-ordered containers. An example implementation is provided
-together with benchmarks.
+allocation and improve performance on ordered associative
+containers. An example implementation is provided together with
+benchmarks.
 
 ### Table of contents
 
 * [Introduction](#Introduction)
 * [Motivation and scope](#Motivation-and-scope)
 * [Impact on the Standard](#Impact-on-the-standard)
-* [Benchmarks](#Benchmarks)
 * [References](#References)
 
 ### Introduction
@@ -40,15 +39,11 @@ performance and render them usable even **hard-real-time**
 contexts.
 
 The core of the idea is to make ordered associative containers
-(std::list, std::forward_list, std::set, std::multiset, std::map
+(std::forward_list, std::list, std::set, std::multiset, std::map
 and std::multimap) support allocators that can serve only one size
-of memory blocks.  With that support, we could introduce
-allocators that use pre-allocated nodes that are linked as a
-stack. When an element is inserted in the container the allocator
-pops one node from the stack, when an element is removed the
-allocator pushes it back into the stack.  Pushing and popping
-from a stack are O(1) operations that do not depend
-fragmentation or any allocation algorithm.
+of memory blocks. Allocating and deallocating blocks with the
+same size is as simple as pushing and popping from a stack, which
+has constant time complexity (O(1)) complexity.
 
 The allocate and deallocate member functions look like this in
 these allocators.
@@ -128,13 +123,13 @@ Some of the motivations behind node_allocators are:
   be inserted in the container, or has at least a reasonable
   upper bound on this number.
 
-To give the reader a rough idea of how badly memory
-fragmentation can affect performance, I have made benchmarks for
-std::list and std::set. The benchmark is made inside of a pure
-function, say foo. Since the function is pure, we expect it to
-behave the same way, regardless of global state. However, with
-fragmentation I noticed I can degrade performance up to one
-order of magnitude. For example
+To give the reader a rough idea of how badly memory fragmentation
+can affect performance, I have made benchmarks for std::list and
+std::set. The benchmark is made inside of a pure function, say
+foo. Since the function is pure, we expect it to behave the same
+way, regardless of global state. However, with fragmentation I
+noticed I can degrade performance up to one order of magnitude.
+For example
 
 ```c++
   fragments_heap(); // Comment this for non-fragmented scenario.
@@ -145,6 +140,19 @@ influence the performance of foo.
 
 ![std::list fragmentation](fig/list_frag_effect.png),
 ![std::set fragmentation](fig/set_frag_effect.png),
+
+**Benchmarks**: The figures below show the bencharks I have made
+to compare the performance of of the rt::node_allocator against
+the standard allocator std::allocator.  They are performed again
+on a scenario with a fragmented heap, where I dynamically
+allocate many `char`'s on the heap and leave some holes for the
+nodes that will be allocated by the container. 
+
+![std::set benchmark](fig/std_set_bench.png),
+![std::list benchmark](fig/std_list_bench.png),
+
+As the reader can see, the node allocator was never slower
+then the standard allocator.
 
 ### Impact on the Standard
 
@@ -163,28 +171,7 @@ allocate().
 ```c++
 using use_node_alloc = std::true_type;
 ```
-
-### Benchmarks
-
-The figures below show the bencharks I have made to compare the
-performance of of the rt::node_allocator against the standard
-allocator.
-
-  1. `std::allocator`.
-  2. `rt::allocator`. (The node allocator.)
-
-The benchmarks are performed on a scenario with a fragmented
-heap, where I dynamically allocate many `char`'s on the heap
-and leave some holes for the nodes that will be allocated by
-the container. 
-
-![std::set benchmark](fig/std_set_bench.png),
-![std::list benchmark](fig/std_list_bench.png),
-
-As the reader can see, the node allocator was never slower
-then the standard allocator.
-
 ### References
 
-* [Knuth](The Art of Computer Programming)
+* The Art of Computer Programming, Vol. 1, Donald Knuth.
 
