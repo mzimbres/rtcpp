@@ -119,10 +119,16 @@ Some of the motivations behind node_allocators are:
   informations like the size of the allocated block.
 
 * Keep nodes in as-compact-as-possible buffers, either on the
-  stack or heap, improving cache locality and making them
-  specially usefull for embedded programming.
+  stack or on the heap, improving cache locality, performance
+  and making them specially useful for embedded programming.
 
-To give the reader a rough idea of how baddly memory
+* This proposal makes it easy to work with pre-allocated and
+  pre-linked nodes, a situation that is highly desirable when the
+  user knows in advance the number of elements that is going to
+  be inserted in the container, or has at least a reasonable
+  upper bound on this number.
+
+To give the reader a rough idea of how badly memory
 fragmentation can affect performance, I have made benchmarks for
 std::list and std::set. The benchmark is made inside of a pure
 function, say foo. Since the function is pure, we expect it to
