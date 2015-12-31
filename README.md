@@ -35,8 +35,9 @@ unaffordable.
 
 Even though the sub-optimal access patterns are inherent to
 linked data structures, we think that a small non-breaking
-addition on the C++ standard could strongly improve performance
-and render them usable even **hard-real-time** contexts.
+addition to the C++ allocator model could strongly improve
+performance and render them usable even **hard-real-time**
+contexts.
 
 The core of the idea is to make ordered associative containers
 (std::list, std::forward_list, std::set, std::multiset, std::map

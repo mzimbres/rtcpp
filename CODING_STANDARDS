@@ -330,28 +330,3 @@ State:
   Use pure functions and functors with no state. Multi-threaded programming
   becomes a lot easier this way.
 
-Compiling - Debugging
-=============================
-
-Before commits ensure your code compiles with "-Wall -Wextra
--Werror" on gcc. Use cmake as follows
-
-$ cmake ${FOO} \
-       -DCMAKE_INSTALL_PREFIX=${BAR} \
-       -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror " \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_CXX_COMPILER=g++
-$ make
-
-If you are on windows there is no "make" so you can use
-
-$ cmake --build . # Build all targets
-$ cmake --build . --target foo # Build a specific target.
-
-To generate the dependency graph:
-
-$ cmake --graphviz=foo.graph ${FOO}
-$ dot -Tpng foo.graph.foo > fig.png 
-
-* Run valgrind, clang/gcc sanitizers, static analysers etc. often.
-
