@@ -1,0 +1,24 @@
+Installation
+=============================
+
+$ cmake ${RTCPP_SOURCE} -DCMAKE_INSTALL_PREFIX=${FOO} \
+        -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -std=c++11" \
+        -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++
+$ make
+$ make test
+$ make install
+
+If you are on windows there is no "make" so you can use
+
+$ cmake --build . # Build all targets
+$ cmake --build . --target foo # Build a specific target.
+
+To generate the dependency graph:
+
+$ cmake --graphviz=foo.graph ${RTCPP_SOURCE}
+$ dot -Tpng foo.graph.foo > fig.png 
+
+I have tested this software with GCC 4.7 and 5.0, Clang 3.4
+and 3.8, both with libstd++. Please let me know if you failed
+to build this project.
+
