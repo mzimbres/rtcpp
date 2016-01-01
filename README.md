@@ -5,9 +5,8 @@ any allocator design" (Alexandrescu)
 
 **Abstract**: This is a non-breaking proposal to the C++ standard
 that aims to reduce allocator complexity, support realtime
-allocation and improve performance on ordered associative
-containers. An example implementation is provided together with
-benchmarks.
+allocation and improve performance on node based containers. An
+example implementation is provided together with benchmarks.
 
 ### Table of contents
 
@@ -38,12 +37,12 @@ addition to the C++ allocator model could strongly improve
 performance and render them usable even **hard-real-time**
 contexts.
 
-The core of the idea is to make ordered associative containers
+The core of the idea is to make node based containers
 (std::forward_list, std::list, std::set, std::multiset, std::map
-and std::multimap) support allocators that can serve only one size
-of memory blocks. Allocating and deallocating blocks with the
-same size is as simple as pushing and popping from a stack, which
-has constant time complexity (O(1)) complexity.
+and std::multimap) support allocators that can serve only one
+size of memory blocks. Allocating and deallocating blocks with
+the same size is as simple as pushing and popping from a stack,
+which has constant time complexity (O(1)) complexity.
 
 The allocate and deallocate member functions look like this in
 these allocators.
@@ -102,8 +101,8 @@ Some of the motivations behind node_allocators are:
 
 * Most allocators found in the literature are overly complicated
   as a result of having to handle blocks of different size. In
-  ordered associative containers this is unnecessary since the
-  requested memory have always the same size.
+  node containers this is unnecessary since the requested memory
+  have always the same size.
 
 * State of the art allocators like boost::node_allocator already
   tries to optimize when allocate(n) happens to be called with
@@ -161,8 +160,8 @@ then the standard allocator.
 ### Impact on the Standard
 
 This proposal does not require any breaking change. We require
-ordered associative containers to support the following
-additional allocator overload
+node based containers to support the following additional
+allocator overload
 ```c++
 pointer allocate()
 void deallocate(pointer p)
