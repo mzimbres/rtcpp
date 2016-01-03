@@ -38,11 +38,10 @@ performance and render them usable even **hard-real-time**
 contexts.
 
 The core of the idea is to make node based containers
-(std::forward_list, std::list, std::set, std::multiset, std::map
-and std::multimap) support allocators that can serve only one
-size of memory blocks. Allocating and deallocating blocks with
-the same size is as simple as pushing and popping from a stack,
-which has constant time complexity (O(1)) complexity.
+support allocators that can serve only one size of memory blocks.
+Allocating and deallocating blocks with the same size is as
+simple as pushing and popping from a stack, which, beyond other
+advantages, has constant time complexity (O(1)) complexity.
 
 The allocate and deallocate member functions look like this in
 these allocators.
@@ -61,39 +60,14 @@ void deallocate(pointer p)
   m_stack.push(p);
 }
 ```
-The alert reader may have noticed, that these functions differ
-from their standard definitions by the fact that they do not have
-an argument to inform the size to be allocated or deallocated. It
-is not possible to allocate more than one consecutive node.
-
-This repository contains an example implementation of these
-allocators. For example
-
-```c++
-  std::array<char, 2000> buffer = {{}};
-  rt::node_allocator<int> alloc(buffer);
-
-  std::list<int, rt::node_allocator<int>> t1(alloc);
-  t1 = {5, 3, 7, 20, 1, 44, 22, 8};
-
-  print(t1);
-```
-
-In this example the array buffer will serve as arena for all
-allocations made by the list t1 i.e. all elements inserted in the
-list will be stored in buffer. The size of the memory returned by
-::allocate fits exactly what is requested by the list i.e. the
-size of its node type, that is known when the list rebinds the
-allocator.  This way there is no waste of memory.
-
 ### Motivation and scope
 
-Some of the motivations behind node_allocators are:
+Some of the motivations behind this proposal are:
 
 * Support the most natural and fastest allocation scheme for
   linked data structures. In libstd++ and libc++ for example, it
   is already possible to use this allocation technique, since n
-  is always equal to 1 on calls of allocator_type::allocate(n).
+  is always equal to 1 on calls of allocate(n).
 
 * Support hard-realtime allocation for node-based containers.
   This is highly desirable to improve C++ use in embedded
@@ -121,59 +95,64 @@ Some of the motivations behind node_allocators are:
   and making them specially useful for embedded programming.
 
 * This proposal makes it easy to work with pre-allocated and
-  pre-linked nodes, a situation that is highly desirable when the
-  user knows in advance the number of elements that is going to
-  be inserted in the container, or has at least a reasonable
-  upper bound on this number.
+  pre-linked nodes.
 
-To give the reader a rough idea of how badly memory fragmentation
-can affect performance, I have made benchmarks for std::list and
-std::set. The benchmark is made inside of a pure function, say
-foo. Since the function is pure, we expect it to behave the same
-way, regardless of global state. However, with fragmentation I
-noticed I can degrade performance up to one order of magnitude.
-For example
-
+A common question that are raised by users is: *Why dont't you
+simply test whether n = 1 and pass allocation to your allocator?*
 ```c++
-  fragments_heap(); // Comment this for non-fragmented scenario.
-  foo(std::list<int>());
+pointer allocate(std::size_t n)
+{
+  if (n == 1)
+    return foo.allocate(); // Calls the node allocator.
+  return bar.allocate(n); // Calls regular allocators.
+}
 ```
-The following graphs show how the function fragments_heap
-influence the performance of foo.
+There are a couple of reasons why this is an undesirable approach.
 
-![std::list fragmentation](fig/list_frag_effect.png),
-![std::set fragmentation](fig/set_frag_effect.png),
+  1) The parameter n is not a compile time constant that
+  can change in runtime, therefore, there is always the
+  annoying possiblity of having n != 1. The node allocator
+  becomes useless in this case.  We need a guarantee that the
+  container will call the node allocator whenever it can.
 
-**Benchmarks**: The figures below show the bencharks I have made
-to compare the performance of of the rt::node_allocator against
-the standard allocator std::allocator.  They are performed again
-on a scenario with a fragmented heap, where I dynamically
-allocate many `char`'s on the heap and leave some holes for the
-nodes that will be allocated by the container. 
+  2) The possibility of having n != 1 means I have to handle
+  allocation with different sizes, which it is exactly what I am
+  trying to avoid.
 
-![std::set benchmark](fig/std_set_bench.png),
-![std::list benchmark](fig/std_list_bench.png),
+  3) Containers in all major libraries always use n == 1, that
+  means the condition ``if (n == 1)`` is an unnecessary overhead.
 
-As the reader can see, the node allocator was never slower
-then the standard allocator.
+The influence of fragmentation on performance is a well known on
+the C++ community and subject of many talks in conferences,
+therefore I am not going to repeat results here for the sake of
+readability. There is plenty of material on CPPCON for example.
+The interested user can also refer the project
+https://github.com/mzimbres/rtcpp for benchmarks of the
+node_allocator.
 
 ### Impact on the Standard
 
 This proposal does not require any breaking change. We require
-node based containers to support the following additional
-allocator overload
-```c++
-pointer allocate()
-void deallocate(pointer p)
-```
-To do so, it is necessary to add a new member to
-```std::allocator_traits``` so that container implementors have means
-to know which function has to be used i.e. call allocate(n) or
-allocate().
+that all node based containers favor the overload ``allocate()``
+over ``allocate(size_type)`` for all node allocations inside the
+container, whenever this member function is available. The same
+reasoning applies to ``deallocate(pointer)`` over
+``deallocate(pointer, size_type)``
+
+In order to test whether the new overload is present, it is
+necessary to add a new member to ```std::allocator_traits``` so
+that container implementors have means to know which function has
+to be used i.e. call allocate(n) or allocate().
 
 ```c++
 using use_node_alloc = std::true_type;
 ```
+
+The containers that are affected are: std::forward_list,
+std::list, std::set, std::multiset, std::unordered_set,
+std::unordered_multiset, std::map, std::multimap,
+std::unordered_map, std::unordered_multimap
+
 ### References
 
 * The Art of Computer Programming, Vol. 1, Donald Knuth.
