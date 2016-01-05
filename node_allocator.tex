@@ -1,0 +1,249 @@
+\documentclass[11pt]{article}
+\usepackage{tikz}
+\usepackage{pifont}
+\usepackage{amsmath}
+\usepackage{marvosym}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage[utf8]{inputenc}
+\usepackage{subfig}
+\usepackage[switch,columnwise]{lineno}
+\usepackage{amssymb}
+\usepackage{enumitem}
+   
+\usepackage{hyperref}
+\hypersetup{
+bookmarks=false,         % show bookmarks bar?
+unicode=true,          % non-Latin characters in Acrobat's bookmarks
+pdftoolbar=true,        % show Acrobat's toolbar?
+pdfmenubar=true,        % show Acrobat's menu?
+pdffitwindow=true,     % window fit to page when opened
+pdfstartview={FitH},    % fits the width of the page to the window
+pdftitle={Node allocators},    % title
+pdfauthor={Marcelo Zimbres},     % author
+pdfsubject={C++ allocators},   % subject of the document
+pdfcreator={Marcelo Zimbres},   % creator of the document
+pdfproducer={Marcelo Zimbres}, % producer of the document
+pdfkeywords={allocators} {C++}, % list of keywords
+pdfnewwindow=true,      % links in new window
+colorlinks=true,        % false: boxed links; true: colored links
+linkcolor=red,          % color of internal links
+citecolor=red,        % color of links to bibliography
+filecolor=red,      % color of file links
+linktocpage=true,
+urlcolor=red           % color of external links
+}
+
+\lstset{
+  language=C++,                 % the language of the code
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  keywordstyle=\color{blue},       % keyword style
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{blue},       % comment style
+  deletekeywords={},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,                    % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  morekeywords={using},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=10pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{black}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{red},     % string literal style
+  tabsize=2,                       % sets default tabsize to 2 spaces
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+\colorlet{blah}{brown!60!black} % box color
+
+\begin{document}
+
+\date{}
+\title{\bf Node allocators}
+
+\maketitle
+
+\noindent
+{\bf Document number}:  0xFFFF \\
+{\bf Date}:  2016-01-05 \\
+{\bf Project}: Programming Language C++ Evolution Working Group \\
+{\bf Reply-to}: Marcelo Zimbres(\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
+
+\vspace{1cm}
+
+\noindent
+{\bf Abstract: }This is a non-breaking proposal to the C++ standard
+that aims to reduce allocator complexity, support realtime allocation
+and improve performance on node based containers. An example
+implementation is provided together with benchmarks.
+
+\tableofcontents
+
+%\twocolumn
+%\linenumbers
+\begin{flushright}
+\noindent
+{\it Size management adds undue \\
+difficulties and inefficiencies \\
+to any allocator design} \\
+Alexandrescu \\
+\medskip
+{\it }
+\end{flushright}
+\medskip
+
+\section{Introduction}
+\textsc{The importance} of linked data structures in computer science,
+like trees and linked lists, cannot be over-emphasised, yet, in the
+last couple of years it has become a common trend in C++ to move away
+from such data structures due to their sub-optimal memory access
+patterns.  In fact, many people today prefer to use the flat
+alternatives and pay O(n) insertion time than O(1) at the cost of
+memory fragmentation and unpredictable performance loss.
+
+On some domains, like {\it realtime applications}, {\it embedded
+systems} or {\it systems that aim 24/7 availability}, the
+unpredictability introduced by memory fragmentation is simply
+unaffordable.
+
+Even though the sub-optimal access patterns are inherent to
+linked data structures, we think that a small non-breaking
+addition to the C++ allocator model could strongly improve
+performance and render them usable even hard-real-time
+contexts.
+
+The core of the idea is to make node based containers
+support allocators that can serve only one size of memory blocks.
+Allocating and deallocating blocks with the same size is as
+simple as pushing and popping from a stack, which, beyond other
+advantages, has constant time complexity (O(1)).
+
+The allocate and deallocate member functions look like this in
+these allocators.
+
+\begin{lstlisting}
+pointer allocate()
+{
+  pointer p = stack.pop(); 
+  if (!p)
+    throw std::bad_alloc();
+  return p; 
+}
+
+void deallocate(pointer p)
+{
+  stack.push(p);
+}
+\end{lstlisting}
+
+\section{Motivation and scope}
+
+\textsc{Some of} the motivations behind this proposal are:
+\begin{itemize}
+
+\item Support the most natural and fastest allocation scheme for
+linked data structures. In \texttt{libstd++} and \texttt{libc++} for example, it
+is already possible to use this allocation technique, since n is always equal
+to 1 on calls of allocate(n).
+
+\item Support hard-realtime allocation for node-based containers.
+This is highly desirable to improve C++ use in embedded systems.
+
+\item Most allocators found in the literature are overly complicated
+as a result of having to handle blocks of different size. In node
+containers this is unnecessary since the requested memory have always
+the same size.
+
+\item State of the art allocators like \texttt{boost::node\_allocator}
+already tries to optimize when \texttt{allocate(n)} happens to be called with
+\texttt{n = 1}. 
+
+\item The user should not *have to* provide allocators that handle
+different allocation sizes when containers do not make use of this
+feature. Users pay for a feature that is not used.
+
+\item Avoid wasted space behind allocations. It is pretty common that
+allocators allocate more memory than requested to store informations
+like the size of the allocated block.
+
+\item Keep nodes in as-compact-as-possible buffers, either on the
+stack or on the heap, improving cache locality, performance and making
+them specially useful for embedded programming.
+
+\item This proposal makes it easy to work with pre-allocated and
+pre-linked nodes.
+
+\end{itemize}
+
+A common question that are raised by users is: {\it Why dont't you
+simply test whether n = 1 and pass allocation to your allocator?}
+
+\begin{lstlisting}
+pointer allocate(size_type n)
+{
+  if (n == 1)
+    return foo.allocate(); // Calls the node allocator.
+  return bar.allocate(n); // Calls regular allocators.
+}
+\end{lstlisting}
+
+There are a couple of reasons why this is an undesirable approach.
+
+\begin{itemize}
+\item The parameter n is not a compile time constant that can change
+in runtime, therefore, there is always the annoying possiblity of
+having n != 1. The node allocator becomes useless in this case.  We
+need a guarantee that the container will call the node allocator
+whenever it can.
+
+\item The possibility of having n != 1 means I have to handle
+allocation with different sizes, which it is exactly what I am trying
+to avoid.
+
+\item Containers in all major libraries always use n == 1, that means
+the condition \texttt{if (n == 1)} is an unnecessary overhead.
+\end{itemize}
+
+\medskip
+\noindent
+{\bf Benchmarks}: The influence of fragmentation on performance is a well known
+on the C++ community and subject of many talks in conferences, therefore I am
+not going to repeat results here for the sake of readability. There is plenty
+of material on CPPCON for example.  The interested user can also refer the
+project \href{https://github.com/mzimbres/rtcpp} for benchmarks of the
+\texttt{node\_allocator}.
+
+\section{Impact on the Standard}
+
+This proposal does not require any breaking change. We require
+that all node based containers favor the overload \texttt{allocate()}
+over \texttt{allocate(size\_type)} for all node allocations inside the
+container, whenever this member function is available. The same
+reasoning applies to \texttt{deallocate(pointer)} over
+\texttt{deallocate(pointer, size\_type)}
+
+In order to test whether the new overload is present, it is
+necessary to add a new member to \texttt{std::allocator\_traits} so
+that container implementors have means to know which function has
+to be used i.e. call allocate(n) or allocate().
+
+\begin{lstlisting}
+using use_node_alloc = std::true_type;
+\end{lstlisting}
+
+The containers that are affected are: \texttt{std::forward\_list},
+\texttt{std::list}, \texttt{std::set}, \texttt{std::multiset}, \texttt{std::unordered\_set},
+\texttt{std::unordered\_multiset}, \texttt{std::map}, \texttt{std::multimap},
+\texttt{std::unordered\_map}, \texttt{std::unordered\_multimap}
+
+
+\end{document}
+
