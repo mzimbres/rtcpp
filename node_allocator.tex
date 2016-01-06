@@ -31,7 +31,7 @@ linkcolor=red,          % color of internal links
 citecolor=red,        % color of links to bibliography
 filecolor=red,      % color of file links
 linktocpage=true,
-urlcolor=red           % color of external links
+urlcolor=blue           % color of external links
 }
 
 \lstset{
@@ -69,13 +69,15 @@ urlcolor=red           % color of external links
 \date{}
 \title{\bf Node allocators}
 
-\maketitle
+\maketitle\vspace{-2cm}
+
+\vspace{1cm}
 
 \noindent
-{\bf Document number}:  0xFFFF \\
+{\bf Document number}:  0 \\
 {\bf Date}:  2016-01-05 \\
 {\bf Project}: Programming Language C++ Evolution Working Group \\
-{\bf Reply-to}: Marcelo Zimbres(\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
+{\bf Reply-to}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
 
 \vspace{1cm}
 
@@ -83,7 +85,9 @@ urlcolor=red           % color of external links
 {\bf Abstract: }This is a non-breaking proposal to the C++ standard
 that aims to reduce allocator complexity, support realtime allocation
 and improve performance on node based containers. An example
-implementation is provided together with benchmarks.
+implementation that explores the proposed feature is available at
+\href{https://github.com/mzimbres/rtcpp}{https://github.com/mzimbres/rtcpp}
+together with benchmarks.
 
 \tableofcontents
 
@@ -91,9 +95,8 @@ implementation is provided together with benchmarks.
 %\linenumbers
 \begin{flushright}
 \noindent
-{\it Size management adds undue \\
-difficulties and inefficiencies \\
-to any allocator design} \\
+{\it Size management adds undue difficulties \\
+     and inefficiencies to any allocator design.} \\
 Alexandrescu \\
 \medskip
 {\it }
@@ -106,28 +109,25 @@ like trees and linked lists, cannot be over-emphasised, yet, in the
 last couple of years it has become a common trend in C++ to move away
 from such data structures due to their sub-optimal memory access
 patterns.  In fact, many people today prefer to use the flat
-alternatives and pay O(n) insertion time than O(1) at the cost of
-memory fragmentation and unpredictable performance loss.
+alternatives and pay $O(n)$ insertion time than $O(1)$ at the cost of
+memory fragmentation and unpredictable performance loss. Other
+domains, like {\it realtime applications}, {\it embedded systems} or
+systems that aim {\it 24/7 availability}, cannot even afford the
+unpredictability introduced by memory fragmentation and dynamic
+memory allocations in general.
 
-On some domains, like {\it realtime applications}, {\it embedded
-systems} or {\it systems that aim 24/7 availability}, the
-unpredictability introduced by memory fragmentation is simply
-unaffordable.
+We propose here a small addition that aims to simplify
+the design of allocators for node-based containers and strongly
+improve their performance.
 
-Even though the sub-optimal access patterns are inherent to
-linked data structures, we think that a small non-breaking
-addition to the C++ allocator model could strongly improve
-performance and render them usable even hard-real-time
-contexts.
+The core of the idea is to make node based containers support
+allocators that can serve only one size of memory blocks.  Allocating
+and deallocating blocks with the same size is as simple as pushing and
+popping from a stack, which, beyond other advantages, has constant
+time complexity $O(1)$.
 
-The core of the idea is to make node based containers
-support allocators that can serve only one size of memory blocks.
-Allocating and deallocating blocks with the same size is as
-simple as pushing and popping from a stack, which, beyond other
-advantages, has constant time complexity (O(1)).
-
-The allocate and deallocate member functions look like this in
-these allocators.
+The \texttt{allocate} and \texttt{deallocate} member functions
+look like this in these allocators.
 
 \begin{lstlisting}
 pointer allocate()
@@ -147,28 +147,28 @@ void deallocate(pointer p)
 \section{Motivation and scope}
 
 \textsc{Some of} the motivations behind this proposal are:
-\begin{itemize}
+\begin{enumerate}
 
 \item Support the most natural and fastest allocation scheme for
-linked data structures. In \texttt{libstd++} and \texttt{libc++} for example, it
-is already possible to use this allocation technique, since n is always equal
-to 1 on calls of allocate(n).
+linked data structures. In \texttt{libstd++} and \texttt{libc++}
+for example, it is already possible to use this allocation
+technique, since $n$ is always $1$ on calls of \texttt{allocate(n)}.
 
 \item Support hard-realtime allocation for node-based containers.
 This is highly desirable to improve C++ use in embedded systems.
 
-\item Most allocators found in the literature are overly complicated
-as a result of having to handle blocks of different size. In node
-containers this is unnecessary since the requested memory have always
-the same size.
+\item Most allocators found in the literature are overly
+complicated as a result of having to handle blocks of different
+size. In most node-based containers this is unnecessary since the
+requested memory have always the same size.
 
-\item State of the art allocators like \texttt{boost::node\_allocator}
-already tries to optimize when \texttt{allocate(n)} happens to be called with
-\texttt{n = 1}. 
+\item State of the art allocators like
+\texttt{boost::node\_allocator} already tries to optimize when
+\texttt{allocate(n)} happens to be called with \texttt{n = 1}. 
 
-\item The user should not *have to* provide allocators that handle
-different allocation sizes when containers do not make use of this
-feature. Users pay for a feature that is not used.
+\item The user should not {\it have to} provide allocators that
+handle different allocation sizes when containers do not make use
+of this feature. Users pay for a feature that is not used.
 
 \item Avoid wasted space behind allocations. It is pretty common that
 allocators allocate more memory than requested to store informations
@@ -180,12 +180,17 @@ them specially useful for embedded programming.
 
 \item This proposal makes it easy to work with pre-allocated and
 pre-linked nodes.
+\end{enumerate}
 
-\end{itemize}
+\medskip
+\noindent
+{\bf Frequently asked questions:} Some of the questions commonly
+raised are:
 
-A common question that are raised by users is: {\it Why dont't you
-simply test whether n = 1 and pass allocation to your allocator?}
-
+\medskip
+\noindent
+{\bf 1) }{\it Why don't you simply test whether $n = 1$ and pass
+allocation to your allocator? For example}
 \begin{lstlisting}
 pointer allocate(size_type n)
 {
@@ -195,55 +200,89 @@ pointer allocate(size_type n)
 }
 \end{lstlisting}
 
+\noindent
 There are a couple of reasons why this is an undesirable approach.
 
-\begin{itemize}
-\item The parameter n is not a compile time constant that can change
-in runtime, therefore, there is always the annoying possiblity of
-having n != 1. The node allocator becomes useless in this case.  We
-need a guarantee that the container will call the node allocator
-whenever it can.
+\begin{enumerate}
+\item The parameter $n$ is obviously not a compile time constant,
+therefore, there is always the annoying possibility of having
+$n \ne 1$, even though what containers really need, is a single
+node. We need a guarantee that the container will request
+same-size blocks whenever it can.
 
-\item The possibility of having n != 1 means I have to handle
-allocation with different sizes, which it is exactly what I am trying
-to avoid.
+\item The possibility of having $n \ne 1$ means I have to handle
+allocations with different sizes, which it is exactly what I am
+trying to avoid for reasons mentioned above.
 
-\item Containers in all major libraries always use n == 1, that means
-the condition \texttt{if (n == 1)} is an unnecessary overhead.
-\end{itemize}
+\item Containers in major libraries always use $n = 1$, that
+means the condition \texttt{if (n == 1)} is an unnecessary
+overhead.
+\end{enumerate}
 
 \medskip
 \noindent
-{\bf Benchmarks}: The influence of fragmentation on performance is a well known
-on the C++ community and subject of many talks in conferences, therefore I am
-not going to repeat results here for the sake of readability. There is plenty
-of material on CPPCON for example.  The interested user can also refer the
-project \href{https://github.com/mzimbres/rtcpp} for benchmarks of the
-\texttt{node\_allocator}.
+{\bf 2) }{\it How does this proposal simplify allocator design?}
+
+\medskip
+\noindent
+All the simplification comes from the fact that there is no more
+need of an allocation algorithm or any fancy strategy. We can simply
+build a singly linked list were the nodes have the size demanded
+by the container, then allocation and deallocation reduces to
+push and pop from the linked list.
+
+\begin{lstlisting}
+pointer node_stack::pop()
+{
+  pointer q = avail; // Pointer the next free node
+  if (avail)
+    avail = avail->next;
+
+  return q;
+}
+
+void node_stack::push(pointer p)
+{
+  p->next = avail;
+  avail = p;
+}
+
+\end{lstlisting}
+
+\medskip
+\noindent
+{\bf Benchmarks}: The influence of fragmentation on performance
+is well known on the C++ community and subject of many talks in
+conferences, therefore I am not going to repeat results here for
+the sake of readability. There is plenty of material on CPPCON
+for example.  The interested user can also refer the project
+\href{https://github.com/mzimbres/rtcpp}{https://github.com/mzimbres/rtcpp}
+for benchmarks of an allocator that uses the proposed feature.
 
 \section{Impact on the Standard}
 
-This proposal does not require any breaking change. We require
+\textsc{This proposal} does not require any breaking change. We require
 that all node based containers favor the overload \texttt{allocate()}
 over \texttt{allocate(size\_type)} for all node allocations inside the
 container, whenever this member function is available. The same
 reasoning applies to \texttt{deallocate(pointer)} over
 \texttt{deallocate(pointer, size\_type)}
 
-In order to test whether the new overload is present, it is
-necessary to add a new member to \texttt{std::allocator\_traits} so
-that container implementors have means to know which function has
-to be used i.e. call allocate(n) or allocate().
+In order to know which overload should be prefered, users are
+requested to add a new member to the specialization of
+\texttt{std::allocator\_traits}
 
 \begin{lstlisting}
-using use_node_alloc = std::true_type;
+using use_node_allocator = std::true_type;
 \end{lstlisting}
 
-The containers that are affected are: \texttt{std::forward\_list},
-\texttt{std::list}, \texttt{std::set}, \texttt{std::multiset}, \texttt{std::unordered\_set},
-\texttt{std::unordered\_multiset}, \texttt{std::map}, \texttt{std::multimap},
+Following containers are affected: \texttt{std::forward\_list},
+\texttt{std::list}, \texttt{std::set}, \texttt{std::multiset},
+\texttt{std::unordered\_set}, \texttt{std::unordered\_multiset},
+\texttt{std::map}, \texttt{std::multimap},
 \texttt{std::unordered\_map}, \texttt{std::unordered\_multimap}
 
+\section{Technical Specifications}
 
 \end{document}
 

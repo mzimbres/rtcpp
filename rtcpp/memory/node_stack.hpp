@@ -109,7 +109,7 @@ char* node_stack<S>::pop() noexcept
 template <std::size_t S>
 void node_stack<S>::push(char* p) noexcept
 {
-  if (!p)
+  if (!p) // Should not be necesary. TODO: Test and remove.
     return;
 
   std::memcpy(p, get_avail_ptr(), ptr_size);
