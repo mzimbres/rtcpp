@@ -10,6 +10,7 @@
 \usepackage[switch,columnwise]{lineno}
 \usepackage{amssymb}
 \usepackage{enumitem}
+\usepackage[nottoc,numbib]{tocbibind}
    
 \usepackage{hyperref}
 \hypersetup{
@@ -67,17 +68,20 @@ urlcolor=blue           % color of external links
 \begin{document}
 
 \date{}
-\title{\bf Node allocators}
+\title{\bf Support for allocators that handle only one size
+allocations}
 
-\maketitle\vspace{-2cm}
+\vspace{-2cm}
+\maketitle
+%\vspace{-2cm}
 
-\vspace{1cm}
+%\vspace{1cm}
 
 \noindent
 {\bf Document number}:  0 \\
 {\bf Date}:  2016-01-05 \\
 {\bf Project}: Programming Language C++ Evolution Working Group \\
-{\bf Reply-to}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
+{\bf Reply-to}: Marcelo Zimbres (\url{mailto:mzimbres@gmail.com}) 
 
 \vspace{1cm}
 
@@ -86,11 +90,12 @@ urlcolor=blue           % color of external links
 that aims to reduce allocator complexity, support realtime allocation
 and improve performance on node based containers. An example
 implementation that explores the proposed feature is available at
-\href{https://github.com/mzimbres/rtcpp}{https://github.com/mzimbres/rtcpp}
+\href{https://github.com/mzimbres/rtcpp}
 together with benchmarks.
 
 \tableofcontents
 
+%\newpage
 %\twocolumn
 %\linenumbers
 \begin{flushright}
@@ -116,18 +121,15 @@ systems that aim {\it 24/7 availability}, cannot even afford the
 unpredictability introduced by memory fragmentation and dynamic
 memory allocations in general.
 
-We propose here a small addition that aims to simplify
-the design of allocators for node-based containers and strongly
-improve their performance.
-
-The core of the idea is to make node based containers support
-allocators that can serve only one size of memory blocks.  Allocating
-and deallocating blocks with the same size is as simple as pushing and
-popping from a stack, which, beyond other advantages, has constant
-time complexity $O(1)$.
+To address these problems, we propose the addition of support for
+allocators that can serve only one size of memory blocks in
+node-based containers.  Allocating and deallocating blocks with
+the same size is as simple as pushing and popping from a stack,
+which, beyond other advantages, has constant time complexity
+$O(1)$.
 
 The \texttt{allocate} and \texttt{deallocate} member functions
-look like this in these allocators.
+look like this in these allocators
 
 \begin{lstlisting}
 pointer allocate()
@@ -143,10 +145,11 @@ void deallocate(pointer p)
   stack.push(p);
 }
 \end{lstlisting}
-
+which differ from the standard allocator interface by the fact
+that they do not and cannot manage different allocation sizes.
 \section{Motivation and scope}
 
-\textsc{Some of} the motivations behind this proposal are:
+\textsc{Some of} the motivations behind this proposal are
 \begin{enumerate}
 
 \item Support the most natural and fastest allocation scheme for
@@ -160,7 +163,7 @@ This is highly desirable to improve C++ use in embedded systems.
 \item Most allocators found in the literature are overly
 complicated as a result of having to handle blocks of different
 size. In most node-based containers this is unnecessary since the
-requested memory have always the same size.
+requested memory has always the same size.
 
 \item State of the art allocators like
 \texttt{boost::node\_allocator} already tries to optimize when
@@ -168,7 +171,8 @@ requested memory have always the same size.
 
 \item The user should not {\it have to} provide allocators that
 handle different allocation sizes when containers do not make use
-of this feature. Users pay for a feature that is not used.
+of this feature. Users have to provide a complex feature that is
+not used.
 
 \item Avoid wasted space behind allocations. It is pretty common that
 allocators allocate more memory than requested to store informations
@@ -204,19 +208,20 @@ pointer allocate(size_type n)
 There are a couple of reasons why this is an undesirable approach.
 
 \begin{enumerate}
-\item The parameter $n$ is obviously not a compile time constant,
-therefore, there is always the annoying possibility of having
-$n \ne 1$, even though what containers really need, is a single
-node. We need a guarantee that the container will request
-same-size blocks whenever it can.
-
 \item The possibility of having $n \ne 1$ means I have to handle
-allocations with different sizes, which it is exactly what I am
-trying to avoid for reasons mentioned above.
+allocations with different sizes, which is exactly what I am
+trying to avoid for reasons mentioned above i.e. reduce
+complexity, improve performance etc.
 
 \item Containers in major libraries always use $n = 1$, that
 means the condition \texttt{if (n == 1)} is an unnecessary
 overhead.
+
+\item All that most node-based containers need from their allocator
+is space for a single node, asking for more than that means
+allocation logic is being built on the container itself an not on
+the allocator, with unpredictable side effects that users may
+want to avoid.
 \end{enumerate}
 
 \medskip
@@ -226,15 +231,15 @@ overhead.
 \medskip
 \noindent
 All the simplification comes from the fact that there is no more
-need of an allocation algorithm or any fancy strategy. We can simply
-build a singly linked list were the nodes have the size demanded
-by the container, then allocation and deallocation reduces to
-push and pop from the linked list.
+need for an allocation algorithm or any fancy strategy inside the
+allocator. We can simply build a singly linked list were the
+nodes have the size demanded by the container, then allocation
+and deallocation reduces to push and pop from the linked list.
 
 \begin{lstlisting}
 pointer node_stack::pop()
 {
-  pointer q = avail; // Pointer the next free node
+  pointer q = avail; // The next free node
   if (avail)
     avail = avail->next;
 
@@ -256,7 +261,7 @@ is well known on the C++ community and subject of many talks in
 conferences, therefore I am not going to repeat results here for
 the sake of readability. There is plenty of material on CPPCON
 for example.  The interested user can also refer the project
-\href{https://github.com/mzimbres/rtcpp}{https://github.com/mzimbres/rtcpp}
+\href{https://github.com/mzimbres/rtcpp}
 for benchmarks of an allocator that uses the proposed feature.
 
 \section{Impact on the Standard}
@@ -276,7 +281,7 @@ requested to add a new member to the specialization of
 using use_node_allocator = std::true_type;
 \end{lstlisting}
 
-Following containers are affected: \texttt{std::forward\_list},
+The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::list}, \texttt{std::set}, \texttt{std::multiset},
 \texttt{std::unordered\_set}, \texttt{std::unordered\_multiset},
 \texttt{std::map}, \texttt{std::multimap},
@@ -284,5 +289,14 @@ Following containers are affected: \texttt{std::forward\_list},
 
 \section{Technical Specifications}
 
+\begin{thebibliography}{9}
+
+  \bibitem{std} ISOCPP Standard C++ - ISO/IEC JTC1 SC22 WG21 N 3690\newline
+    \url{https://isocpp.org/files/papers/N3690.pdf}
+  \bibitem{libcxx} libcxx
+  \bibitem{libstd} libstd++
+  \bibitem{boost} boost
+
+\end{thebibliography}
 \end{document}
 
