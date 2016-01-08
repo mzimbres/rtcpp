@@ -68,8 +68,8 @@ urlcolor=blue           % color of external links
 \begin{document}
 
 \date{}
-\title{\bf Support for allocators that handle only one size
-allocations}
+\title{\bf Support for \texttt{allocate/deallocate} overloads to
+handle same size allocations}
 
 \vspace{-2cm}
 \maketitle
@@ -88,13 +88,15 @@ allocations}
 \noindent
 {\bf Abstract: }This is a non-breaking proposal to the C++ standard
 that aims to reduce allocator complexity, support realtime allocation
-and improve performance on node based containers. An example
-implementation that explores the proposed feature is available at
-\href{https://github.com/mzimbres/rtcpp}
+and improve performance on node based containers through the addition
+of support for new overloads of the \texttt{allocate} and
+\texttt{deallocate} member functions in the allocator interface. An
+example implementation that explores the proposed feature is provided
 together with benchmarks.
 
 \tableofcontents
 
+\vfill
 %\newpage
 %\twocolumn
 %\linenumbers
@@ -122,15 +124,14 @@ unpredictability introduced by memory fragmentation and dynamic
 memory allocations in general.
 
 To address these problems, we propose the addition of support for
-allocators that can serve only one size of memory blocks in
-node-based containers.  Allocating and deallocating blocks with
-the same size is as simple as pushing and popping from a stack,
-which, beyond other advantages, has constant time complexity
-$O(1)$.
+\texttt{allocate} and \texttt{deallocate} overloads in allocators
+that can only serve one-size memory blocks in node-based containers.
 
-The \texttt{allocate} and \texttt{deallocate} member functions
-look like this in these allocators
+Allocation and deallocation of blocks with the same size is as simple
+as pushing and popping from a stack, which, beyond other advantages,
+has constant time complexity $O(1)$.
 
+These overloads look like this
 \begin{lstlisting}
 pointer allocate()
 {
@@ -145,8 +146,11 @@ void deallocate(pointer p)
   stack.push(p);
 }
 \end{lstlisting}
-which differ from the standard allocator interface by the fact
+which differ from their standard interfaces by the fact
 that they do not and cannot manage different allocation sizes.
+
+For related proposal please see \cite{prop1}.
+
 \section{Motivation and scope}
 
 \textsc{Some of} the motivations behind this proposal are
@@ -161,18 +165,19 @@ technique, since $n$ is always $1$ on calls of \texttt{allocate(n)}.
 This is highly desirable to improve C++ use in embedded systems.
 
 \item Most allocators found in the literature are overly
-complicated as a result of having to handle blocks of different
-size. In most node-based containers this is unnecessary since the
+complicated as a result of having to handle blocks with different
+sizes. In most node-based containers this is unnecessary since the
 requested memory has always the same size.
 
 \item State of the art allocators like
-\texttt{boost::node\_allocator} already tries to optimize when
-\texttt{allocate(n)} happens to be called with \texttt{n = 1}. 
+\texttt{boost::node\_allocator} achieve great performance gains
+optimizing for the $n = 1$ case. 
 
-\item The user should not {\it have to} provide allocators that
-handle different allocation sizes when containers do not make use
-of this feature. Users have to provide a complex feature that is
-not used.
+\item The majority of containers do not manage sizes but pointlessly
+demand this feature from their allocator. They are: all ordered
+associative containers plus \texttt{std::list} and
+\texttt{std::forward\_list} (unordered containers also benefit from
+the new overload to allocate the elements in the buckets).
 
 \item Avoid wasted space behind allocations. It is pretty common that
 allocators allocate more memory than requested to store informations
@@ -261,7 +266,7 @@ is well known on the C++ community and subject of many talks in
 conferences, therefore I am not going to repeat results here for
 the sake of readability. There is plenty of material on CPPCON
 for example.  The interested user can also refer the project
-\href{https://github.com/mzimbres/rtcpp}
+\url{https://github.com/mzimbres/rtcpp}
 for benchmarks of an allocator that uses the proposed feature.
 
 \section{Impact on the Standard}
@@ -273,7 +278,7 @@ container, whenever this member function is available. The same
 reasoning applies to \texttt{deallocate(pointer)} over
 \texttt{deallocate(pointer, size\_type)}
 
-In order to know which overload should be prefered, users are
+In order to know whether the overload is available, users are
 requested to add a new member to the specialization of
 \texttt{std::allocator\_traits}
 
@@ -291,6 +296,11 @@ The following containers are affected: \texttt{std::forward\_list},
 
 \begin{thebibliography}{9}
 
+  \bibitem{prop1} \url{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2045.html}
+  \bibitem{rtcpp} \url{https://github.com/mzimbres/rtcpp}
+  \bibitem{Alexandrescu} Alexandrescu \url{https://www.youtube.com/watch?v=LIb3L4vKZ7U}
+  \bibitem{Chandler} Chandler \url{https://www.youtube.com/watch?v=fHNmRkzxHWs}
+  \bibitem{meyers} Meyers \url{https://www.youtube.com/watch?v=WDIkqP4JbkE}
   \bibitem{std} ISOCPP Standard C++ - ISO/IEC JTC1 SC22 WG21 N 3690\newline
     \url{https://isocpp.org/files/papers/N3690.pdf}
   \bibitem{libcxx} libcxx
