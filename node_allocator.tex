@@ -47,10 +47,10 @@ urlcolor=blue           % color of external links
   deletekeywords={},            % if you want to delete keywords from the given language
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=single,                    % adds a frame around the code
+  frame=no,                    % adds a frame around the code
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
   morekeywords={using},            % if you want to add more keywords to the set
-  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  %numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
   numbersep=10pt,                   % how far the line-numbers are from the code
   numberstyle=\tiny\color{black}, % the style that is used for the line-numbers
   rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
@@ -81,7 +81,7 @@ handle same size allocations}
 {\bf Document number}:  0 \\
 {\bf Date}:  2016-01-05 \\
 {\bf Project}: Programming Language C++ Evolution Working Group \\
-{\bf Reply-to}: Marcelo Zimbres (\url{mailto:mzimbres@gmail.com}) 
+{\bf Reply-to}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
 
 \vspace{1cm}
 
@@ -115,7 +115,7 @@ Alexandrescu \\
 like trees and linked lists, cannot be over-emphasised, yet, in the
 last couple of years it has become a common trend in C++ to move away
 from such data structures due to their sub-optimal memory access
-patterns.  In fact, many people today prefer to use the flat
+patterns \cite{chandler, meyers}.  In fact, many people today prefer to use the flat
 alternatives and pay $O(n)$ insertion time than $O(1)$ at the cost of
 memory fragmentation and unpredictable performance loss. Other
 domains, like {\it realtime applications}, {\it embedded systems} or
@@ -124,14 +124,13 @@ unpredictability introduced by memory fragmentation and dynamic
 memory allocations in general.
 
 To address these problems, we propose the addition of support for
-\texttt{allocate} and \texttt{deallocate} overloads in allocators
-that can only serve one-size memory blocks in node-based containers.
+\texttt{allocate} and \texttt{deallocate} overloads in allocators that can only
+serve one-size memory blocks in node-based containers.  Allocation and
+deallocation in this case are as simple as popping and pushing from a stack,
+which, beyond other advantages, has constant time complexity $O(1)$.  These
+overloads look like this
 
-Allocation and deallocation of blocks with the same size is as simple
-as pushing and popping from a stack, which, beyond other advantages,
-has constant time complexity $O(1)$.
-
-These overloads look like this
+\medskip
 \begin{lstlisting}
 pointer allocate()
 {
@@ -149,8 +148,6 @@ void deallocate(pointer p)
 which differ from their standard interfaces by the fact
 that they do not and cannot manage different allocation sizes.
 
-For related proposal please see \cite{prop1}.
-
 \section{Motivation and scope}
 
 \textsc{Some of} the motivations behind this proposal are
@@ -158,26 +155,24 @@ For related proposal please see \cite{prop1}.
 
 \item Support the most natural and fastest allocation scheme for
 linked data structures. In \texttt{libstd++} and \texttt{libc++}
-for example, it is already possible to use this allocation
+for example, it is already possible (by chance) to use this allocation
 technique, since $n$ is always $1$ on calls of \texttt{allocate(n)}.
+
+\item The majority of containers do not manage sizes but pointlessly demand
+this feature from their allocators. They are: all ordered associative
+containers plus \texttt{std::list} and \texttt{std::forward\_list}. The
+unordered associative containers will also benefit from the new overload since
+they also do node allocation internally.
+
+\item Most allocators found in the literature are overly
+complicated as a result of having to handle blocks with different
+sizes.
 
 \item Support hard-realtime allocation for node-based containers.
 This is highly desirable to improve C++ use in embedded systems.
 
-\item Most allocators found in the literature are overly
-complicated as a result of having to handle blocks with different
-sizes. In most node-based containers this is unnecessary since the
-requested memory has always the same size.
-
-\item State of the art allocators like
-\texttt{boost::node\_allocator} achieve great performance gains
-optimizing for the $n = 1$ case. 
-
-\item The majority of containers do not manage sizes but pointlessly
-demand this feature from their allocator. They are: all ordered
-associative containers plus \texttt{std::list} and
-\texttt{std::forward\_list} (unordered containers also benefit from
-the new overload to allocate the elements in the buckets).
+\item State of the art allocators like \texttt{boost::node\_allocator}
+\cite{boost} achieve great performance gains optimizing for the $n = 1$ case. 
 
 \item Avoid wasted space behind allocations. It is pretty common that
 allocators allocate more memory than requested to store informations
@@ -200,6 +195,7 @@ raised are:
 \noindent
 {\bf 1) }{\it Why don't you simply test whether $n = 1$ and pass
 allocation to your allocator? For example}
+\medskip
 \begin{lstlisting}
 pointer allocate(size_type n)
 {
@@ -226,7 +222,8 @@ overhead.
 is space for a single node, asking for more than that means
 allocation logic is being built on the container itself an not on
 the allocator, with unpredictable side effects that users may
-want to avoid.
+want to avoid. If more than one node must be allocated at once for any
+reason, it still can loop over \texttt{allocate()}.
 \end{enumerate}
 
 \medskip
@@ -241,6 +238,7 @@ allocator. We can simply build a singly linked list were the
 nodes have the size demanded by the container, then allocation
 and deallocation reduces to push and pop from the linked list.
 
+\medskip
 \begin{lstlisting}
 pointer node_stack::pop()
 {
@@ -261,13 +259,16 @@ void node_stack::push(pointer p)
 
 \medskip
 \noindent
-{\bf Benchmarks}: The influence of fragmentation on performance
-is well known on the C++ community and subject of many talks in
-conferences, therefore I am not going to repeat results here for
-the sake of readability. There is plenty of material on CPPCON
-for example.  The interested user can also refer the project
-\url{https://github.com/mzimbres/rtcpp}
-for benchmarks of an allocator that uses the proposed feature.
+{\bf Further considerations}: The influence of fragmentation on
+performance is well known on the C++ community and subject of many
+talks in conferences therefore I am not going to repeat results here
+for the sake of readability. The interested reader can refer to
+  \cite{chandler, meyers} for example.
+
+For an allocator that explores the feature proposed here, please see
+the project \cite{rtcpp}. For a general
+talk on allocators and why size management is a problem
+\cite{alexandrescu}. For related proposal, please see \cite{prop1}.
 
 \section{Impact on the Standard}
 
@@ -282,6 +283,7 @@ In order to know whether the overload is available, users are
 requested to add a new member to the specialization of
 \texttt{std::allocator\_traits}
 
+\medskip
 \begin{lstlisting}
 using use_node_allocator = std::true_type;
 \end{lstlisting}
@@ -292,20 +294,32 @@ The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::map}, \texttt{std::multimap},
 \texttt{std::unordered\_map}, \texttt{std::unordered\_multimap}
 
+\medskip
+\noindent
+{\bf Pure node-based}: As a result of this proposal all node based
+containers mentioned above, with the exception of the unordered ones,
+should support allocators that provide only the overload
+\texttt{allocate()}.
+
+\medskip
+\noindent
+{\bf Hybrid}: Unordered containers have to rebind twice, once
+for node allocation and once for other internal data structures.
+The rebound type used for node allocations should prefer the 
+\texttt{allocate()} overload.
+
 \section{Technical Specifications}
 
 \begin{thebibliography}{9}
 
+  \bibitem{chandler} Chandler Carruth: {\it Efficiency with Algorithms, Performance
+  with Data Structures} (\url{https://www.youtube.com/watch?v=fHNmRkzxHWs})
+  \bibitem{meyers} Scott Meyers: {\it Cpu Caches and Why You Care} (\url{https://www.youtube.com/watch?v=WDIkqP4JbkE})
+  \bibitem{boost} \url{http://www.boost.org/doc/libs/1_58_0/boost/container/node_allocator.hpp}
   \bibitem{prop1} \url{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2045.html}
   \bibitem{rtcpp} \url{https://github.com/mzimbres/rtcpp}
-  \bibitem{Alexandrescu} Alexandrescu \url{https://www.youtube.com/watch?v=LIb3L4vKZ7U}
-  \bibitem{Chandler} Chandler \url{https://www.youtube.com/watch?v=fHNmRkzxHWs}
-  \bibitem{meyers} Meyers \url{https://www.youtube.com/watch?v=WDIkqP4JbkE}
-  \bibitem{std} ISOCPP Standard C++ - ISO/IEC JTC1 SC22 WG21 N 3690\newline
-    \url{https://isocpp.org/files/papers/N3690.pdf}
-  \bibitem{libcxx} libcxx
-  \bibitem{libstd} libstd++
-  \bibitem{boost} boost
+  \bibitem{alexandrescu} Andrei Alexandrescu: {\it std::allocator Is to Allocation what
+  std::vector Is to Vexation} (\url{https://www.youtube.com/watch?v=LIb3L4vKZ7U})
 
 \end{thebibliography}
 \end{document}
