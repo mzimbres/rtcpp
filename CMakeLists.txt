@@ -1,3 +1,5 @@
+# Using a single CMakeLists.txt to avoid recursive makefiles.
+
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(rtcpp)
@@ -9,7 +11,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 configure_file(
-  ${PROJECT_SOURCE_DIR}/config.h.in
+  ${PROJECT_SOURCE_DIR}/src/config.h.in
   ${PROJECT_BINARY_DIR}/config.h
 )
 
@@ -20,36 +22,33 @@ include(CPack)
 include_directories(.)
 include_directories(${PROJECT_BINARY_DIR})
 
-if (UNIX)
-  add_executable(bench_set benchmarks/bench_set.cpp)
-  add_executable(bench_list benchmarks/bench_list.cpp)
-  add_executable(test_set tests/test_set.cpp)
-  add_test(NAME test_set COMMAND test_set)
-endif (UNIX)
-
 install( DIRECTORY ${PROJECT_SOURCE_DIR}/rtcpp
          DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 
-add_executable(test_flist tests/test_flist.cpp)
-add_executable(test_align tests/test_align.cpp)
-add_executable(test_reverse tests/test_reverse.cpp)
-add_executable(test_alloc tests/test_alloc.cpp)
-add_executable(test_matrix tests/test_matrix.cpp)
-add_executable(test_comp_counting_sort tests/test_comp_counting_sort.cpp)
-add_executable(test_dist_counting_sort tests/test_dist_counting_sort.cpp)
-add_executable(test_find_intrusive tests/test_find_intrusive.cpp)
-add_executable(alloc_example1 examples/alloc_example1.cpp)
-add_executable(alloc_example2 examples/alloc_example2.cpp)
-add_executable(alloc_example3 examples/alloc_example3.cpp)
-add_executable(matrix_example1 examples/matrix_example1.cpp)
-add_executable(bench_list_frag benchmarks/bench_list_frag.cpp)
-add_executable(bench_find benchmarks/bench_find.cpp)
+add_executable(bench_set src/benchmarks/bench_set.cpp)
+add_executable(bench_list src/benchmarks/bench_list.cpp)
+add_executable(test_set src/tests/test_set.cpp)
+add_executable(test_flist src/tests/test_flist.cpp)
+add_executable(test_align src/tests/test_align.cpp)
+add_executable(test_reverse src/tests/test_reverse.cpp)
+add_executable(test_alloc src/tests/test_alloc.cpp)
+add_executable(test_matrix src/tests/test_matrix.cpp)
+add_executable(test_comp_counting_sort src/tests/test_comp_counting_sort.cpp)
+add_executable(test_dist_counting_sort src/tests/test_dist_counting_sort.cpp)
+add_executable(test_find_intrusive src/tests/test_find_intrusive.cpp)
+add_executable(alloc_example1 src/examples/alloc_example1.cpp)
+add_executable(alloc_example2 src/examples/alloc_example2.cpp)
+add_executable(alloc_example3 src/examples/alloc_example3.cpp)
+add_executable(matrix_example1 src/examples/matrix_example1.cpp)
+add_executable(bench_list_frag src/benchmarks/bench_list_frag.cpp)
+add_executable(bench_find src/benchmarks/bench_find.cpp)
 
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIR})
   target_link_libraries(bench_set ${Boost_LIBRARIES})
 endif()
 
+add_test(NAME test_set COMMAND test_set)
 add_test(NAME test_reverse COMMAND test_reverse)
 add_test(NAME test_align COMMAND test_align)
 add_test(NAME test_alloc COMMAND test_alloc)
