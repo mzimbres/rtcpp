@@ -80,7 +80,7 @@ handle same size allocations}
 \noindent
 {\bf Document number}:  0 \\
 {\bf Date}:  2016-01-05 \\
-{\bf Project}: Programming Language C++ Evolution Working Group \\
+{\bf Project}: Programming Language C++ \\
 {\bf Reply-to}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
 
 \vspace{1cm}
@@ -123,12 +123,13 @@ systems that aim {\it 24/7 availability}, cannot even afford the
 unpredictability introduced by memory fragmentation and dynamic
 memory allocations in general.
 
-To address these problems, we propose the addition of support for
-\texttt{allocate} and \texttt{deallocate} overloads in allocators that can only
-serve one-size memory blocks in node-based containers.  Allocation and
-deallocation in this case are as simple as popping and pushing from a stack,
-which, beyond other advantages, has constant time complexity $O(1)$.  These
-overloads look like this
+To address these problems, we propose that node-based containers favor
+the allocator member function \texttt{allocate()}, that can serve only one-size
+memory blocks, over \texttt{allocate(size\_type)}, whenever this overload is
+available.  The same reasoning is applies to \texttt{deallocate()}.
+Allocations and deallocations in this case are as simple as popping and pushing
+from a stack, which, beyond other advantages, has constant time complexity
+$O(1)$.  These overloads look like this
 
 \medskip
 \begin{lstlisting}
@@ -161,7 +162,7 @@ technique, since $n$ is always $1$ on calls of \texttt{allocate(n)}.
 \item The majority of containers do not manage sizes but pointlessly demand
 this feature from their allocators. They are: all ordered associative
 containers plus \texttt{std::list} and \texttt{std::forward\_list}. The
-unordered associative containers will also benefit from the new overload since
+unordered associative containers will also benefit from the new overloads since
 they also do node allocation internally.
 
 \item Most allocators found in the literature are overly
@@ -175,7 +176,7 @@ This is highly desirable to improve C++ use in embedded systems.
 \cite{boost} achieve great performance gains optimizing for the $n = 1$ case. 
 
 \item Avoid wasted space behind allocations. It is pretty common that
-allocators allocate more memory than requested to store informations
+allocators allocate more memory than requested to store information
 like the size of the allocated block.
 
 \item Keep nodes in as-compact-as-possible buffers, either on the
@@ -214,13 +215,13 @@ allocations with different sizes, which is exactly what I am
 trying to avoid for reasons mentioned above i.e. reduce
 complexity, improve performance etc.
 
-\item Containers in major libraries always use $n = 1$, that
+\item Containers in major libraries always use $n = 1$, which
 means the condition \texttt{if (n == 1)} is an unnecessary
 overhead.
 
 \item All that most node-based containers need from their allocator
 is space for a single node, asking for more than that means
-allocation logic is being built on the container itself an not on
+allocation logic is being built on the container itself and not on
 the allocator, with unpredictable side effects that users may
 want to avoid. If more than one node must be allocated at once for any
 reason, it still can loop over \texttt{allocate()}.
@@ -272,12 +273,12 @@ talk on allocators and why size management is a problem
 
 \section{Impact on the Standard}
 
-\textsc{This proposal} does not require any breaking change. We require
-that all node based containers favor the overload \texttt{allocate()}
-over \texttt{allocate(size\_type)} for all node allocations inside the
-container, whenever this member function is available. The same
-reasoning applies to \texttt{deallocate(pointer)} over
-\texttt{deallocate(pointer, size\_type)}
+\textsc{This proposal} does not require any breaking change. We
+require that all node based containers favor the overload
+\texttt{allocate()} over \texttt{allocate(size\_type)} for all node
+allocations inside the container, whenever this member function is
+available. The same reasoning applies to \texttt{deallocate(pointer)}
+over \texttt{deallocate(pointer, size\_type)}
 
 In order to know whether the overload is available, users are
 requested to add a new member to the specialization of
