@@ -68,8 +68,7 @@ urlcolor=blue           % color of external links
 \begin{document}
 
 \date{}
-\title{\bf Support for \texttt{allocate/deallocate} overloads to
-handle same size allocations}
+\title{\bf Improving allocator interface for node-based containers}
 
 \vspace{-2cm}
 \maketitle
@@ -88,8 +87,8 @@ handle same size allocations}
 \noindent
 {\bf Abstract: }This is a non-breaking proposal to the C++ standard
 that aims to reduce allocator complexity, support realtime allocation
-and improve performance on node based containers through the addition
-of support for new overloads of the \texttt{allocate} and
+and improve performance on node-based containers through the addition
+of overloads of the \texttt{allocate} and
 \texttt{deallocate} member functions in the allocator interface. An
 example implementation that explores the proposed feature is provided
 together with benchmarks.
@@ -116,7 +115,7 @@ like trees and linked lists, cannot be over-emphasised, yet, in the
 last couple of years it has become a common trend in C++ to move away
 from such data structures due to their sub-optimal memory access
 patterns \cite{chandler, meyers}.  In fact, many people today prefer to use the flat
-alternatives and pay $O(n)$ insertion time than $O(1)$ at the cost of
+alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of
 memory fragmentation and unpredictable performance loss. Other
 domains, like {\it realtime applications}, {\it embedded systems} or
 systems that aim {\it 24/7 availability}, cannot even afford the
@@ -124,9 +123,9 @@ unpredictability introduced by memory fragmentation and dynamic
 memory allocations in general.
 
 To address these problems, we propose that node-based containers favor
-the allocator member function \texttt{allocate()}, that can serve only one-size
-memory blocks, over \texttt{allocate(size\_type)}, whenever this overload is
-available.  The same reasoning is applies to \texttt{deallocate()}.
+the overload \texttt{allocate()}, that can serve only one-size
+memory blocks, over \texttt{allocate(size\_type)}, whenever it is
+available on the allocator.  The same reasoning is applies to \texttt{deallocate()}.
 Allocations and deallocations in this case are as simple as popping and pushing
 from a stack, which, beyond other advantages, has constant time complexity
 $O(1)$.  These overloads look like this
@@ -189,12 +188,11 @@ pre-linked nodes.
 
 \medskip
 \noindent
-{\bf Frequently asked questions:} Some of the questions commonly
-raised are:
+{\bf Frequently asked questions:} Some of the questions the reader
+may be asking are:
 
-\medskip
-\noindent
-{\bf 1) }{\it Why don't you simply test whether $n = 1$ and pass
+\begin{itemize}
+\item {\it Why don't you simply test whether $n = 1$ and pass
 allocation to your allocator? For example}
 \medskip
 \begin{lstlisting}
@@ -209,27 +207,27 @@ pointer allocate(size_type n)
 \noindent
 There are a couple of reasons why this is an undesirable approach.
 
-\begin{enumerate}
-\item The possibility of having $n \ne 1$ means I have to handle
+{\bf 1) } The possibility of having $n \ne 1$ means I have to handle
 allocations with different sizes, which is exactly what I am
 trying to avoid for reasons mentioned above i.e. reduce
 complexity, improve performance etc.
 
-\item Containers in major libraries always use $n = 1$, which
+\medskip
+\noindent
+{\bf 2) } Containers in major libraries always use $n = 1$, which
 means the condition \texttt{if (n == 1)} is an unnecessary
 overhead.
 
-\item All that most node-based containers need from their allocator
+\medskip
+\noindent
+{\bf 3) } All that most node-based containers need from their allocator
 is space for a single node, asking for more than that means
 allocation logic is being built on the container itself and not on
 the allocator, with unpredictable side effects that users may
 want to avoid. If more than one node must be allocated at once for any
 reason, it still can loop over \texttt{allocate()}.
-\end{enumerate}
 
-\medskip
-\noindent
-{\bf 2) }{\it How does this proposal simplify allocator design?}
+\item {\it How does this proposal simplify allocator design?}
 
 \medskip
 \noindent
@@ -257,6 +255,7 @@ void node_stack::push(pointer p)
 }
 
 \end{lstlisting}
+\end{itemize}
 
 \medskip
 \noindent
