@@ -90,7 +90,7 @@ that aims to reduce allocator complexity, support realtime allocation
 and improve performance of node-based containers through the addition
 of overloads of the \texttt{allocate} and \texttt{deallocate} member
 functions. An example implementation that explores the proposed
-feature is provided together with benchmarks.
+feature is provided.
 
 \tableofcontents
 
@@ -124,7 +124,7 @@ memory allocations in general.
 To address these problems, we propose that node-based containers favor
 the overload \texttt{allocate()}, that can serve only one-size
 memory blocks, over \texttt{allocate(size\_type)}, whenever it is
-available on the allocator.  The same reasoning is applies to \texttt{deallocate()}.
+available on the allocator.  The same reasoning applies to \texttt{deallocate()}.
 Allocations and deallocations in this case are as simple as popping and pushing
 from a stack, which, beyond other advantages, has constant time complexity
 $O(1)$.  These overloads look like this
@@ -157,18 +157,15 @@ linked data structures. In \texttt{libstd++} and \texttt{libc++}
 for example, it is already possible (by chance) to use this allocation
 technique, since $n$ is always $1$ on calls of \texttt{allocate(n)}.
 
-\item The majority of containers do not manage sizes but pointlessly demand
-this feature from their allocators. They are: all ordered associative
-containers plus \texttt{std::list} and \texttt{std::forward\_list}. The
-unordered associative containers will also benefit from the new overloads since
-they also do node allocation internally.
+\item Node-based containers do not manage allocation sizes but
+demand this feature from their allocators, with a cost in performance
+and unnecessary complexity. (The unordered associative containers uses
+sized allocations in addition to node allocation, which means they
+need the sized version of \texttt{allocate}).
 
-\item Most allocators found in the literature are overly
-complicated as a result of having to handle blocks with different
-sizes.
-
-\item Support hard-realtime allocation for node-based containers.
-This is highly desirable to improve C++ use in embedded systems.
+\item Support hard-realtime allocation for node-based containers
+through pre-allocation and pre-linking of nodes. This is highly
+desirable to improve C++ usability in embedded systems.
 
 \item State of the art allocators like \texttt{boost::node\_allocator}
 \cite{boost} achieve great performance gains optimizing for the $n = 1$ case. 
@@ -181,8 +178,6 @@ like the size of the allocated block.
 stack or on the heap, improving cache locality, performance and making
 them specially useful for embedded programming.
 
-\item This proposal makes it easy to work with pre-allocated and
-pre-linked nodes.
 \end{enumerate}
 
 \medskip
@@ -207,9 +202,9 @@ pointer allocate(size_type n)
 There are a couple of reasons why this is an undesirable approach.
 
 {\bf 1) } The possibility of having $n \ne 1$ means I have to handle
-allocations with different sizes, which is exactly what I am
-trying to avoid for reasons mentioned above i.e. reduce
-complexity, improve performance etc.
+allocations with different sizes, which is exactly what I am trying to
+avoid for reasons mentioned above i.e. reduce complexity, improve
+performance etc.
 
 \medskip
 \noindent
@@ -217,14 +212,14 @@ complexity, improve performance etc.
 means the condition \texttt{if (n == 1)} is an unnecessary
 overhead.
 
-\medskip
-\noindent
-{\bf 3) } All that most node-based containers need from their allocator
-is space for a single node, asking for more than that means
-allocation logic is being built on the container itself and not on
-the allocator, with unpredictable side effects that users may
-want to avoid. If more than one node must be allocated at once for any
-reason, it still can loop over \texttt{allocate()}.
+%\medskip
+%\noindent
+%{\bf 3) } All that most node-based containers need from their allocator
+%is space for a single node, asking for more than that means
+%allocation logic is being built on the container itself and not on
+%the allocator, with unpredictable side effects that users may
+%want to avoid. If more than one node must be allocated at once for any
+%reason, it still can loop over \texttt{allocate()}.
 
 \item {\it How does this proposal simplify allocator design?}
 
