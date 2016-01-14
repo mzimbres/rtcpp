@@ -158,10 +158,11 @@ for example, it is already possible (by chance) to use this allocation
 technique, since $n$ is always $1$ on calls of \texttt{allocate(n)}.
 
 \item Node-based containers do not manage allocation sizes but
-demand this feature from their allocators, with a cost in performance
-and unnecessary complexity. (The unordered associative containers uses
+unnecessarily demand this feature from their allocators, with a cost
+in performance and complexity. (Unordered associative containers use
 sized allocations in addition to node allocation, which means they
-need the sized version of \texttt{allocate}).
+need the sized version of \texttt{allocate}, but for purposes other
+than node allocation).
 
 \item Support hard-realtime allocation for node-based containers
 through pre-allocation and pre-linking of nodes. This is highly
@@ -180,14 +181,10 @@ them specially useful for embedded programming.
 
 \end{enumerate}
 
-\medskip
-\noindent
-{\bf Frequently asked questions:} Some of the questions the reader
-may be asking are:
+A question that naturally arises is: {\it Why not simply test
+whether $n = 1$ and pass allocation to an appropriate
+function internally?} For example
 
-\begin{itemize}
-\item {\it Why don't you simply test whether $n = 1$ and pass
-allocation to your allocator? For example}
 \medskip
 \begin{lstlisting}
 pointer allocate(size_type n)
@@ -199,37 +196,18 @@ pointer allocate(size_type n)
 \end{lstlisting}
 
 \noindent
-There are a couple of reasons why this is an undesirable approach.
+The main reason why this is an undesirable approach is that the
+possibility of having $n \ne 1$ means I have to handle allocations
+with different sizes, which is exactly what I am trying to avoid for
+reasons mentioned above i.e. reduce complexity, improve performance
+etc. Additionally, test for the condition \texttt{if (n == 1)} is
+pointless since it is always true on node allocation.
 
-{\bf 1) } The possibility of having $n \ne 1$ means I have to handle
-allocations with different sizes, which is exactly what I am trying to
-avoid for reasons mentioned above i.e. reduce complexity, improve
-performance etc.
-
-\medskip
-\noindent
-{\bf 2) } Containers in major libraries always use $n = 1$, which
-means the condition \texttt{if (n == 1)} is an unnecessary
-overhead.
-
-%\medskip
-%\noindent
-%{\bf 3) } All that most node-based containers need from their allocator
-%is space for a single node, asking for more than that means
-%allocation logic is being built on the container itself and not on
-%the allocator, with unpredictable side effects that users may
-%want to avoid. If more than one node must be allocated at once for any
-%reason, it still can loop over \texttt{allocate()}.
-
-\item {\it How does this proposal simplify allocator design?}
-
-\medskip
-\noindent
-All the simplification comes from the fact that there is no more
-need for an allocation algorithm or any fancy strategy inside the
-allocator. We can simply build a singly linked list were the
-nodes have the size demanded by the container, then allocation
-and deallocation reduces to push and pop from the linked list.
+The simplification we are talking about comes from the fact that there
+is no more need for an allocation algorithm or any fancy strategy
+inside the allocator. We can simply build a singly linked list were
+the nodes have the size demanded by the container, then allocation and
+deallocation reduces to push and pop from the linked list.
 
 \medskip
 \begin{lstlisting}
@@ -249,7 +227,6 @@ void node_stack::push(pointer p)
 }
 
 \end{lstlisting}
-\end{itemize}
 
 \medskip
 \noindent
