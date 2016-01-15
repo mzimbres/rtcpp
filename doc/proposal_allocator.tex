@@ -113,7 +113,7 @@ Alexandrescu \\
 like trees and linked lists, cannot be over-emphasised, yet, in the
 last couple of years it has become a common trend in C++ to move away
 from such data structures due to their sub-optimal memory access
-patterns \cite{chandler, meyers}.  In fact, many people today prefer to use the flat
+patterns \cite{middleditch, chandler, meyers}.  In fact, many people today prefer to use the flat
 alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of
 memory fragmentation and unpredictable performance loss. Other
 domains, like {\it realtime applications}, {\it embedded systems} or
@@ -152,17 +152,18 @@ that they do not take the size as a parameter.
 \textsc{Some of} the motivations behind this proposal are
 \begin{enumerate}
 
-\item Support the most natural and fastest allocation scheme for
-linked data structures. In \texttt{libstd++} and \texttt{libc++}
-for example, it is already possible (by chance) to use this allocation
-technique, since $n$ is always $1$ on calls of \texttt{allocate(n)}.
+\item Support the most natural and one of the fastest allocation
+scheme for linked data structures. In \texttt{libstd++} and
+\texttt{libc++} for example, it is already possible (by chance) to use
+this allocation technique, since $n$ is always $1$ on calls of
+\texttt{allocate(n)}.
 
 \item Node-based containers do not manage allocation sizes but
 unnecessarily demand this feature from their allocators, with a cost
 in performance and complexity. (Unordered associative containers use
 sized allocations in addition to node allocation, which means they
-need the sized version of \texttt{allocate}, but for purposes other
-than node allocation).
+need the sized version of \texttt{allocate} as well, but for purposes
+other than node allocation).
 
 \item Support hard-realtime allocation for node-based containers
 through pre-allocation and pre-linking of nodes. This is highly
@@ -234,12 +235,23 @@ void node_stack::push(pointer p)
 performance is well known on the C++ community and subject of many
 talks in conferences therefore I am not going to repeat results here
 for the sake of readability. The interested reader can refer to
-  \cite{chandler, meyers} for example.
+\cite{chandler, meyers} for example.
 
 For an allocator that explores the feature proposed here, please see
 the project \cite{rtcpp}. For a general
 talk on allocators and why size management is a problem
 \cite{alexandrescu}. For related proposal, please see \cite{prop1}.
+
+%\begin{figure}[ht]
+%    \centering
+%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_list_bench.png} }
+%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_set_bench.png} }
+%        \\
+%    \caption[Benchmarks]
+%    {Never slower than blah.}
+%    \label{fig::bench}
+%\end{figure}
+
 
 \section{Impact on the Standard}
 
@@ -283,13 +295,14 @@ The rebound type used for node allocations should prefer the
 
 \begin{thebibliography}{9}
 
-  \bibitem{chandler} Chandler Carruth: {\it Efficiency with Algorithms, Performance
+  \bibitem{middleditch} Sean Middleditch, \url{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0038r0.html}
+  \bibitem{chandler} Chandler Carruth, {\it Efficiency with Algorithms, Performance
   with Data Structures} (\url{https://www.youtube.com/watch?v=fHNmRkzxHWs})
-  \bibitem{meyers} Scott Meyers: {\it Cpu Caches and Why You Care} (\url{https://www.youtube.com/watch?v=WDIkqP4JbkE})
+  \bibitem{meyers} Scott Meyers, {\it Cpu Caches and Why You Care} (\url{https://www.youtube.com/watch?v=WDIkqP4JbkE})
   \bibitem{boost} \url{http://www.boost.org/doc/libs/1_58_0/boost/container/node_allocator.hpp}
-  \bibitem{prop1} \url{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2045.html}
+  \bibitem{prop1} Ion Gazta\~ naga, \url{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2045.html}
   \bibitem{rtcpp} \url{https://github.com/mzimbres/rtcpp}
-  \bibitem{alexandrescu} Andrei Alexandrescu: {\it std::allocator Is to Allocation what
+  \bibitem{alexandrescu} Andrei Alexandrescu, {\it std::allocator Is to Allocation what
   std::vector Is to Vexation} (\url{https://www.youtube.com/watch?v=LIb3L4vKZ7U})
 
 \end{thebibliography}
