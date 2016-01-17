@@ -78,9 +78,9 @@ urlcolor=blue           % color of external links
 
 \noindent
 {\bf Document number}:  0 \\
-{\bf Date}:  2016-01-05 \\
+{\bf Date}:  \today \\
 {\bf Project}: Programming Language C++ \\
-{\bf Reply-to}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
+{\bf Author}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
 
 \vspace{1cm}
 
@@ -101,8 +101,8 @@ feature is provided.
 \begin{flushright}
 \noindent
 {\it Size management adds undue difficulties \\
-     and inefficiencies to any allocator design.} \\
-Alexandrescu \\
+     and inefficiencies to any allocator design} \\
+A. ALEXANDRESCU \\
 \medskip
 {\it }
 \end{flushright}
@@ -121,10 +121,10 @@ systems that aim {\it 24/7 availability}, cannot even afford the
 unpredictability introduced by memory fragmentation and dynamic
 memory allocations in general.
 
-To address these problems, we propose that node-based containers favor
-the overload \texttt{allocate()}, that can serve only one-size
-memory blocks, over \texttt{allocate(size\_type)}, whenever it is
-available on the allocator.  The same reasoning applies to \texttt{deallocate()}.
+To address these problems, we propose that node-based containers favor the
+overload \texttt{allocate()}, that can serve only one-size memory blocks, over
+\texttt{allocate(size\_type)}, whenever \texttt{std::allocator\_traits}
+instructs them so.  The same reasoning applies to \texttt{deallocate()}.
 Allocations and deallocations in this case are as simple as popping and pushing
 from a stack, which, beyond other advantages, has constant time complexity
 $O(1)$.  These overloads look like this
@@ -191,8 +191,8 @@ function internally?} For example
 pointer allocate(size_type n)
 {
   if (n == 1)
-    return foo.allocate(); // Calls the node allocator.
-  return bar.allocate(n); // Calls regular allocators.
+    return foo.allocate(); // Calls node allocation.
+  return bar.allocate(n); // Calls regular allocate.
 }
 \end{lstlisting}
 
@@ -255,21 +255,21 @@ talk on allocators and why size management is a problem
 
 \section{Impact on the Standard}
 
-\textsc{This proposal} does not require any breaking change. We
-require that all node based containers favor the overload
-\texttt{allocate()} over \texttt{allocate(size\_type)} for all node
-allocations inside the container, whenever this member function is
-available. The same reasoning applies to \texttt{deallocate(pointer)}
-over \texttt{deallocate(pointer, size\_type)}
-
-In order to know whether the overload is available, users are
-requested to add a new member to the specialization of
-\texttt{std::allocator\_traits}
-
+We require that all node based containers favor the overload
+\texttt{allocate()} over \texttt{allocate(size\_type)}, for all node
+allocations inside the container, whenever
+\texttt{std::allocator\_traits} instructs them so, by means of a new
+typedef
 \medskip
 \begin{lstlisting}
-using use_node_allocator = std::true_type;
+template<class Alloc>
+struct allocator_traits {
+  ...
+  using use_node_allocation = typename Alloc::use_node_allocation;
+};
 \end{lstlisting}
+When \texttt{use\_node\_allocation} is not present in the allocator,
+the typedef should default to \texttt{std::false\_type}.
 
 The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::list}, \texttt{std::set}, \texttt{std::multiset},
