@@ -118,7 +118,7 @@ class node_allocator<T, N, true> {
   , m_size(alloc.m_size)
   , m_stack(m_data, m_size)
   {}
-  pointer allocate()
+  pointer allocate_node()
   {
     char* p = m_stack.pop(); 
     if (!p)
@@ -127,12 +127,12 @@ class node_allocator<T, N, true> {
   }
   pointer allocate(size_type)
   {
-    return allocate();
+    return allocate_node();
   }
-  void deallocate(pointer p)
+  void deallocate_node(pointer p)
   { m_stack.push(reinterpret_cast<char*>(p)); }
   void deallocate(pointer p, size_type)
-  { deallocate(p); }
+  { deallocate_node(p); }
   template<typename U>
   void destroy(U* p) {p->~U();}
   template< typename U, typename... Args>
@@ -179,12 +179,14 @@ struct allocator_traits<rt::node_allocator<T>> {
     select_on_container_copy_construction(const allocator_type& a)
     {return a;}
   static pointer allocate(allocator_type& a, size_type)
-  {return a.allocate();}
-  static pointer allocate(allocator_type& a)
-  {return a.allocate();}
+  {return a.allocate_node();}
+  static pointer allocate_node(allocator_type& a)
+  {return a.allocate_node();}
   static void deallocate( allocator_type& a
                         , pointer p
-                        , size_type) {a.deallocate(p);}
+                        , size_type) {a.deallocate_node(p);}
+  static void deallocate_node( allocator_type& a
+                        , pointer p) {a.deallocate_node(p);}
   template<class U>
   static void destroy(allocator_type& a, U* p) {a.destroy(p);}
   template<class U, class... Args >

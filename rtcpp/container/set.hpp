@@ -265,7 +265,7 @@ std::enable_if< detail::test_use_node_alloc<std::allocator_traits<Alloc>>::value
               , typename std::allocator_traits<Alloc>::pointer>::type
 get_node_free(Alloc& alloc)
 {
-  return std::allocator_traits<Alloc>::allocate(alloc);
+  return std::allocator_traits<Alloc>::allocate_node(alloc);
 }
 
 template <typename Alloc>

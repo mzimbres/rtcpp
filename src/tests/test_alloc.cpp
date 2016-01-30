@@ -71,20 +71,16 @@ bool test_deallocate()
   rt::node_allocator<int> alloc1(buffer);
   rt::node_allocator<std::size_t> alloc2(alloc1); // links the node_allocator.
 
-  std::size_t* p1 = alloc2.allocate(1);
+  std::size_t* p1 = alloc2.allocate_node();
   *p1 = 10; // To avoid a warning.
-  std::size_t* p2 = alloc2.allocate(1);
+  std::size_t* p2 = alloc2.allocate_node();
   try {
-    std::size_t* p3 = alloc2.allocate(1); // Should throw.
+    std::size_t* p3 = alloc2.allocate_node(); // Should throw.
     *p3 = 100; // To avoid a warning.
     return false;
   } catch (...) {
-    alloc2.deallocate(p2, 1);
+    alloc2.deallocate_node(p2);
   }
-  std::size_t* p = alloc2.allocate(1);
-  *p = 2;
-  if (*p != 2)
-    return false;
   return true;
 }
 
