@@ -34,18 +34,19 @@ class node_allocator {
   char* m_data;
   std::size_t m_size;
   public:
-  typedef T value_type;
-  typedef T* pointer;
-  typedef const T* const_pointer;
-  typedef T& reference;
-  typedef const T& const_reference;
-  typedef std::size_t size_type;
-  typedef std::ptrdiff_t difference_type;
+  using use_node_allocation = std::true_type;
+  using value_type = T;
+  using pointer = T*;
+  using const_pointer = const T*;
+  using reference = T&;
+  using const_reference = const T&;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
   template<typename U>
   struct rebind {
-    typedef node_allocator< U
-                          , sizeof (U)
-                          , !(sizeof (U) < sizeof (char*))> other;
+    using other = node_allocator< U
+                                , sizeof (U)
+                                , !(sizeof (U) < sizeof (char*))>;
   };
   bool operator==(const node_allocator& alloc) const
   {return m_data == alloc.m_data;}
@@ -79,18 +80,19 @@ class node_allocator {
 template <typename T, std::size_t N>
 class node_allocator<T, N, true> {
   public:
-  typedef T value_type;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef std::size_t size_type;
-  typedef std::ptrdiff_t difference_type;
+  using use_node_allocation = std::true_type;
+  using value_type = T;
+  using pointer = T*;
+  using const_pointer = const T*;
+  using reference = T&;
+  using const_reference = const T&;
+  using size_type = std::size_t;
+  using difference_type = std::ptrdiff_t;
   template<class U>
   struct rebind {
-    typedef node_allocator< U
-                          , sizeof (U)
-                          , !(sizeof (U) < sizeof (char*))> other;
+    using other = node_allocator< U
+                                , sizeof (U)
+                                , !(sizeof (U) < sizeof (char*))>;
   };
   public:
   char* m_data;
@@ -159,19 +161,19 @@ namespace std {
 
 template <typename T>
 struct allocator_traits<rt::node_allocator<T>> {
+  using use_node_allocation = typename rt::node_allocator<T>::use_node_allocation;
   using is_always_equal = std::false_type;
-  using use_node_alloc = std::true_type;
   using allocator_type = typename rt::node_allocator<T>;
   using size_type = typename allocator_type::size_type;
   using pointer = typename allocator_type::pointer;
   using value_type = typename allocator_type::value_type;
   using difference_type = typename allocator_type::difference_type;
   using const_pointer = typename allocator_type::const_pointer;
-  using propagate_on_container_copy_assignment = std::false_type; // TODO: Review this.
-  using propagate_on_container_move_assignment = std::false_type; // TODO: Review this.
+  using propagate_on_container_copy_assignment = std::true_type;
+  using propagate_on_container_move_assignment = std::true_type;
   using void_pointer = typename std::pointer_traits<pointer>::template rebind<void>;
   using const_void_pointer = typename std::pointer_traits<pointer>::template rebind<const void>;
-  using propagate_on_container_swap = std::false_type;
+  using propagate_on_container_swap = std::true_type;
   template<typename U>
   using rebind_alloc =
     typename allocator_type::template rebind<U>::other;

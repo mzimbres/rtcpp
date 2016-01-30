@@ -265,7 +265,7 @@ struct test_use_node_alloc : std::false_type {};
 
 template<class T>
 struct test_use_node_alloc< T
-                          , typename enable_if_type<typename T::use_node_alloc>::type
+                          , typename enable_if_type<typename T::use_node_allocation>::type
                           > : std::true_type {};
 // allocate
 
