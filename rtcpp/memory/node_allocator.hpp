@@ -9,7 +9,7 @@
 
 #include <rtcpp/memory/node_stack.hpp>
 
-  /*
+/*
 
   Implementation of a node allocator.  It performs constant
   time allocation on a pre-allocated buffer.
@@ -21,7 +21,7 @@
   the type the allocator will serve and can link together
   blocks of that size on the buffer.
 
-  */
+*/
 
 namespace rt {
 
