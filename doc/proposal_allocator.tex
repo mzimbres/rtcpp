@@ -77,7 +77,7 @@ urlcolor=blue           % color of external links
 %\vspace{1cm}
 
 \noindent
-{\bf Document number}:  0 \\
+{\bf Document number}:  1 \\
 {\bf Date}:  \today \\
 {\bf Project}: Programming Language C++ \\
 {\bf Author}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
@@ -85,12 +85,12 @@ urlcolor=blue           % color of external links
 \vspace{1cm}
 
 \noindent
-{\bf Abstract: }This is a non-breaking proposal to the C++ standard
-that aims to reduce allocator complexity, support realtime allocation
-and improve performance of node-based containers through the addition
-of overloads of the \texttt{allocate} and \texttt{deallocate} member
-functions. An example implementation that explores the proposed
-feature is provided.
+{\bf Abstract: }This is a non-breaking proposal to the C++ standard that aims
+to reduce allocator complexity, support realtime allocation and improve
+performance of node-based containers by making a clear distinction between node
+and array allocation in \texttt{std::allocator\_traits}.  Two new member
+functions are proposed \texttt{allocate\_node} and \texttt{deallocate\_node}.
+An example implementation is provided.
 
 \tableofcontents
 
@@ -265,7 +265,17 @@ typedef
 template<class Alloc>
 struct allocator_traits {
   ...
-  using use_node_allocation = typename Alloc::use_node_allocation;
+  // Equal to Alloc::use_node_allocation if present
+  // std::false_type otherwise.
+  using use_node_allocation = std::false_type
+
+  // Calls Alloc::allocate_node() if present otherwise
+  // calls Alloc::allocate(n).
+  pointer allocate_node();
+
+  // Calls Alloc::deallocate_node(pointer) if present
+  // otherwise calls Alloc::deallocate(n).
+  void deallocate_node(pointer);
 };
 \end{lstlisting}
 When \texttt{use\_node\_allocation} is not present in the allocator,
@@ -293,6 +303,12 @@ The rebound type used for node allocations should prefer the
 
 \section{Technical Specifications}
 
+\section{Acknowledgment}
+
+I would like thank people that give me any kind of feedback: Ville Voutilainen,
+Nevin Liber, Daniel Gutson, Alisdair Meredith, David Krauss. Special thanks go
+to Ion Gaztañaga, that suggested important changes in the original design.
+
 \begin{thebibliography}{9}
 
   \bibitem{middleditch} Sean Middleditch, \url{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0038r0.html}
@@ -304,7 +320,14 @@ The rebound type used for node allocations should prefer the
   \bibitem{rtcpp} \url{https://github.com/mzimbres/rtcpp}
   \bibitem{alexandrescu} Andrei Alexandrescu, {\it std::allocator Is to Allocation what
   std::vector Is to Vexation} (\url{https://www.youtube.com/watch?v=LIb3L4vKZ7U})
+  \bibitem{embedded} \url{http://www.open-std.org/pipermail/embedded/2014-December/000335.html}
+  \bibitem{proplist} \url{https://groups.google.com/a/isocpp.org/forum/#!topic/std-proposals/ccwOpTxM_xE}
 
 \end{thebibliography}
+
+\appendix
+
+\section{Alternative approach}
+
 \end{document}
 
