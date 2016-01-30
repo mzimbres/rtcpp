@@ -86,7 +86,7 @@ node_stack<S>::node_stack(char* p, std::size_t n)
     if (node_size < S)
       throw std::runtime_error("node_stack: Avail stack already linked for node with different size.");
   } else { // Links only once.
-    char* top = link_stack<S>(get_pool_ptr(), n - pool_offset);
+    char* top = link_stack(get_pool_ptr(), n - pool_offset, S);
     std::memcpy(get_avail_ptr(), &top, ptr_size);
     const std::uintptr_t node_size = S;
     std::memcpy(get_node_size_ptr(), &node_size, ptr_size);

@@ -12,13 +12,14 @@ namespace rt {
   is 2 * S. The buffer is split into blocks of size S and
   the blocks are linked in a LIFO fashion. The address of
   the next block is recorded in the first bytes of the
-  block.
+  block. The block sizes S are expected to be at least the size
+  of a pointer.
 
   returns a pointer to the top of the stack.
   ___________________________________________________________*/
 
-template <std::size_t S> // Block size in bytes.
-char* link_stack(char* p, std::size_t n)
+inline
+char* link_stack(char* p, std::size_t n, std::size_t S)
 {
   const std::size_t m = n / S; // Number of blocks of size S available.
   if (m < 2) // The minimum number of blocks we need is 2.
