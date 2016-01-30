@@ -49,6 +49,7 @@ class set {
   Compare m_comp;
   void copy(set& rhs) const noexcept;
   node_pointer get_node() const;
+  void release_node(node_pointer p) const;
   void safe_construct(node_pointer p, const value_type& key) const;
   public:
   static std::size_t reserve_to_alloc(std::size_t n) {return sizeof ((node_type) + 1) * n;}
@@ -119,14 +120,14 @@ set<T, Compare, Allocator>::erase(const K& key)
     return 0;
 
   node_pointer r = erase_node<1>(const_cast<node_pointer>(pq), const_cast<node_pointer>(q));
-  std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, r, 1);
+  release_node(r);
   return 1;
 }
 
 template <typename T, typename Compare, typename Allocator>
 void set<T, Compare, Allocator>::swap(set<T, Compare, Allocator>& other) noexcept
 {
-  std::swap(m_inner_alloc, other.m_inner_alloc); // this one is in namespace rt.
+  std::swap(m_inner_alloc, other.m_inner_alloc);
   std::swap(m_head, other.m_head);
   std::swap(m_comp, other.m_comp);
 }
@@ -199,7 +200,7 @@ void set<T, Compare, Allocator>::clear() noexcept
     node_pointer q = inorder<1>(p);
     if (p != m_head) {
       std::allocator_traits<inner_allocator_type>::destroy(m_inner_alloc, &q->key);
-      std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, p, 1);
+      release_node(p);
     }
     if (q == m_head)
       break;
@@ -214,7 +215,7 @@ template <typename T, typename Compare, typename Allocator>
 set<T, Compare, Allocator>::~set() noexcept
 {
   clear();
-  std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, m_head, 1);
+  release_node(m_head);
 }
 
 template <typename T, typename Compare, typename Allocator>
@@ -247,6 +248,15 @@ void set<T, Compare, Allocator>::copy(set<T, Compare, Allocator>& rhs) const noe
 namespace detail
 {
 
+/*
+   All the content of this namespace will be removed if the proposal gets
+   accepted! At the moment std::allocator traits do not offer the function
+   allocate_node, so I am guessing its existance based on the typedef
+   use_node_allocation. I am using SFINAE to test if it exists.  If it does, I
+   call the function allocate_node/deallocate_node othersize
+   allocate/deallocate.
+*/
+
 template<class T, class R = void>  
 struct enable_if_type { using type = R; };
 
@@ -257,11 +267,11 @@ template<class T>
 struct test_use_node_alloc< T
                           , typename enable_if_type<typename T::use_node_alloc>::type
                           > : std::true_type {};
-
+// allocate
 
 template <typename Alloc>
 typename
-std::enable_if< detail::test_use_node_alloc<std::allocator_traits<Alloc>>::value
+std::enable_if< test_use_node_alloc<std::allocator_traits<Alloc>>::value
               , typename std::allocator_traits<Alloc>::pointer>::type
 get_node_free(Alloc& alloc)
 {
@@ -270,19 +280,43 @@ get_node_free(Alloc& alloc)
 
 template <typename Alloc>
 typename
-std::enable_if< !detail::test_use_node_alloc<std::allocator_traits<Alloc>>::value
+std::enable_if< !test_use_node_alloc<std::allocator_traits<Alloc>>::value
               , typename std::allocator_traits<Alloc>::pointer>::type
 get_node_free(Alloc& alloc)
 {
   return std::allocator_traits<Alloc>::allocate(alloc, 1);
 }
 
+// deallocate
+
+template <typename Alloc>
+void release_node_free( Alloc& alloc
+                      , typename std::enable_if< test_use_node_alloc<std::allocator_traits<Alloc>>::value
+                                               , typename std::allocator_traits<Alloc>::pointer>::type p)
+{
+  return std::allocator_traits<Alloc>::deallocate_node(alloc, p);
 }
+
+template <typename Alloc>
+void release_node_free( Alloc& alloc
+                      , typename std::enable_if< !test_use_node_alloc<std::allocator_traits<Alloc>>::value
+                                               , typename std::allocator_traits<Alloc>::pointer>::type p)
+{
+  return std::allocator_traits<Alloc>::deallocate(alloc, p, 1);
+}
+
+} // detail
 
 template <typename T, typename Compare, typename Allocator>
 typename set<T, Compare, Allocator>::node_pointer set<T, Compare, Allocator>::get_node() const
 { 
   return detail::get_node_free(m_inner_alloc);
+}
+
+template <typename T, typename Compare, typename Allocator>
+void set<T, Compare, Allocator>::release_node(typename set<T, Compare, Allocator>::node_pointer p) const
+{ 
+  detail::release_node_free(m_inner_alloc, p);
 }
 
 template <typename T, typename Compare, typename Allocator>
@@ -293,7 +327,7 @@ set<T, Compare, Allocator>::safe_construct( typename set<T, Compare, Allocator>:
   try {
     std::allocator_traits<inner_allocator_type>::construct(m_inner_alloc, std::addressof(p->key), key);
   } catch (...) {
-    std::allocator_traits<inner_allocator_type>::deallocate(m_inner_alloc, p, 1);
+    release_node(p);
     throw;
   }
 }
