@@ -12,7 +12,6 @@
 
 namespace rt {
 
-template <std::size_t S>
 class node_stack {
   // I do not know whether the standard guarantees the
   // condition below, since I rely on it I will test it.
@@ -39,7 +38,7 @@ class node_stack {
   {return m_data + pool_offset;}
   public:
   node_stack();
-  node_stack(char* p, std::size_t n);
+  node_stack(char* p, std::size_t n, std::size_t S);
   char* pop() noexcept;
   void push(char* p) noexcept;
   bool operator==(const node_stack& rhs) const noexcept
@@ -48,8 +47,7 @@ class node_stack {
   {std::swap(m_data, other.m_data);}
 };
 
-template <std::size_t S>
-node_stack<S>::node_stack()
+node_stack::node_stack()
 {
   std::fill( std::begin(m_dummy_buffer)
            , std::end(m_dummy_buffer), 0);
@@ -58,8 +56,7 @@ node_stack<S>::node_stack()
   align_if_needed<ptr_size>(m_data, size);
 }
 
-template <std::size_t S>
-node_stack<S>::node_stack(char* p, std::size_t n)
+node_stack::node_stack(char* p, std::size_t n, std::size_t S)
 : m_data(p)
 {
   // p is expected to be (sizeof pointer) aligned and its
@@ -95,8 +92,8 @@ node_stack<S>::node_stack(char* p, std::size_t n)
   std::memcpy(m_data, &counter, ptr_size);
 }
 
-template <std::size_t S>
-char* node_stack<S>::pop() noexcept
+inline
+char* node_stack::pop() noexcept
 {
   char* q;
   std::memcpy(&q, get_avail_ptr(), ptr_size);
@@ -106,8 +103,8 @@ char* node_stack<S>::pop() noexcept
   return q;
 }
 
-template <std::size_t S>
-void node_stack<S>::push(char* p) noexcept
+inline
+void node_stack::push(char* p) noexcept
 {
   std::memcpy(p, get_avail_ptr(), ptr_size);
   std::memcpy(get_avail_ptr(), &p, ptr_size);

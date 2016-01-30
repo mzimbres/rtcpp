@@ -97,7 +97,7 @@ class node_allocator<T, N, true> {
   public:
   char* m_data;
   std::size_t m_size;
-  node_stack<sizeof (T)> m_stack;
+  node_stack m_stack;
   public:
   node_allocator(char* data, std::size_t size)
   : m_data(data)
@@ -118,7 +118,7 @@ class node_allocator<T, N, true> {
                                      , !(sizeof (U) < sizeof (char*))>& alloc)
   : m_data(alloc.m_data)
   , m_size(alloc.m_size)
-  , m_stack(m_data, m_size)
+  , m_stack(m_data, m_size, N)
   {}
   pointer allocate_node()
   {
