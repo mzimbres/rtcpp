@@ -11,20 +11,34 @@
 
 /*
 
-  Implementation of a node allocator.  It performs constant
-  time allocation on a pre-allocated buffer.
+  Implementation of a node allocator.  It performs constant time
+  allocation on a pre-allocated buffer.
 
-  Upon construction, only pointers are stored and you cannot
-  use its member functions. They can be used only after
-  copy-constructing the rebound instance, which will happen
-  inside the container. At that point we know the size of
-  the type the allocator will serve and can link together
-  blocks of that size on the buffer.
+  Node allocation can happen only when the node size is greater than
+  or equal to the size of a pointer, otherwise it is not possible to
+  link nodes together.  Therefore this class has a specialization for
+  such types.
+
+  This allocator is lazy, that means, when it is constructed
+  only the pointer to the buffer and the size is stored. Only on 
+  copy construction this buffer is divided in blocks and linked
+  together. Copy construction occurrs inside the container with
+  the new rebound allocator type.
+
+  I also offer a constructor to divide and link the buffer
+  immediately, but currently there is no way of knowing the right
+  size, since this is only known inside the container.
+
+  In general it is possible to delay linking the buffer until the
+  rebound type is copy constructed. However, on unordered containers
+  the allocator is rebound twice and both are copy constructed,
+  therefore, in this case, I do have to inform the size.
 
 */
 
 namespace rt {
 
+// TODO: Add constructors that link the buffer.
 template < typename T
          , std::size_t S = sizeof (T)
          , bool B = !(S < sizeof (char*))
@@ -99,19 +113,38 @@ class node_allocator<T, N, true> {
   std::size_t m_size;
   node_stack m_stack;
   public:
+  // The following ctors only store the pointer and the size.  Use
+  // them if you want linking to occurr inside the container.
   node_allocator(char* data, std::size_t size)
   : m_data(data)
   , m_size(size)
   {}
-  // Stack is not linked in this ctor
   template <std::size_t I>
   explicit node_allocator(std::array<char, I>& arr)
   : node_allocator(&arr.front(), arr.size())
   {}
-  // Stack is not linked in this ctor
-  explicit node_allocator(std::vector<char>& arr)
+  template <typename Alloc>
+  explicit node_allocator(std::vector<char, Alloc>& arr)
   : node_allocator(&arr.front(), arr.size())
   {}
+  // The following ctors store the pointer, the size and do link the
+  // buffer. Use them if you do not wnt this to happen inside the
+  // container.
+  node_allocator(char* data, std::size_t size, std::size_t S)
+  : m_data(data)
+  , m_size(size)
+  , m_stack(m_data, m_size, S)
+  {}
+  template <std::size_t I>
+  explicit node_allocator(std::array<char, I>& arr, std::size_t S)
+  : node_allocator(&arr.front(), arr.size(), S)
+  {}
+  template <typename Alloc>
+  explicit node_allocator(std::vector<char, Alloc>& arr, std::size_t S)
+  : node_allocator(&arr.front(), arr.size(), S)
+  {}
+  // Copy constructor, always tries to link the stack. If it is already
+  // linked ok. If it is linked to an incompatible size, throws.
   template<typename U>
   node_allocator(const node_allocator< U
                                      , sizeof (U)

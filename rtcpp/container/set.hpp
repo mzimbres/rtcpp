@@ -39,8 +39,8 @@ class set {
   using const_iterator = bst_iterator<T>;
   using iterator = const_iterator;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  private:
   using node_type = bst_node<T>;
+  private:
   using inner_allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<node_type>;
   using node_pointer = typename inner_allocator_type::pointer;
   using const_node_pointer = const node_type*;

@@ -28,29 +28,22 @@ class node_stack {
   char* m_data;
   // used only when default constructed.
   std::array<char, pool_offset + ptr_size> m_dummy_buffer;
-  char* get_counter_ptr() const noexcept
-  {return m_data + counter_offset;}
-  char* get_avail_ptr() const noexcept
-  {return m_data + avail_offset;}
-  char* get_node_size_ptr() const
-  noexcept {return m_data + node_size_offset;}
-  char* get_pool_ptr() const noexcept
-  {return m_data + pool_offset;}
+  char* get_counter_ptr() const noexcept {return m_data + counter_offset;}
+  char* get_avail_ptr() const noexcept {return m_data + avail_offset;}
+  char* get_node_size_ptr() const noexcept {return m_data + node_size_offset;}
+  char* get_pool_ptr() const noexcept {return m_data + pool_offset;}
   public:
   node_stack();
   node_stack(char* p, std::size_t n, std::size_t S);
   char* pop() noexcept;
   void push(char* p) noexcept;
-  bool operator==(const node_stack& rhs) const noexcept
-  {return m_data == rhs.m_data;}
-  void swap(node_stack& other) noexcept
-  {std::swap(m_data, other.m_data);}
+  bool operator==(const node_stack& rhs) const noexcept {return m_data == rhs.m_data;}
+  void swap(node_stack& other) noexcept {std::swap(m_data, other.m_data);}
 };
 
 node_stack::node_stack()
 {
-  std::fill( std::begin(m_dummy_buffer)
-           , std::end(m_dummy_buffer), 0);
+  std::fill(std::begin(m_dummy_buffer), std::end(m_dummy_buffer), 0);
   m_data = &m_dummy_buffer[0];
   std::size_t size = m_dummy_buffer.size();
   align_if_needed<ptr_size>(m_data, size);
@@ -78,10 +71,10 @@ node_stack::node_stack(char* p, std::size_t n, std::size_t S)
   std::memcpy(&counter, get_counter_ptr(), ptr_size);
 
   if (counter != 0) { // Links only once.
-    std::uintptr_t node_size; // Current node size o the buffer.
+    std::uintptr_t node_size; // Current node size in the buffer.
     std::memcpy(&node_size, get_node_size_ptr(), ptr_size);
     if (node_size < S)
-      throw std::runtime_error("node_stack: Avail stack already linked for node with different size.");
+      throw std::runtime_error("node_stack: Avail stack already linked for node with incompatible size.");
   } else { // Links only once.
     char* top = link_stack(get_pool_ptr(), n - pool_offset, S);
     std::memcpy(get_avail_ptr(), &top, ptr_size);
