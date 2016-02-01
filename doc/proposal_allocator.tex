@@ -109,43 +109,49 @@ A. ALEXANDRESCU \\
 \medskip
 
 \section{Introduction}
-\textsc{The importance} of linked data structures in computer science,
-like trees and linked lists, cannot be over-emphasised, yet, in the
-last couple of years it has become a common trend in C++ to move away
-from such data structures due to their sub-optimal memory access
-patterns \cite{middleditch, chandler, meyers}.  In fact, many people today prefer to use the flat
-alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of
-memory fragmentation and unpredictable performance loss. Other
-domains, like {\it realtime applications}, {\it embedded systems} or
-systems that aim {\it 24/7 availability}, cannot even afford the
-unpredictability introduced by memory fragmentation and dynamic
-memory allocations in general.
+\textsc{The importance} of linked data structures in computer science, like
+trees and linked lists, cannot be over-emphasised, yet, in the last couple of
+years it has become a common trend in C++ to move away from such data
+structures due to their sub-optimal memory access patterns \cite{middleditch,
+chandler, meyers}.  In fact, many people today prefer to use the flat
+alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of memory
+fragmentation and unpredictable performance loss. Other domains, like {\it
+realtime applications}, {\it embedded systems} or systems that aim {\it 24/7
+availability}, cannot even afford the unpredictability introduced by memory
+fragmentation and dynamic memory allocations in general.
 
-To address these problems, we propose that node-based containers favor the
-overload \texttt{allocate()}, that can serve only one-size memory blocks, over
-\texttt{allocate(size\_type)}, whenever \texttt{std::allocator\_traits}
-instructs them so.  The same reasoning applies to \texttt{deallocate()}.
-Allocations and deallocations in this case are as simple as popping and pushing
-from a stack, which, beyond other advantages, has constant time complexity
-$O(1)$.  These overloads look like this
-
+To address these problems, we propose the complete split between array and
+node allocations in the \texttt{std::allocator\_traits} by adding two new
+functions, dedicated to node allocations, and a new typedef to inform when
+node allocation should be used
 \medskip
 \begin{lstlisting}
-pointer allocate()
-{
-  pointer p = stack.pop(); 
-  if (!p)
-    throw std::bad_alloc();
-  return p; 
-}
-
-void deallocate(pointer p)
-{
-  stack.push(p);
-}
+template<class Alloc>
+struct allocator_traits {
+  using node_allocation_only = std::false_type
+  pointer allocate_node(Alloc& a);
+  void deallocate_node(Alloc& a, pointer);
+};
 \end{lstlisting}
-which differ from their standard interfaces by the fact
-that they do not take the size as a parameter.
+The behaviour of these new members is better explained in section \ref{impact}.
+These addition will allow the following configuration inside node-based
+containers
+\begin{itemize}
+\item {\bf Array allocation only} \\
+This is the status quo. When the allocator does not provide \texttt{allocate\_node},
+the respective function in the \texttt{allocator\_traits} falls back to 
+\texttt{allocate(1)}.
+\item {\bf Node allocation only} \\
+In this case the user is required the set the tpedef \texttt{node\_allocation\_only}
+to \texttt{std::true\_type}. The user is not required to provide array allocation
+in this case (i.e. \texttt{allocate(n)})
+\item {\bf Array and node allocation together} \\
+In this case the user provides \texttt{allocate\_node} but sets
+\texttt{node\_allocation\_only} to \texttt{std::false\_type}.
+\end{itemize}
+
+These additions covers all use cases, is non-brekaing and very flexible.
+For an alternative solution please see appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
@@ -253,7 +259,7 @@ talk on allocators and why size management is a problem
 %\end{figure}
 
 
-\section{Impact on the Standard}
+\section{Impact on the Standard} \label{impact}
 
 We require that all node based containers favor the overload
 \texttt{allocate()} over \texttt{allocate(size\_type)}, for all node
@@ -267,15 +273,15 @@ struct allocator_traits {
   ...
   // Equal to Alloc::use_node_allocation if present
   // std::false_type otherwise.
-  using use_node_allocation = std::false_type
+  using node_allocation_only = std::false_type
 
   // Calls Alloc::allocate_node() if present otherwise
   // calls Alloc::allocate(n).
-  pointer allocate_node();
+  pointer allocate_node(Alloc& a);
 
   // Calls Alloc::deallocate_node(pointer) if present
   // otherwise calls Alloc::deallocate(n).
-  void deallocate_node(pointer);
+  void deallocate_node(Alloc& a, pointer);
 };
 \end{lstlisting}
 When \texttt{use\_node\_allocation} is not present in the allocator,
@@ -327,7 +333,7 @@ to Ion Gaztañaga, that suggested important changes in the original design.
 
 \appendix
 
-\section{Alternative approach}
+\section{Alternative approach} \label{alternative}
 
 \end{document}
 

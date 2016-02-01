@@ -40,6 +40,7 @@ namespace rt {
 
 // TODO: Add constructors that link the buffer.
 template < typename T
+         , typename NodeType = T
          , std::size_t S = sizeof (T)
          , bool B = !(S < sizeof (char*))
          >
@@ -59,6 +60,7 @@ class node_allocator {
   template<typename U>
   struct rebind {
     using other = node_allocator< U
+                                , NodeType
                                 , sizeof (U)
                                 , !(sizeof (U) < sizeof (char*))>;
   };
@@ -82,8 +84,9 @@ class node_allocator {
   explicit node_allocator(std::vector<char>& arr)
   : node_allocator(&arr.front(), arr.size())
   {}
-  template<typename U>
+  template<typename U, typename K>
   node_allocator(const node_allocator< U
+                                     , K
                                      , sizeof (U)
                                      , !(sizeof (U) < sizeof (char*))>& alloc)
   : m_data(alloc.m_data)
@@ -91,8 +94,10 @@ class node_allocator {
   {}
 };
 
-template <typename T, std::size_t N>
-class node_allocator<T, N, true> {
+template < typename T
+         , typename NodeType
+         , std::size_t N>
+class node_allocator<T, NodeType, N, true> {
   public:
   using use_node_allocation = std::true_type;
   using value_type = T;
@@ -105,6 +110,7 @@ class node_allocator<T, N, true> {
   template<class U>
   struct rebind {
     using other = node_allocator< U
+                                , NodeType
                                 , sizeof (U)
                                 , !(sizeof (U) < sizeof (char*))>;
   };
@@ -145,8 +151,9 @@ class node_allocator<T, N, true> {
   {}
   // Copy constructor, always tries to link the stack. If it is already
   // linked ok. If it is linked to an incompatible size, throws.
-  template<typename U>
+  template<typename U, typename K>
   node_allocator(const node_allocator< U
+                                     , K
                                      , sizeof (U)
                                      , !(sizeof (U) < sizeof (char*))>& alloc)
   : m_data(alloc.m_data)

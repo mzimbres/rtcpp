@@ -26,7 +26,7 @@ class node_stack {
                                        + avail_offset 
                                        + node_size_offset;
   char* m_data;
-  // used only when default constructed.
+  // used only when default constructed. Will be soon removed.
   std::array<char, pool_offset + ptr_size> m_dummy_buffer;
   char* get_counter_ptr() const noexcept {return m_data + counter_offset;}
   char* get_avail_ptr() const noexcept {return m_data + avail_offset;}
@@ -41,6 +41,7 @@ class node_stack {
   void swap(node_stack& other) noexcept {std::swap(m_data, other.m_data);}
 };
 
+// Move this to cpp file.
 node_stack::node_stack()
 {
   std::fill(std::begin(m_dummy_buffer), std::end(m_dummy_buffer), 0);
@@ -49,6 +50,7 @@ node_stack::node_stack()
   align_if_needed<ptr_size>(m_data, size);
 }
 
+// Move this to cpp file.
 node_stack::node_stack(char* p, std::size_t n, std::size_t S)
 : m_data(p)
 {
