@@ -115,15 +115,14 @@ years it has become a common trend in C++ to move away from such data
 structures due to their sub-optimal memory access patterns \cite{middleditch,
 chandler, meyers}.  In fact, many people today prefer to use the flat
 alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of memory
-fragmentation and unpredictable performance loss. Other domains, like {\it
-realtime applications}, {\it embedded systems} or systems that aim {\it 24/7
-availability}, cannot even afford the unpredictability introduced by memory
-fragmentation and dynamic memory allocations in general.
+fragmentation and unpredictable performance loss.  
 
-To address these problems, we propose the complete split between array and
-node allocations in the \texttt{std::allocator\_traits} by adding two new
-functions, dedicated to node allocations, and a new typedef to inform when
-node allocation should be used
+We believe in fact, that the "{\it Don't pay for what you dont use}" premise
+is not met for a lot of reasons. This proposal tries to fix what the author
+believes to be the root of problem: {\it The lack of distinction between array
+and node allocations}.  Therefore, we propose the complete split between array
+and node allocations by adding the following new members to
+\texttt{std::allocator\_traits}
 \medskip
 \begin{lstlisting}
 template<class Alloc>
@@ -133,29 +132,86 @@ struct allocator_traits {
   void deallocate_node(Alloc& a, pointer);
 };
 \end{lstlisting}
-The behaviour of these new members is better explained in section \ref{impact}.
+%The behaviour of these new members is better explained in section \ref{impact}.
 These addition will allow the following configuration inside node-based
 containers
 \begin{itemize}
 \item {\bf Array allocation only} \\
-This is the status quo. When the allocator does not provide \texttt{allocate\_node},
-the respective function in the \texttt{allocator\_traits} falls back to 
-\texttt{allocate(1)}.
+This is the status quo and is not changed. Libraries can continue to call
+\texttt{allocate(n)} if they want, but since the majority of implementations
+use $n = 1$ they may simply be implemented in terms of
+\texttt{allocate\_node()}, regardless of whether the allocator provides this
+function or not. The implementation of \texttt{allocate\_node()} should fall
+back to \texttt{allocate(1)} when the allocator does not provide one.
+
 \item {\bf Node allocation only} \\
-In this case the user is required the set the tpedef \texttt{node\_allocation\_only}
+In this case the user is required the set the typedef \texttt{node\_allocation\_only}
 to \texttt{std::true\_type}. The user is not required to provide array allocation
 in this case (i.e. \texttt{allocate(n)})
-\item {\bf Array and node allocation together} \\
-In this case the user provides \texttt{allocate\_node} but sets
-\texttt{node\_allocation\_only} to \texttt{std::false\_type}.
+%\item {\bf Array and node allocation together} \\
+%In this case the user provides \texttt{allocate\_node} but sets
+%\texttt{node\_allocation\_only} to \texttt{std::false\_type}.
 \end{itemize}
 
-These additions covers all use cases, is non-brekaing and very flexible.
-For an alternative solution please see appendix \ref{alternative}.
+For an alternative solution that achieves almost the same goals, please see
+appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
-\textsc{Some of} the motivations behind this proposal are
+Supose a programmer needs an \texttt{std::list} with say, 20
+integers somewhere in the code. In current C++ we there are
+two ways to solve this extremely simple task.
+
+\medskip
+\noindent
+{\bf Use \texttt{std::list}} with \texttt{std::allocator} \\
+This is undesirable for a lot of reasons
+\begin{enumerate}
+\item Nodes go on the heap. For only 20 elements I would rather better
+use the stack.
+\item The node size is small ($\approx 20$bytes), it does not make sense allocating
+them individually on the heap. Fragmentation begin to play a role
+if I have many lists (or bigger n).
+\item Unknown heap allocation algorithms behind \texttt{malloc}. it does not
+know you are doing node allocations and therefore is not optimal.
+\item Unknown allocated size. Did it allocated more space to store information
+needed by the algorithm?
+\item  Each heap allocation is an overhead: all the code inside malloc, plus
+system calls and allocation strategies. (I only need 20bytes of space for a
+node!)
+\end{enumerate}
+
+All this is overkill for a simple list with a couple of elements
+(for bigger n situation gets worser).
+\medskip
+\noindent
+{\bf Use a custom allocator} \\
+
+\medskip
+\begin{lstlisting}
+std::array<char, 20 * node_size > buffer = {{}};
+my_allocator alloc(buffer);
+
+std::list<int, my_allocator<int>> l(alloc);
+\end{lstlisting}
+
+This sees the ideal solution:
+\begin{enumerate}
+\item Nodes on the stack.
+\item Buffer is as small as possible. {\it You do not pay for space
+you do not use}.
+\item No allocation overhead: I only change some pointers.
+\end{enumerate}
+
+This is however not possible in the current allocator interface
+due to the fact that \texttt{allocate(n)} may be called with $n != 1$ and
+that means I have to add unnecessary complexity to handle the many possible
+values of n. The size of the buffer is not anymore clear. All the added
+complexity is pointless. The proposal as far as the author can see, fixes this.
+
+\medskip
+\noindent
+{\bf General motivations} \\
 \begin{enumerate}
 
 \item Support the most natural and one of the fastest allocation
