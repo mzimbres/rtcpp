@@ -47,10 +47,10 @@ urlcolor=blue           % color of external links
   deletekeywords={},            % if you want to delete keywords from the given language
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=no,                    % adds a frame around the code
+  frame=single,                    % adds a frame around the code
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
   morekeywords={using},            % if you want to add more keywords to the set
-  %numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
   numbersep=10pt,                   % how far the line-numbers are from the code
   numberstyle=\tiny\color{black}, % the style that is used for the line-numbers
   rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
@@ -117,37 +117,46 @@ chandler, meyers}.  In fact, many people today prefer to use the flat
 alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of memory
 fragmentation and unpredictable performance loss.  
 
-We believe in fact, that the "{\it Don't pay for what you dont use}" premise
-is not met for a lot of reasons. This proposal tries to fix what the author
+We believe in fact, that the ``{\it Don't pay for what you dont use}" premise
+is not being met for a lot of reasons. This proposal tries to fix what the author
 believes to be the root of problem: {\it The lack of distinction between array
-and node allocations}.  Therefore, we propose the complete split between array
-and node allocations by adding the following new members to
+and node allocations}.  Therefore, we propose the complete split between these
+two allocation schemes by means of a simple non-breaking addition to
 \texttt{std::allocator\_traits}
 \medskip
 \begin{lstlisting}
 template<class Alloc>
 struct allocator_traits {
+  ...
+  // Equal to Alloc::node_allocation_only if present,
+  // std::false_type otherwise.
   using node_allocation_only = std::false_type
+
+  // Calls Alloc::allocate_node() if present otherwise
+  // calls Alloc::allocate(1).
   pointer allocate_node(Alloc& a);
+
+  // Calls Alloc::deallocate_node(pointer) if present
+  // otherwise calls Alloc::deallocate(p, 1).
   void deallocate_node(Alloc& a, pointer);
 };
 \end{lstlisting}
 %The behaviour of these new members is better explained in section \ref{impact}.
-These addition will allow the following configuration inside node-based
+These additions will provide the following options inside node-based
 containers
 \begin{itemize}
-\item {\bf Array allocation only} \\
-This is the status quo and is not changed. Libraries can continue to call
+\item {\bf Array allocation only}.
+This is the {\it status quo}. Libraries can continue to call
 \texttt{allocate(n)} if they want, but since the majority of implementations
 use $n = 1$ they may simply be implemented in terms of
 \texttt{allocate\_node()}, regardless of whether the allocator provides this
 function or not. The implementation of \texttt{allocate\_node()} should fall
 back to \texttt{allocate(1)} when the allocator does not provide one.
 
-\item {\bf Node allocation only} \\
+\item {\bf Node allocation only}.
 In this case the user is required the set the typedef \texttt{node\_allocation\_only}
-to \texttt{std::true\_type}. The user is not required to provide array allocation
-in this case (i.e. \texttt{allocate(n)})
+to \texttt{std::true\_type} and provide \texttt{allocate\_node()}. The user is
+not required to provide \texttt{allocate(n)} this case.
 %\item {\bf Array and node allocation together} \\
 %In this case the user provides \texttt{allocate\_node} but sets
 %\texttt{node\_allocation\_only} to \texttt{std::false\_type}.
@@ -159,59 +168,64 @@ appendix \ref{alternative}.
 \section{Motivation and scope}
 
 Supose a programmer needs an \texttt{std::list} with say, 20
-integers somewhere in the code. In current C++ we there are
-two ways to solve this extremely simple task.
+integers somewhere in the code. In current C++ there are
+two ways to solve this simple task (if we want indeed to use a standard
+container)
 
 \medskip
+\medskip
 \noindent
-{\bf Use \texttt{std::list}} with \texttt{std::allocator} \\
+{A) \bf The standard allocator: \texttt{std::list<int, std::allocator<int>>}} \\
+
+\medskip
 This is undesirable for a lot of reasons
-\begin{enumerate}
-\item Nodes go on the heap. For only 20 elements I would rather better
+\begin{itemize}
+\item Nodes go on the heap. For only 20 elements I would preferably
 use the stack.
 \item The node size is small ($\approx 20$bytes), it does not make sense allocating
 them individually on the heap. Fragmentation begin to play a role
 if I have many lists (or bigger n).
-\item Unknown heap allocation algorithms behind \texttt{malloc}. it does not
-know you are doing node allocations and therefore is not optimal.
+\item Suboptimal allocation behind \texttt{malloc}. It does not
+know we are doing node allocations and cannot optimize it.
 \item Unknown allocated size. Did it allocated more space to store information
-needed by the algorithm?
+needed by the algorithm? How much memory I am really using?
 \item  Each heap allocation is an overhead: all the code inside malloc, plus
 system calls and allocation strategies. (I only need 20bytes of space for a
 node!)
-\end{enumerate}
+\end{itemize}
 
 All this is overkill for a simple list with a couple of elements
-(for bigger n situation gets worser).
+(for bigger n situation gets worser). At this point we think it is
+better to use a custom allocator. \\
+
+\medskip
 \medskip
 \noindent
-{\bf Use a custom allocator} \\
+{\bf B) Use a custom allocator \texttt{std::list<int, my::allocator<int>>}} \\
 
 \medskip
 \begin{lstlisting}
 std::array<char, 20 * node_size > buffer = {{}};
-my_allocator alloc(buffer);
+my::allocator<int> alloc(buffer);
 
 std::list<int, my_allocator<int>> l(alloc);
 \end{lstlisting}
 
-This sees the ideal solution:
-\begin{enumerate}
-\item Nodes on the stack.
-\item Buffer is as small as possible. {\it You do not pay for space
-you do not use}.
-\item No allocation overhead: I only change some pointers.
-\end{enumerate}
+This seems the ideal solution:
+\begin{itemize}
+\item Nodes go on the stack.
+\item Optimal node size. {\it You do not pay for space you do not use}.
+\item Small and compact buffer, improving cache locality.
+\item No allocation overhead: I only change some pointers. (See below)
+\end{itemize}
 
 This is however not possible in the current allocator interface
-due to the fact that \texttt{allocate(n)} may be called with $n != 1$ and
+due to the fact that \texttt{allocate(n)} may be called with $n \ne 1$,
 that means I have to add unnecessary complexity to handle the many possible
-values of n. The size of the buffer is not anymore clear. All the added
-complexity is pointless. The proposal as far as the author can see, fixes this.
-
-\medskip
-\noindent
-{\bf General motivations} \\
+values of n. The size of the buffer is not anymore clear and depend on the
+allocation strategy/algorithm. All the added
+complexity is pointless. This is only one use case out of many. Some
+further motivations for this proposal are listed below.
 \begin{enumerate}
 
 \item Support the most natural and one of the fastest allocation
@@ -222,10 +236,12 @@ this allocation technique, since $n$ is always $1$ on calls of
 
 \item Node-based containers do not manage allocation sizes but
 unnecessarily demand this feature from their allocators, with a cost
-in performance and complexity. (Unordered associative containers use
-sized allocations in addition to node allocation, which means they
-need the sized version of \texttt{allocate} as well, but for purposes
-other than node allocation).
+in performance and complexity.
+
+%(Unordered associative containers use
+%sized allocations in addition to node allocation, which means they
+%need the sized version of \texttt{allocate} as well, but for purposes
+%other than node allocation).
 
 \item Support hard-realtime allocation for node-based containers
 through pre-allocation and pre-linking of nodes. This is highly
@@ -244,37 +260,38 @@ them specially useful for embedded programming.
 
 \end{enumerate}
 
-A question that naturally arises is: {\it Why not simply test
-whether $n = 1$ and pass allocation to an appropriate
-function internally?} For example
-
-\medskip
-\begin{lstlisting}
-pointer allocate(size_type n)
-{
-  if (n == 1)
-    return foo.allocate(); // Calls node allocation.
-  return bar.allocate(n); // Calls regular allocate.
-}
-\end{lstlisting}
+%A question that naturally arises is: {\it Why not simply test
+%whether $n = 1$ and pass allocation to an appropriate
+%function internally?} For example
+%
+%\medskip
+%\begin{lstlisting}
+%pointer allocate(size_type n)
+%{
+%  if (n == 1)
+%    return foo.allocate(); // Calls node allocation.
+%  return bar.allocate(n); // Calls regular allocate.
+%}
+%\end{lstlisting}
+%
+%\noindent
+%The main reason why this is an undesirable approach is that the
+%possibility of having $n \ne 1$ means I have to handle allocations
+%with different sizes, which is exactly what I am trying to avoid for
+%reasons mentioned above i.e. reduce complexity, improve performance
+%etc. Additionally, test for the condition \texttt{if (n == 1)} is
+%pointless since it is always true on node allocation.
 
 \noindent
-The main reason why this is an undesirable approach is that the
-possibility of having $n \ne 1$ means I have to handle allocations
-with different sizes, which is exactly what I am trying to avoid for
-reasons mentioned above i.e. reduce complexity, improve performance
-etc. Additionally, test for the condition \texttt{if (n == 1)} is
-pointless since it is always true on node allocation.
-
-The simplification we are talking about comes from the fact that there
-is no more need for an allocation algorithm or any fancy strategy
-inside the allocator. We can simply build a singly linked list were
+{\bf Node allocation}.  The simplification we are talking about comes from the
+fact that there is no more need for an allocation algorithm or any fancy
+strategy inside the allocator. We can simply build a singly linked list were
 the nodes have the size demanded by the container, then allocation and
 deallocation reduces to push and pop from the linked list.
 
 \medskip
 \begin{lstlisting}
-pointer node_stack::pop()
+pointer allocate_node()
 {
   pointer q = avail; // The next free node
   if (avail)
@@ -283,7 +300,7 @@ pointer node_stack::pop()
   return q;
 }
 
-void node_stack::push(pointer p)
+void deallocate_node(pointer p)
 {
   p->next = avail;
   avail = p;
@@ -327,16 +344,16 @@ typedef
 template<class Alloc>
 struct allocator_traits {
   ...
-  // Equal to Alloc::use_node_allocation if present
+  // Equal to Alloc::node_allocation_only if present,
   // std::false_type otherwise.
   using node_allocation_only = std::false_type
 
   // Calls Alloc::allocate_node() if present otherwise
-  // calls Alloc::allocate(n).
+  // calls Alloc::allocate(1).
   pointer allocate_node(Alloc& a);
 
   // Calls Alloc::deallocate_node(pointer) if present
-  // otherwise calls Alloc::deallocate(n).
+  // otherwise calls Alloc::deallocate(p, 1).
   void deallocate_node(Alloc& a, pointer);
 };
 \end{lstlisting}
