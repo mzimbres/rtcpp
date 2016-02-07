@@ -68,15 +68,10 @@ urlcolor=blue           % color of external links
 \begin{document}
 
 \date{}
-\title{\bf Improving allocator interface for node-based containers}
-
-\vspace{-2cm}
+\title{\vspace{-2cm} \bf Improving allocator interface for node-based containers}
 \maketitle
-%\vspace{-2cm}
-
-%\vspace{1cm}
-
 \noindent
+\vspace{-1cm} \\
 {\bf Document number}:  1 \\
 {\bf Date}:  \today \\
 {\bf Project}: Programming Language C++ \\
@@ -90,6 +85,7 @@ to reduce allocator complexity, support realtime allocation and improve
 performance of node-based containers by making a clear distinction between node
 and array allocation in \texttt{std::allocator\_traits}.  Two new member
 functions are proposed \texttt{allocate\_node} and \texttt{deallocate\_node}.
+We also a propose that the containers node type should be exposed.
 An example implementation is provided.
 
 \tableofcontents
@@ -132,12 +128,12 @@ struct allocator_traits {
   // std::false_type otherwise.
   using node_allocation_only = std::false_type
 
-  // Calls Alloc::allocate_node() if present otherwise
-  // calls Alloc::allocate(1).
+  // Calls a.allocate_node() if present otherwise calls
+  // Alloc::allocate(1).
   pointer allocate_node(Alloc& a);
 
-  // Calls Alloc::deallocate_node(pointer) if present
-  // otherwise calls Alloc::deallocate(p, 1).
+  // Calls a.deallocate_node(pointer) if present otherwise
+  // calls Alloc::deallocate(p, 1).
   void deallocate_node(Alloc& a, pointer);
 };
 \end{lstlisting}
@@ -163,20 +159,69 @@ not required to provide \texttt{allocate(n)} this case.
 %\texttt{node\_allocation\_only} to \texttt{std::false\_type}.
 \end{itemize}
 
-For an alternative solution that achieves almost the same goals, please see
-appendix \ref{alternative}.
+\medskip
+\noindent
+{\bf Exposing the node type}. Even though the changes in \\
+\texttt{std::allocator\_traits} proposed above are enough to achieve node
+allocation, we still have no direct means of knowing the allocation size
+i.e. the node size. This information is not available at compile time and
+at runtime only when the rebound allocator instance is constructed on
+container construction. It is a tricky operation that can be avoided
+if we expose the container node type.
+
+\medskip
+\noindent
+{\bf Example}. The example below uses the proposed features
+to write code that uses the minimum amount of memory. It is not 
+possible to write it portably in current C++.
+\medskip
+\begin{lstlisting}
+  using alloc_type = rt::node_allocator<int>;
+
+  // Memory reserved to the allocator. Three words in my
+  // implementation.
+  std::size_t alloc_mem = alloc_type::memory_use;
+
+  using container_type = std::list<int, alloc_type>;
+
+  // Node type. Currently unavailable in containers.
+  using node_type = typename container_type::node_type;
+  std::size_t node_size = sizeof (node_type);
+
+  // Buffer with space for 100 elements. It is not possible
+  // to calculate this size portably in current C++.
+  std::size_t buffer_size = alloc_mem + 100 * node_size;
+  std::array<char, buffer_size> buffer = {{}};
+
+  // Allocator instance that will serve container instances.
+  alloc_type alloc(buffer);
+
+  container_type l1(alloc);
+  container_type l2(alloc);
+  ...
+  // Inserts elements. Allocation and deallocation implemented
+  // with 6 lines of code (see below). Faster than any allocator
+  // I could benchmark.
+  l1 = {27, 1, 60};
+  ...
+\end{lstlisting}
+
+\medskip
+\noindent
+{\bf Alternative approach}. For an alternative solution that achieves almost
+the same goals, please see appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
-Supose a programmer needs an \texttt{std::list} with say, 20
-integers somewhere in the code. In current C++ there are
-two ways to solve this simple task (if we want indeed to use a standard
-container)
+Suppose the example from last section where a programmer needs an
+\texttt{std::list} with 100 integers somewhere in the code. In current C++
+there are two ways to solve this simple task (if we want indeed to use a
+standard container)
 
 \medskip
 \medskip
 \noindent
-{A) \bf The standard allocator: \texttt{std::list<int, std::allocator<int>>}} \\
+{(A) \bf The standard allocator: \texttt{std::list<int, std::allocator<int>>}} \\
 
 \medskip
 This is undesirable for a lot of reasons
@@ -202,11 +247,11 @@ better to use a custom allocator. \\
 \medskip
 \medskip
 \noindent
-{\bf B) Use a custom allocator \texttt{std::list<int, my::allocator<int>>}} \\
+{\bf (B) Custom allocator \texttt{std::list<int, my::allocator<int>>}} \\
 
 \medskip
 \begin{lstlisting}
-std::array<char, 20 * node_size > buffer = {{}};
+std::array<char, some_offset + 100 * node_size > buffer = {{}};
 my::allocator<int> alloc(buffer);
 
 std::list<int, my_allocator<int>> l(alloc);
@@ -224,9 +269,13 @@ This is however not possible in the current allocator interface
 due to the fact that \texttt{allocate(n)} may be called with $n \ne 1$,
 that means I have to add unnecessary complexity to handle the many possible
 values of n. The size of the buffer is not anymore clear and depend on the
-allocation strategy/algorithm. All the added
-complexity is pointless. This is only one use case out of many. Some
-further motivations for this proposal are listed below.
+allocation strategy/algorithm. All the added complexity is pointless. This is
+only one use case out of many.
+
+\medskip
+\noindent
+{\bf General motivations}. Some further motivations for this proposal are listed
+below.
 \begin{enumerate}
 
 \item Support the most natural and one of the fastest allocation
@@ -349,17 +398,18 @@ struct allocator_traits {
   // std::false_type otherwise.
   using node_allocation_only = std::false_type
 
-  // Calls Alloc::allocate_node() if present otherwise
-  // calls Alloc::allocate(1).
+  // Calls a.allocate_node() if present otherwise calls
+  // Alloc::allocate(1).
   pointer allocate_node(Alloc& a);
 
-  // Calls Alloc::deallocate_node(pointer) if present
-  // otherwise calls Alloc::deallocate(p, 1).
+  // Calls a.deallocate_node(pointer) if present otherwise
+  // calls Alloc::deallocate(p, 1).
   void deallocate_node(Alloc& a, pointer);
 };
 \end{lstlisting}
 When \texttt{use\_node\_allocation} is not present in the allocator,
 the typedef should default to \texttt{std::false\_type}.
+We also propose that node-based containers should expose their node type.
 
 The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::list}, \texttt{std::set}, \texttt{std::multiset},
