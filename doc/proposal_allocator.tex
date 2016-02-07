@@ -85,7 +85,7 @@ to reduce allocator complexity, support realtime allocation and improve
 performance of node-based containers by making a clear distinction between node
 and array allocation in \texttt{std::allocator\_traits}.  Two new member
 functions are proposed \texttt{allocate\_node} and \texttt{deallocate\_node}.
-We also a propose that the containers node type should be exposed.
+We also propose that the containers node type should be exposed to the user.
 An example implementation is provided.
 
 \tableofcontents
@@ -138,7 +138,7 @@ struct allocator_traits {
 };
 \end{lstlisting}
 %The behaviour of these new members is better explained in section \ref{impact}.
-These additions will provide the following options inside node-based
+These additions provide the following options inside node-based
 containers
 \begin{itemize}
 \item {\bf Array allocation only}.
@@ -151,9 +151,9 @@ function or not. The implementation of \texttt{allocate\_node()} in
 when the allocator does not provide one.
 
 \item {\bf Node allocation only}.
-In this case the user is required the set the typedef \texttt{node\_allocation\_only}
+In this case, the user is required the set the typedef \texttt{node\_allocation\_only}
 to \texttt{std::true\_type} and provide \texttt{allocate\_node()}. The user is
-not required to provide \texttt{allocate(n)} this case.
+not required to provide an \texttt{allocate(n)} member function.
 %\item {\bf Array and node allocation together} \\
 %In this case the user provides \texttt{allocate\_node} but sets
 %\texttt{node\_allocation\_only} to \texttt{std::false\_type}.
@@ -172,7 +172,7 @@ if we expose the container node type.
 \medskip
 \noindent
 {\bf Example}. The example below uses the proposed features
-to write code that uses the minimum amount of memory. It is not 
+to write code that is fast and uses the minimum amount of memory. It is not 
 possible to write it portably in current C++.
 \medskip
 \begin{lstlisting}
@@ -208,12 +208,12 @@ possible to write it portably in current C++.
 
 \medskip
 \noindent
-{\bf Alternative approach}. For an alternative solution that achieves almost
+{\bf Alternative approach}. For an alternative approaches that achieves almost
 the same goals, please see appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
-Suppose the example from last section where a programmer needs an
+Consider the example from last section where a programmer needs an
 \texttt{std::list} with 100 integers somewhere in the code. In current C++
 there are two ways to solve this simple task (if we want indeed to use a
 standard container)
@@ -224,7 +224,7 @@ standard container)
 {(A) \bf The standard allocator: \texttt{std::list<int, std::allocator<int>>}} \\
 
 \medskip
-This is undesirable for a lot of reasons
+This is undesirable for many reasons
 \begin{itemize}
 \item Nodes go on the heap. For only 20 elements I would preferably
 use the stack.
@@ -233,7 +233,7 @@ them individually on the heap. Fragmentation begin to play a role
 if I have many lists (or bigger n).
 \item Suboptimal allocation behind \texttt{malloc}. It does not
 know we are doing node allocations and cannot optimize it.
-\item Unknown allocated size. Did it allocated more space to store information
+\item Unknown allocated size. Does it allocate more space to store information
 needed by the algorithm? How much memory I am really using?
 \item  Each heap allocation is an overhead: all the code inside malloc, plus
 system calls and allocation strategies. (I only need 20bytes of space for a
@@ -257,18 +257,19 @@ my::allocator<int> alloc(buffer);
 std::list<int, my_allocator<int>> l(alloc);
 \end{lstlisting}
 
-This seems the ideal solution:
+Like said in the previous section, this approach has a number of advantages
 \begin{itemize}
 \item Nodes go on the stack.
 \item Optimal node size. {\it You do not pay for space you do not use}.
-\item Small and compact buffer, improving cache locality.
+\item Small and compact buffer, improving cache locality and causing
+minimal fragmentation.
 \item No allocation overhead: I only change some pointers. (See below)
 \end{itemize}
 
 This is however not possible in the current allocator interface
 due to the fact that \texttt{allocate(n)} may be called with $n \ne 1$,
 that means I have to add unnecessary complexity to handle the many possible
-values of n. The size of the buffer is not anymore clear and depend on the
+values of n. The size of the buffer is not anymore clear and depends on the
 allocation strategy/algorithm. All the added complexity is pointless. This is
 only one use case out of many.
 
@@ -437,7 +438,8 @@ The rebound type used for node allocations should prefer the
 
 I would like thank people that give me any kind of feedback: Ville Voutilainen,
 Nevin Liber, Daniel Gutson, Alisdair Meredith, David Krauss. Special thanks go
-to Ion Gaztañaga, that suggested important changes in the original design.
+to Ion Gaztañaga for suggesting important changes in the original design and David 
+Krauss for proposing a diferent approach.
 
 \begin{thebibliography}{9}
 
@@ -457,7 +459,63 @@ to Ion Gaztañaga, that suggested important changes in the original design.
 
 \appendix
 
-\section{Alternative approach} \label{alternative}
+\section{Alternative approaches} \label{alternative}
+
+There are other possible approaches to support node allocation that are worth knowing
+of.  I will list them here, so that the commitee can compare them.
+
+\medskip
+\noindent
+{\bf Ensure \texttt{allocate(n)} is called with $n = 1$}. This seems the easiest
+way to perform node allocation. Once the standard guarantees $n$ will be always $1$,
+there is no more need to provide array allocation for node-based containers. The
+prameter $n$ can be simply ignored. The \texttt{allocate} and\texttt{deallocate}
+can be implemented in terms of node-allocation-only functions, for example
+\medskip
+\begin{lstlisting}
+pointer allocate(std::size_t /* n is ignored */)
+{
+  return allocate_node();
+}
+
+void deallocate_node(pointer p, std::size_t /* n is ignored */)
+{
+  deallocate_node();
+}
+\end{lstlisting}
+
+The problem with this approach is that it prevents array allocation inside
+node-based containers which means it can be viewed as a narrowing of the
+current interface.
+
+\medskip
+\noindent
+{\bf Provide a \texttt{constexpr max\_size()} that returns 1}. This approach has one advantage
+
+\begin{itemize}
+\item It does not require any new member functions and typedef in the
+\texttt{std::allocator\_traits}.
+\end{itemize}
+
+The disadvantages I see however are
+
+\begin{itemize}
+\item It requires the user to specialize \texttt{std::allocator\_traits} to
+provide a \texttt{constexpr max\_size()} since the default is not
+\texttt{constexpr}. This is not bad but I prefer to avoid it if I can.
+
+\item Other static information like \texttt{propagate\_on\_container\_copy\_assignment}
+are provided as typedef so I would prefer to keep the harmony.
+
+\item Libraries would have to detect \texttt{constexpr}'ness and take appropriate action.
+This is not much different than detecting if \texttt{node\_allocation\_only::value} is true or
+false but my personal opinion is that this procedure is not elegant for standardization.
+
+\item It sounds more like a hack of the current standard interface to achieve node
+allocation than a full supported feature.
+
+\end{itemize}
+
 
 \end{document}
 
