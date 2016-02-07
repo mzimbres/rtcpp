@@ -118,9 +118,9 @@ alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of memory
 fragmentation and unpredictable performance loss.  
 
 We believe in fact, that the ``{\it Don't pay for what you dont use}" premise
-is not being met for a lot of reasons. This proposal tries to fix what the author
+is not being met for some reasons. This proposal tries to fix what the author
 believes to be the root of problem: {\it The lack of distinction between array
-and node allocations}.  Therefore, we propose the complete split between these
+and node allocations}.  We propose here a complete split between these
 two allocation schemes by means of a simple non-breaking addition to
 \texttt{std::allocator\_traits}
 \medskip
@@ -148,10 +148,11 @@ containers
 \item {\bf Array allocation only}.
 This is the {\it status quo}. Libraries can continue to call
 \texttt{allocate(n)} if they want, but since the majority of implementations
-use $n = 1$ they may simply be implemented in terms of
+use $n = 1$, they may simply be implemented in terms of
 \texttt{allocate\_node()}, regardless of whether the allocator provides this
-function or not. The implementation of \texttt{allocate\_node()} should fall
-back to \texttt{allocate(1)} when the allocator does not provide one.
+function or not. The implementation of \texttt{allocate\_node()} in
+\texttt{std::allocator\_traits} should fall back to \texttt{allocate(1)} 
+when the allocator does not provide one.
 
 \item {\bf Node allocation only}.
 In this case the user is required the set the typedef \texttt{node\_allocation\_only}

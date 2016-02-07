@@ -49,6 +49,7 @@ class node_allocator {
   char* m_data;
   std::size_t m_size;
   public:
+  static constexpr std::size_t memory_use = node_stack::memory_use;
   using use_node_allocation = std::true_type;
   using value_type = T;
   using pointer = T*;

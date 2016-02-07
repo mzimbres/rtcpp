@@ -27,7 +27,10 @@ class node_stack {
                                        + node_size_offset;
   char* m_data;
   // used only when default constructed. Will be soon removed.
-  std::array<char, pool_offset + ptr_size> m_dummy_buffer;
+  public:
+  static constexpr std::size_t memory_use = pool_offset + ptr_size;
+  private:
+  std::array<char, memory_use> m_dummy_buffer;
   char* get_counter_ptr() const noexcept {return m_data + counter_offset;}
   char* get_avail_ptr() const noexcept {return m_data + avail_offset;}
   char* get_node_size_ptr() const noexcept {return m_data + node_size_offset;}
