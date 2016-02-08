@@ -82,11 +82,11 @@ urlcolor=blue           % color of external links
 \noindent
 {\bf Abstract: }This is a non-breaking proposal to the C++ standard that aims
 to reduce allocator complexity, support realtime allocation and improve
-performance of node-based containers by making a clear distinction between node
-and array allocation in \texttt{std::allocator\_traits}.  Two new member
-functions are proposed \texttt{allocate\_node} and \texttt{deallocate\_node}.
-We also propose that the containers node type should be exposed to the user.
-An example implementation is provided.
+performance of node-based containers by making a clear distinction between {\it node}
+and {\it array} allocation in the \texttt{std::allocator\_traits} interface.
+Two new member functions are proposed \texttt{allocate\_node} and
+\texttt{deallocate\_node}. We also propose that the containers node type should
+be exposed to the user. An example implementation is provided.
 
 \tableofcontents
 
@@ -113,11 +113,12 @@ chandler, meyers}.  In fact, many people today prefer to use the flat
 alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of memory
 fragmentation and unpredictable performance loss.  
 
-We believe in fact, that the ``{\it Don't pay for what you dont use}" premise
-is not being met for some reasons. This proposal tries to fix what the author
+We believe in fact, that the ``{\it Don't pay for what you don't use}" premise
+is not being met on node-based containers due to the current suboptimal
+allocator interface. This proposal tries to fix what the author
 believes to be the root of problem: {\it The lack of distinction between array
 and node allocations}.  We propose here a complete split between these
-two allocation schemes by means of a simple non-breaking addition to
+two allocation schemes by means of a non-breaking addition to
 \texttt{std::allocator\_traits}
 \medskip
 \begin{lstlisting}
@@ -161,70 +162,57 @@ not required to provide an \texttt{allocate(n)} member function.
 
 \medskip
 \noindent
-{\bf Exposing the node type}. Even though the changes in \\
-\texttt{std::allocator\_traits} proposed above are enough to achieve node
-allocation, we still have no direct means of knowing the allocation size
-i.e. the node size. This information is not available at compile time and
-at runtime only when the rebound allocator instance is constructed on
-container construction. It is a tricky operation that can be avoided
-if we expose the container node type.
+{\bf Exposing the node type}. Even though the changes proposed above are enough
+to achieve efficient node allocation, we still have no direct means of knowing the
+allocation size i.e. the node size. This information is not available at
+compile time and at runtime only when the rebound allocator instance is
+constructed on container construction. It is a tricky operation that can be
+avoided if we expose the container node type.
 
 \medskip
 \noindent
 {\bf Example}. The example below uses the proposed features
-to write code that is fast and uses the minimum amount of memory. It is not 
-possible to write it portably in current C++.
+to write code that is fast and uses the minimum amount of memory.
+Many linked lists served with node stored in an \texttt{std::array.}
+It is not possible to write it portably in current C++.
 \medskip
 \begin{lstlisting}
+  // My implementation of the node allocator
   using alloc_type = rt::node_allocator<int>;
 
-  // Memory reserved to the allocator. Three words in my
-  // implementation.
-  std::size_t alloc_mem = alloc_type::memory_use;
-
-  using container_type = std::list<int, alloc_type>;
-
   // Node type. Currently unavailable in containers.
-  using node_type = typename container_type::node_type;
-  std::size_t node_size = sizeof (node_type);
+  using node_type =
+    typename std::list<int, alloc_type>::node_type;
 
-  // Buffer with space for 100 elements. It is not possible
-  // to calculate this size portably in current C++.
-  std::size_t buffer_size = alloc_mem + 100 * node_size;
-  std::array<char, buffer_size> buffer = {{}};
+  // Buffer for 100 elements. offset is a space reserved for
+  // the allocator (three computer words in my implementation).
+  std::size_t node_size = sizeof (node_type);
+  std::array<char, offset + 100 * node_size> buffer = {{}};
 
   // Allocator instance that will serve container instances.
   alloc_type alloc(buffer);
 
-  container_type l1(alloc);
-  container_type l2(alloc);
+  std::list<int, alloc_type> l1(alloc);
+  std::list<int, alloc_type> l2(alloc);
   ...
   // Inserts elements. Allocation and deallocation implemented
-  // with 6 lines of code (see below). Faster than any allocator
-  // I could benchmark.
+  // with 6 lines of code (see below). Faster and simpler than
+  // any allocator I could find.
   l1 = {27, 1, 60};
   ...
 \end{lstlisting}
 
 \medskip
 \noindent
-{\bf Alternative approach}. For an alternative approaches that achieves almost
-the same goals, please see appendix \ref{alternative}.
+{\bf Alternative approach}. For an alternative approaches, please see appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
 Consider the example from last section where a programmer needs an
 \texttt{std::list} with 100 integers somewhere in the code. In current C++
-there are two ways to solve this simple task (if we want indeed to use a
-standard container)
-
-\medskip
-\medskip
-\noindent
-{(A) \bf The standard allocator: \texttt{std::list<int, std::allocator<int>>}} \\
-
-\medskip
-This is undesirable for many reasons
+there are two ways to solve this task (if we want indeed to use a
+standard container). We can simply use the standard allocator
+\texttt{std::list<int>}.  This is undesirable for many reasons
 \begin{itemize}
 \item Nodes go on the heap. For only 20 elements I would preferably
 use the stack.
@@ -235,6 +223,8 @@ if I have many lists (or bigger n).
 know we are doing node allocations and cannot optimize it.
 \item Unknown allocated size. Does it allocate more space to store information
 needed by the algorithm? How much memory I am really using?
+\item The \texttt{malloc} implementation is platform dependent and can lead
+to deferent behaviours in different platforms.
 \item  Each heap allocation is an overhead: all the code inside malloc, plus
 system calls and allocation strategies. (I only need 20bytes of space for a
 node!)
@@ -242,19 +232,14 @@ node!)
 
 All this is overkill for a simple list with a couple of elements
 (for bigger n situation gets worser). At this point we think it is
-better to use a custom allocator. \\
-
-\medskip
-\medskip
-\noindent
-{\bf (B) Custom allocator \texttt{std::list<int, my::allocator<int>>}} \\
-
+better to use a custom allocator.
 \medskip
 \begin{lstlisting}
-std::array<char, some_offset + 100 * node_size > buffer = {{}};
+std::array<char, offset + 100 * node_size > buffer = {{}};
 my::allocator<int> alloc(buffer);
 
 std::list<int, my_allocator<int>> l(alloc);
+...
 \end{lstlisting}
 
 Like said in the previous section, this approach has a number of advantages
