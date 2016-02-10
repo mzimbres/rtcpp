@@ -114,11 +114,11 @@ alternatives and pay $O(n)$ insertion time, than $O(1)$ at the cost of memory
 fragmentation and unpredictable performance loss.  
 
 We believe in fact, that the ``{\it Don't pay for what you don't use}" premise
-is not being met on node-based containers due to the current suboptimal
-allocator interface. This proposal tries to fix what the author
+is not being met on node-based containers due to the restrictive
+array-oriented allocator interface. This proposal tries to fix what the author
 believes to be the root of problem: {\it The lack of distinction between array
-and node allocations}.  We propose here a complete split between these
-two allocation schemes by means of a non-breaking addition to
+and node allocations}.  We propose here a complete split between these two
+allocation schemes by means of a non-breaking addition to
 \texttt{std::allocator\_traits}
 \medskip
 \begin{lstlisting}
@@ -130,12 +130,14 @@ struct allocator_traits {
   using node_allocation_only = std::false_type
 
   // Calls a.allocate_node() if present otherwise calls
-  // Alloc::allocate(1).
+  // Alloc::allocate(1). Memory allocate with this function
+  // must be deallocated with deallocate_node.
   pointer allocate_node(Alloc& a);
 
   // Calls a.deallocate_node(pointer) if present otherwise
-  // calls Alloc::deallocate(p, 1).
-  void deallocate_node(Alloc& a, pointer);
+  // calls Alloc::deallocate(p, 1). Can only be used with
+  // memory allocated with allocate_node.
+  void deallocate_node(Alloc& a, pointer p);
 };
 \end{lstlisting}
 %The behaviour of these new members is better explained in section \ref{impact}.
@@ -153,11 +155,13 @@ when the allocator does not provide one.
 
 \item {\bf Node allocation only}.
 In this case, the user is required the set the typedef \texttt{node\_allocation\_only}
-to \texttt{std::true\_type} and provide \texttt{allocate\_node()}. The user is
+to \texttt{std::true\_type} in the allocator and provide \texttt{allocate\_node()}. The user is
 not required to provide an \texttt{allocate(n)} member function.
-%\item {\bf Array and node allocation together} \\
-%In this case the user provides \texttt{allocate\_node} but sets
-%\texttt{node\_allocation\_only} to \texttt{std::false\_type}.
+\item {\bf Array and node allocation together}. It is possible to use
+both array {and} node allocation when the user provides \texttt{allocate\_node}
+and sets \texttt{node\_allocation\_only} to \texttt{std::false\_type}.
+I am unaware if this option is useful, since memory allocated by
+\texttt{allocate\_node} must be deallocated by \texttt{allocate\_node}.
 \end{itemize}
 
 \medskip
@@ -173,7 +177,7 @@ avoided if we expose the container node type.
 \noindent
 {\bf Example}. The example below uses the proposed features
 to write code that is fast and uses the minimum amount of memory.
-Many linked lists served with node stored in an \texttt{std::array.}
+Many linked lists served with nodes stored in an \texttt{std::array.}
 It is not possible to write it portably in current C++.
 \medskip
 \begin{lstlisting}
@@ -216,15 +220,15 @@ standard container). We can simply use the standard allocator
 \begin{itemize}
 \item Nodes go on the heap. For only 20 elements I would preferably
 use the stack.
-\item The node size is small ($\approx 20$bytes), it does not make sense allocating
-them individually on the heap. Fragmentation begin to play a role
+\item The node size is small ($\approx 20$bytes), it is not recommended
+allocating them individually on the heap. Fragmentation begins to play a role
 if I have many lists (or bigger n).
 \item Suboptimal allocation behind \texttt{malloc}. It does not
 know we are doing node allocations and cannot optimize it.
 \item Unknown allocated size. Does it allocate more space to store information
 needed by the algorithm? How much memory I am really using?
-\item The \texttt{malloc} implementation is platform dependent and can lead
-to deferent behaviours in different platforms.
+%\item The \texttt{malloc} implementation is platform dependent and can lead
+%to deferent behaviours in different platforms.
 \item  Each heap allocation is an overhead: all the code inside malloc, plus
 system calls and allocation strategies. (I only need 20bytes of space for a
 node!)
@@ -232,17 +236,8 @@ node!)
 
 All this is overkill for a simple list with a couple of elements
 (for bigger n situation gets worser). At this point we think it is
-better to use a custom allocator.
-\medskip
-\begin{lstlisting}
-std::array<char, offset + 100 * node_size > buffer = {{}};
-my::allocator<int> alloc(buffer);
-
-std::list<int, my_allocator<int>> l(alloc);
-...
-\end{lstlisting}
-
-Like said in the previous section, this approach has a number of advantages
+better to use a custom allocator like in example from last section.
+This approach has a number of advantages
 \begin{itemize}
 \item Nodes go on the stack.
 \item Optimal node size. {\it You do not pay for space you do not use}.
@@ -385,12 +380,14 @@ struct allocator_traits {
   using node_allocation_only = std::false_type
 
   // Calls a.allocate_node() if present otherwise calls
-  // Alloc::allocate(1).
+  // Alloc::allocate(1). Memory allocate with this function
+  // must be deallocated with deallocate_node.
   pointer allocate_node(Alloc& a);
 
   // Calls a.deallocate_node(pointer) if present otherwise
-  // calls Alloc::deallocate(p, 1).
-  void deallocate_node(Alloc& a, pointer);
+  // calls Alloc::deallocate(p, 1). Can only be used with
+  // memory allocated with allocate_node.
+  void deallocate_node(Alloc& a, pointer p);
 };
 \end{lstlisting}
 When \texttt{use\_node\_allocation} is not present in the allocator,
@@ -498,6 +495,14 @@ false but my personal opinion is that this procedure is not elegant for standard
 
 \item It sounds more like a hack of the current standard interface to achieve node
 allocation than a full supported feature.
+
+\item One reason for a different name (it's a matter of taste) is that function
+names should reflect that both operations have different semantics, apart from
+the storage size. If memory expansion (realloc) is added in the future, it
+should only work with storage allocated with allocate(n) but not with storage
+allocated for nodes. This allows node allocations to avoid extra bookeeping
+data to mark the storage as non-expandable (typically simple segregated
+storage).
 
 \end{itemize}
 
