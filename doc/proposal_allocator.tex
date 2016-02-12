@@ -154,14 +154,13 @@ function or not. The implementation of \texttt{allocate\_node()} in
 when the allocator does not provide one.
 
 \item {\bf Node allocation only}.
-In this case, the user is required the set the typedef \texttt{node\_allocation\_only}
+In this case, the user is required to set the typedef \texttt{node\_allocation\_only}
 to \texttt{std::true\_type} in the allocator and provide \texttt{allocate\_node()}. The user is
-not required to provide an \texttt{allocate(n)} member function.
+not required to provide \texttt{allocate(n)}.
 \item {\bf Array and node allocation together}. It is possible to use
 both array {and} node allocation when the user provides \texttt{allocate\_node}
 and sets \texttt{node\_allocation\_only} to \texttt{std::false\_type}.
-I am unaware if this option is useful, since memory allocated by
-\texttt{allocate\_node} must be deallocated by \texttt{allocate\_node}.
+I am unaware if this option is useful.
 \end{itemize}
 
 \medskip
@@ -236,12 +235,11 @@ node!)
 
 All this is overkill for a simple list with a couple of elements
 (for bigger n situation gets worser). At this point we think it is
-better to use a custom allocator like in example from last section.
+better to use a custom allocator like in the example from last section.
 This approach has a number of advantages
 \begin{itemize}
-\item Nodes go on the stack.
-\item Optimal node size. {\it You do not pay for space you do not use}.
-\item Small and compact buffer, improving cache locality and causing
+\item Nodes on the stack with optimal size. {\it You do not pay for space you do not use}.
+\item Compact buffer, improving cache locality and causing
 minimal fragmentation.
 \item No allocation overhead: I only change some pointers. (See below)
 \end{itemize}
@@ -365,11 +363,9 @@ talk on allocators and why size management is a problem
 
 \section{Impact on the Standard} \label{impact}
 
-We require that all node based containers favor the overload
-\texttt{allocate()} over \texttt{allocate(size\_type)}, for all node
-allocations inside the container, whenever
-\texttt{std::allocator\_traits} instructs them so, by means of a new
-typedef
+We require the addition of two new member function and
+a typedef in \texttt{std::allocator\_traits()} as follows
+
 \medskip
 \begin{lstlisting}
 template<class Alloc>
@@ -390,9 +386,10 @@ struct allocator_traits {
   void deallocate_node(Alloc& a, pointer p);
 };
 \end{lstlisting}
-When \texttt{use\_node\_allocation} is not present in the allocator,
-the typedef should default to \texttt{std::false\_type}.
-We also propose that node-based containers should expose their node type.
+
+The typedef \texttt{node\_allocation\_only} is to ensure that
+container do not use array allocation on this allocator.
+We also propose that all node based containers expose their node types.
 
 The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::list}, \texttt{std::set}, \texttt{std::multiset},
@@ -400,21 +397,26 @@ The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::map}, \texttt{std::multimap},
 \texttt{std::unordered\_map}, \texttt{std::unordered\_multimap}
 
-\medskip
-\noindent
-{\bf Pure node-based}: As a result of this proposal all node based
-containers mentioned above, with the exception of the unordered ones,
-should support allocators that provide only the overload
-\texttt{allocate()}.
+%\medskip
+%\noindent
+%{\bf Pure node-based}: As a result of this proposal all node based
+%containers mentioned above, with the exception of the unordered ones,
+%should support allocators that provide only the overload
+%\texttt{allocate()}.
+%
+%\medskip
+%\noindent
+{\bf Unordered containers}: Unordered containers have to rebind twice,
+where one type is used for node allocation and one for array allocation.
+Let us name these types \texttt{node\_alloc\_type} and \texttt{array\_alloc\_type}.
+According to this proposal, \texttt{node\_alloc\_type} is not required to
+provide the \texttt{allocate(n)} member whenever \texttt{node\_allocation\_only}
+is set to \texttt{std::true\_type()}.
 
-\medskip
-\noindent
-{\bf Hybrid}: Unordered containers have to rebind twice, once
-for node allocation and once for other internal data structures.
-The rebound type used for node allocations should prefer the 
-\texttt{allocate()} overload.
+Implementing such allocators for node based containers is easy when we know
+the container node type. An example implementation is provided in \cite{rtcpp}.
 
-\section{Technical Specifications}
+%\section{Technical Specifications}
 
 \section{Acknowledgment}
 
@@ -482,19 +484,8 @@ current interface.
 The disadvantages I see however are
 
 \begin{itemize}
-\item It requires the user to specialize \texttt{std::allocator\_traits} to
-provide a \texttt{constexpr max\_size()} since the default is not
-\texttt{constexpr}. This is not bad but I prefer to avoid it if I can.
-
-\item Other static information like \texttt{propagate\_on\_container\_copy\_assignment}
-are provided as typedef so I would prefer to keep the harmony.
-
-\item Libraries would have to detect \texttt{constexpr}'ness and take appropriate action.
-This is not much different than detecting if \texttt{node\_allocation\_only::value} is true or
-false but my personal opinion is that this procedure is not elegant for standardization.
-
-\item It sounds more like a hack of the current standard interface to achieve node
-allocation than a full supported feature.
+\item It sounds more like a hack of the current allocator interface to achieve
+node allocation than a full supported feature.
 
 \item One reason for a different name (it's a matter of taste) is that function
 names should reflect that both operations have different semantics, apart from
@@ -503,6 +494,17 @@ should only work with storage allocated with allocate(n) but not with storage
 allocated for nodes. This allows node allocations to avoid extra bookeeping
 data to mark the storage as non-expandable (typically simple segregated
 storage).
+
+\item It requires the user to specialize \texttt{std::allocator\_traits} to
+provide a \texttt{constexpr max\_size()} since the default is not
+\texttt{constexpr}. This is not bad but I prefer to avoid it if I can.
+
+\item Other static information like \texttt{propagate\_on\_container\_copy\_assignment}
+are provided as typedef so I would prefer to keep the harmony.
+
+%\item Libraries would have to detect \texttt{constexpr}'ness and take appropriate action.
+%This is not much different than detecting if \texttt{node\_allocation\_only::value} is true or
+%false but my personal opinion is that this procedure is not elegant for standardization.
 
 \end{itemize}
 
