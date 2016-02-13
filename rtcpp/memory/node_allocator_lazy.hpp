@@ -23,20 +23,10 @@
   copy construction this buffer is divided in blocks and linked
   together. Copy construction occurrs inside the container with
   the new rebound allocator type.
-
-  I also offer a constructor to divide and link the buffer
-  immediately, but currently there is no way of knowing the right
-  size, since this is only known inside the container.
-
-  In general it is possible to delay linking the buffer until the
-  rebound type is copy constructed. However, on unordered containers
-  the allocator is rebound twice and both are copy constructed,
-  therefore, in this case, I do have to inform the size.
 */
 
 namespace rt {
 
-// TODO: Add constructors that link the buffer.
 template < typename T
          , std::size_t S = sizeof (T)
          , bool B = !(S < sizeof (char*))
@@ -123,22 +113,6 @@ class node_allocator_lazy<T, N, true> {
   explicit node_allocator_lazy(std::vector<char, Alloc>& arr)
   : node_allocator_lazy(&arr.front(), arr.size())
   {}
-  // The following ctors store the pointer, the size and do link the
-  // buffer. Use them if you do not wnt this to happen inside the
-  // container.
-  node_allocator_lazy(char* data, std::size_t size, std::size_t S)
-  : m_data(data)
-  , m_size(size)
-  , m_stack(m_data, m_size, S)
-  {}
-  template <std::size_t I>
-  explicit node_allocator_lazy(std::array<char, I>& arr, std::size_t S)
-  : node_allocator_lazy(&arr.front(), arr.size(), S)
-  {}
-  template <typename Alloc>
-  explicit node_allocator_lazy(std::vector<char, Alloc>& arr, std::size_t S)
-  : node_allocator_lazy(&arr.front(), arr.size(), S)
-  {}
   // Copy constructor, always tries to link the stack. If it is already
   // linked ok. If it is linked to an incompatible size, throws.
   template<typename U>
@@ -181,13 +155,13 @@ class node_allocator_lazy<T, N, true> {
 };
 
 template <typename T>
-bool operator==( const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc1
-               , const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc2)
+bool operator==( const node_allocator_lazy<T>& alloc1
+               , const node_allocator_lazy<T>& alloc2)
 {return alloc1.m_stack == alloc2.m_stack;}
 
 template <typename T>
-bool operator!=( const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc1
-               , const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc2)
+bool operator!=( const node_allocator_lazy<T>& alloc1
+               , const node_allocator_lazy<T>& alloc2)
 {return !(alloc1 == alloc2);}
 
 }

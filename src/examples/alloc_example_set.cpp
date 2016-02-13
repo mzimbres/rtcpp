@@ -2,11 +2,11 @@
 
 #include <rtcpp/utility/print.hpp>
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/node_allocator_lazy.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 
 int main()
 {
-  using alloc_type = rt::node_allocator_lazy<int>;
+  using alloc_type = rt::node_allocator<int>;
   const std::size_t alloc_memory_use = alloc_type::memory_use;
 
   using container_type = rt::set<int, std::less<int>, alloc_type>;
