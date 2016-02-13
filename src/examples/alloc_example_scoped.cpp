@@ -3,15 +3,15 @@
 #include <scoped_allocator>
 
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/node_allocator.hpp>
+#include <rtcpp/memory/node_allocator_lazy.hpp>
 #include <rtcpp/utility/print.hpp>
 
 int main()
 {
-  typedef rt::node_allocator<int> inner_alloc_type;
+  typedef rt::node_allocator_lazy<int> inner_alloc_type;
   typedef std::list<int, inner_alloc_type> inner_list_type;
 
-  typedef std::scoped_allocator_adaptor< rt::node_allocator<inner_list_type>
+  typedef std::scoped_allocator_adaptor< rt::node_allocator_lazy<inner_list_type>
                                        , inner_alloc_type> outer_alloc_type;
   typedef std::list<inner_list_type, outer_alloc_type> outer_list_type;
 
@@ -19,7 +19,7 @@ int main()
   std::array<char, 2000> buffer2 = {{}};
 
   inner_alloc_type alloc1(buffer1);
-  rt::node_allocator<inner_list_type> alloc2(buffer2);
+  rt::node_allocator_lazy<inner_list_type> alloc2(buffer2);
 
   outer_alloc_type alloc(alloc2, alloc1);
 

@@ -5,10 +5,10 @@
 
 #include <rtcpp/utility/print.hpp>
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/node_allocator.hpp>
+#include <rtcpp/memory/node_allocator_lazy.hpp>
 
 /*
-  In this example I use the rt::node_allocator to serve all standard node-based
+  In this example I use the rt::node_allocator_lazy to serve all standard node-based
   containers (and additionally my own implementation of std::set) from a single
   allocator instance. The allocator is optimal to serve std::set nodes, since
   it was the first to construct the rebound instance, but since the other
@@ -24,17 +24,17 @@ int main()
 {
   std::array<char, 10000> buffer = {{}};
 
-  rt::node_allocator<int> alloc(buffer);
+  rt::node_allocator_lazy<int> alloc(buffer);
 
-  std::set<int, std::less<int>, rt::node_allocator<int>> t1(std::less<int>(), alloc);
+  std::set<int, std::less<int>, rt::node_allocator_lazy<int>> t1(std::less<int>(), alloc);
 
-  rt::set<int, std::less<int>, rt::node_allocator<int>> t2(alloc);
+  rt::set<int, std::less<int>, rt::node_allocator_lazy<int>> t2(alloc);
 
-  std::multiset<int, std::less<int>, rt::node_allocator<int>> t3(std::less<int>(), alloc);
+  std::multiset<int, std::less<int>, rt::node_allocator_lazy<int>> t3(std::less<int>(), alloc);
 
-  std::list<int, rt::node_allocator<int>> t4(alloc);
+  std::list<int, rt::node_allocator_lazy<int>> t4(alloc);
 
-  std::forward_list<int, rt::node_allocator<int>> t5(alloc);
+  std::forward_list<int, rt::node_allocator_lazy<int>> t5(alloc);
 
   auto data = {5, 3, 5, 20, 3, 50, 7, 20, 1, 20};
 

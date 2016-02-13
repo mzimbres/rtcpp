@@ -16,7 +16,7 @@
 #include <rtcpp/container/set.hpp>
 #include <rtcpp/utility/to_number.hpp>
 #include <rtcpp/container/bst_node.hpp>
-#include <rtcpp/memory/node_allocator.hpp>
+#include <rtcpp/memory/node_allocator_lazy.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
 
 #include "heap_frag.hpp"
@@ -76,14 +76,14 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
   }
 
-  std::cout << "std::list<int, rt::node_allocator<int>>" << std::endl;
+  std::cout << "std::list<int, rt::node_allocator_lazy<int>>" << std::endl;
   for (std::size_t i = 0; i < K; ++i) {
     const std::size_t n = N + i * S;
     std::cout << n << " ";
     {
       std::vector<char> buffer((n + 2) * 40, 0);
-      rt::node_allocator<int> alloc(buffer);
-      std::list<int, rt::node_allocator<int>> s(alloc);
+      rt::node_allocator_lazy<int> alloc(buffer);
+      std::list<int, rt::node_allocator_lazy<int>> s(alloc);
       print_list_bench(s, std::begin(data), n); // (2)
     }
     std::cout << std::endl;

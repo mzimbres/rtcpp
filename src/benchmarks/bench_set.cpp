@@ -14,7 +14,7 @@
 #endif
 
 #include <rtcpp/utility/to_number.hpp>
-#include <rtcpp/memory/node_allocator.hpp>
+#include <rtcpp/memory/node_allocator_lazy.hpp>
 #include <rtcpp/utility/make_rand_data.hpp>
 
 #include "heap_frag.hpp"
@@ -76,8 +76,8 @@ int main(int argc, char* argv[])
     const std::size_t n = N + i * S;
     std::cout << n << " ";
     std::vector<char> buffer((n + 2) * 40, 0);
-    rt::node_allocator<int> alloc(buffer);
-    typedef std::set<int, std::less<int>, rt::node_allocator<int>> set_type2;
+    rt::node_allocator_lazy<int> alloc(buffer);
+    typedef std::set<int, std::less<int>, rt::node_allocator_lazy<int>> set_type2;
     set_type2 s(std::less<int>(), alloc); // Uses a vector as buffer.
     print_set_bench(s, std::begin(data), n);
     std::cout << std::endl;
