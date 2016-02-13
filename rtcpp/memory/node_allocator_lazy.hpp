@@ -10,7 +10,6 @@
 #include <rtcpp/memory/node_stack.hpp>
 
 /*
-
   Implementation of a node allocator.  It performs constant time
   allocation on a pre-allocated buffer.
 
@@ -33,14 +32,12 @@
   rebound type is copy constructed. However, on unordered containers
   the allocator is rebound twice and both are copy constructed,
   therefore, in this case, I do have to inform the size.
-
 */
 
 namespace rt {
 
 // TODO: Add constructors that link the buffer.
 template < typename T
-         , typename NodeType = T
          , std::size_t S = sizeof (T)
          , bool B = !(S < sizeof (char*))
          >
@@ -61,14 +58,9 @@ class node_allocator_lazy {
   template<typename U>
   struct rebind {
     using other = node_allocator_lazy< U
-                                     , NodeType
                                      , sizeof (U)
                                      , !(sizeof (U) < sizeof (char*))>;
   };
-  bool operator==(const node_allocator_lazy& alloc) const
-  {return m_data == alloc.m_data;}
-  bool operator!=(const node_allocator_lazy& alloc) const
-  {return !(*this == alloc);}
   void swap(node_allocator_lazy& other) noexcept
   {
     std::swap(m_size, other.m_size);
@@ -85,9 +77,8 @@ class node_allocator_lazy {
   explicit node_allocator_lazy(std::vector<char>& arr)
   : node_allocator_lazy(&arr.front(), arr.size())
   {}
-  template<typename U, typename K>
+  template<typename U>
   node_allocator_lazy(const node_allocator_lazy< U
-                                               , K
                                                , sizeof (U)
                                                , !(sizeof (U) < sizeof (char*))>& alloc)
   : m_data(alloc.m_data)
@@ -96,9 +87,8 @@ class node_allocator_lazy {
 };
 
 template < typename T
-         , typename NodeType
          , std::size_t N>
-class node_allocator_lazy<T, NodeType, N, true> {
+class node_allocator_lazy<T, N, true> {
   public:
   using use_node_allocation = std::true_type;
   using value_type = T;
@@ -111,7 +101,6 @@ class node_allocator_lazy<T, NodeType, N, true> {
   template<class U>
   struct rebind {
     using other = node_allocator_lazy< U
-                                     , NodeType
                                      , sizeof (U)
                                      , !(sizeof (U) < sizeof (char*))>;
   };
@@ -152,9 +141,8 @@ class node_allocator_lazy<T, NodeType, N, true> {
   {}
   // Copy constructor, always tries to link the stack. If it is already
   // linked ok. If it is linked to an incompatible size, throws.
-  template<typename U, typename K>
+  template<typename U>
   node_allocator_lazy(const node_allocator_lazy< U
-                                               , K
                                                , sizeof (U)
                                                , !(sizeof (U) < sizeof (char*))>& alloc)
   : m_data(alloc.m_data)
@@ -181,10 +169,6 @@ class node_allocator_lazy<T, NodeType, N, true> {
   template< typename U, typename... Args>
   void construct(U* p, Args&&... args)
   {::new((void *)p) U(std::forward<Args>(args)...);}
-  bool operator==(const node_allocator_lazy& alloc) const
-  {return m_stack == alloc.m_stack;}
-  bool operator!=(const node_allocator_lazy& alloc) const
-  {return !(*this == alloc);}
   void swap(node_allocator_lazy& other) noexcept
   {
     m_stack.swap(other.m_stack);
@@ -195,6 +179,16 @@ class node_allocator_lazy<T, NodeType, N, true> {
   const_pointer address(const_reference x) const noexcept
   { return std::addressof(x); }
 };
+
+template <typename T>
+bool operator==( const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc1
+               , const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc2)
+{return alloc1.m_stack == alloc2.m_stack;}
+
+template <typename T>
+bool operator!=( const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc1
+               , const node_allocator_lazy<T, sizeof (T), !(sizeof (T) < sizeof (char*))>& alloc2)
+{return !(alloc1 == alloc2);}
 
 }
 
