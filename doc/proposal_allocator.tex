@@ -49,7 +49,7 @@ urlcolor=blue           % color of external links
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
   frame=single,                    % adds a frame around the code
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  morekeywords={using},            % if you want to add more keywords to the set
+  morekeywords={using, static_assert},            % if you want to add more keywords to the set
   numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
   numbersep=10pt,                   % how far the line-numbers are from the code
   numberstyle=\tiny\color{black}, % the style that is used for the line-numbers
@@ -86,7 +86,7 @@ performance of node-based containers by making a clear distinction between {\it 
 and {\it array} allocation in the \texttt{std::allocator\_traits} interface.
 Two new member functions are proposed \texttt{allocate\_node} and
 \texttt{deallocate\_node}. We also propose that the containers node type should
-be exposed to the user. An example implementation is provided.
+be exposed to the user. A prototype implementation is provided.
 
 \tableofcontents
 
@@ -143,11 +143,11 @@ struct allocator_traits {
 %The behaviour of these new members is better explained in section \ref{impact}.
 These additions provide the following options inside node-based
 containers
-\begin{itemize}
+\begin{enumerate}
 \item {\bf Array allocation only}.
 This is the {\it status quo}. Libraries can continue to call
 \texttt{allocate(n)} if they want, but since the majority of implementations
-use $n = 1$, they may simply be implemented in terms of
+use $n = 1$, they may be simply implemented in terms of
 \texttt{allocate\_node()}, regardless of whether the allocator provides this
 function or not. The implementation of \texttt{allocate\_node()} in
 \texttt{std::allocator\_traits} should fall back to \texttt{allocate(1)} 
@@ -161,16 +161,33 @@ not required to provide \texttt{allocate(n)}.
 both array {and} node allocation when the user provides \texttt{allocate\_node}
 and sets \texttt{node\_allocation\_only} to \texttt{std::false\_type}.
 I am unaware if this option is useful.
-\end{itemize}
+\end{enumerate}
 
 \medskip
 \noindent
 {\bf Exposing the node type}. Even though the changes proposed above are enough
-to achieve efficient node allocation, we still have no direct means of knowing the
-allocation size i.e. the node size. This information is not available at
+to achieve efficient node allocation, we still have no direct means of knowing
+the allocation size i.e. the node size. This information is not available at
 compile time and at runtime only when the rebound allocator instance is
 constructed on container construction. It is a tricky operation that can be
 avoided if we expose the container node type.
+
+Another situation where the node type is useful is when implementing node allocators
+for unordered containers. Usually, unordered containers rebound twice and there is
+no way of knowing with rebound type is used for array and node allocation. Once
+the node type is exposed it is easy to detect the type that will be used for node
+allocation for example. We require that the exposed node type support SCARY 
+initialization \cite{scary}. The following should hold
+\medskip
+\begin{lstlisting}
+using node_type1 = std::set<int, C1, A1>::node_type;
+using node_type2 = std::set<int, C2, A1>::node_type;
+using node_type3 = std::set<int, C1, A2>::node_type;
+
+static_assert(std::is_same<node_type1, node_type2>::value, "");
+static_assert(std::is_same<node_type1, node_type3>::value, "");
+static_assert(std::is_same<node_type2, node_type3>::value, "");
+\end{lstlisting}
 
 \medskip
 \noindent
@@ -213,11 +230,11 @@ It is not possible to write it portably in current C++.
 
 Consider the example from last section where a programmer needs an
 \texttt{std::list} with 100 integers somewhere in the code. In current C++
-there are two ways to solve this task (if we want indeed to use a
+there are two ways to do this (if we want indeed to use a
 standard container). We can simply use the standard allocator
 \texttt{std::list<int>}.  This is undesirable for many reasons
-\begin{itemize}
-\item Nodes go on the heap. For only 20 elements I would preferably
+\begin{enumerate}
+\item Nodes go on the heap. For only 100 elements I would preferably
 use the stack.
 \item The node size is small ($\approx 20$bytes), it is not recommended
 allocating them individually on the heap. Fragmentation begins to play a role
@@ -231,18 +248,18 @@ needed by the algorithm? How much memory I am really using?
 \item  Each heap allocation is an overhead: all the code inside malloc, plus
 system calls and allocation strategies. (I only need 20bytes of space for a
 node!)
-\end{itemize}
+\end{enumerate}
 
 All this is overkill for a simple list with a couple of elements
 (for bigger n situation gets worser). At this point we think it is
 better to use a custom allocator like in the example from last section.
 This approach has a number of advantages
-\begin{itemize}
+\begin{enumerate}
 \item Nodes on the stack with optimal size. {\it You do not pay for space you do not use}.
 \item Compact buffer, improving cache locality and causing
 minimal fragmentation.
 \item No allocation overhead: I only change some pointers. (See below)
-\end{itemize}
+\end{enumerate}
 
 This is however not possible in the current allocator interface
 due to the fact that \texttt{allocate(n)} may be called with $n \ne 1$,
@@ -404,8 +421,8 @@ The following containers are affected: \texttt{std::forward\_list},
 %should support allocators that provide only the overload
 %\texttt{allocate()}.
 %
-%\medskip
-%\noindent
+\medskip
+\noindent
 {\bf Unordered containers}: Unordered containers have to rebind twice,
 where one type is used for node allocation and one for array allocation.
 Let us name these types \texttt{node\_alloc\_type} and \texttt{array\_alloc\_type}.
@@ -438,6 +455,7 @@ Krauss for proposing a diferent approach.
   std::vector Is to Vexation} (\url{https://www.youtube.com/watch?v=LIb3L4vKZ7U})
   \bibitem{embedded} \url{http://www.open-std.org/pipermail/embedded/2014-December/000335.html}
   \bibitem{proplist} \url{https://groups.google.com/a/isocpp.org/forum/#!topic/std-proposals/ccwOpTxM_xE}
+  \bibitem{scary} \url{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2009/n2980.pdf}
 
 \end{thebibliography}
 
@@ -476,24 +494,23 @@ current interface.
 \noindent
 {\bf Provide a \texttt{constexpr max\_size()} that returns 1}. This approach has one advantage
 
-\begin{itemize}
+\begin{enumerate}
 \item It does not require any new member functions and typedef in the
 \texttt{std::allocator\_traits}.
-\end{itemize}
+\end{enumerate}
 
 The disadvantages I see however are
 
-\begin{itemize}
+\begin{enumerate}
 \item It sounds more like a hack of the current allocator interface to achieve
 node allocation than a full supported feature.
 
-\item One reason for a different name (it's a matter of taste) is that function
-names should reflect that both operations have different semantics, apart from
-the storage size. If memory expansion (realloc) is added in the future, it
-should only work with storage allocated with allocate(n) but not with storage
-allocated for nodes. This allows node allocations to avoid extra bookeeping
-data to mark the storage as non-expandable (typically simple segregated
-storage).
+\item Function names should reflect that array and node allocation have
+different semantics, apart from the storage size. If memory expansion (realloc)
+is added in the future, it should only work with storage allocated with
+\texttt{allocate(n)} but not with storage allocated for nodes. This allows node
+allocations to avoid extra bookeeping data to mark the storage as
+non-expandable.
 
 \item It requires the user to specialize \texttt{std::allocator\_traits} to
 provide a \texttt{constexpr max\_size()} since the default is not
@@ -506,7 +523,7 @@ are provided as typedef so I would prefer to keep the harmony.
 %This is not much different than detecting if \texttt{node\_allocation\_only::value} is true or
 %false but my personal opinion is that this procedure is not elegant for standardization.
 
-\end{itemize}
+\end{enumerate}
 
 
 \end{document}
