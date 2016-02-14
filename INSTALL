@@ -1,5 +1,5 @@
 Installation
-=============================
+============================
 
 $ cmake ${RTCPP_SOURCE} -DCMAKE_INSTALL_PREFIX=${FOO} \
         -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -std=c++11" \

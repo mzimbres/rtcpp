@@ -6,14 +6,15 @@
 
 int main()
 {
-  using alloc_type = rt::node_allocator<int>;
-  const std::size_t alloc_memory_use = alloc_type::memory_use;
+  // Relying on SCARY assignment of containers node type.
+  using node_type = rt::set<int>::node_type;
+
+  using alloc_type = rt::node_allocator<int, node_type>;
+  const std::size_t offset = alloc_type::memory_use;
 
   using container_type = rt::set<int, std::less<int>, alloc_type>;
-  using node_type = typename container_type::node_type;
-  const std::size_t node_size = sizeof (node_type);
 
-  std::array<char, alloc_memory_use + 11 * node_size> buffer = {{}};
+  std::array<char, offset + 100 * sizeof (node_type)> buffer = {{}};
 
   alloc_type alloc(buffer);
 
