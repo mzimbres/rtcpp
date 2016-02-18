@@ -85,7 +85,7 @@ to reduce allocator complexity, support realtime allocation and improve
 performance of node-based containers by making a clear distinction between {\it node}
 and {\it array} allocation in the \texttt{std::allocator\_traits} interface.
 Two new member functions are proposed \texttt{allocate\_node} and
-\texttt{deallocate\_node}. We also propose that the containers node type should
+\texttt{deallocate\_node}. We also propose that the container node type should
 be exposed to the user. A prototype implementation is provided.
 
 \tableofcontents
@@ -117,8 +117,8 @@ We believe in fact, that the ``{\it Don't pay for what you don't use}" premise
 is not being met on node-based containers due to the restrictive
 array-oriented allocator interface. This proposal tries to fix what the author
 believes to be the root of problem: {\it The lack of distinction between array
-and node allocations}.  We propose here a complete split between these two
-allocation schemes by means of a non-breaking addition to
+and node allocation}.  We propose here a complete split between these two
+allocation techniques by means of a non-breaking addition to
 \texttt{std::allocator\_traits}
 \medskip
 \begin{lstlisting}
@@ -147,7 +147,7 @@ containers
 \item {\bf Array allocation only}.
 This is the {\it status quo}. Libraries can continue to call
 \texttt{allocate(n)} if they want, but since the majority of implementations
-use $n = 1$, they may be simply implemented in terms of
+use $n = 1$, they may simply be implemented in terms of
 \texttt{allocate\_node()}, regardless of whether the allocator provides this
 function or not. The implementation of \texttt{allocate\_node()} in
 \texttt{std::allocator\_traits} should fall back to \texttt{allocate(1)} 
@@ -174,7 +174,7 @@ avoided if we expose the container node type.
 
 Another situation where the node type is useful is when implementing node allocators
 for unordered containers. Usually, unordered containers rebound twice and there is
-no way of knowing with rebound type is used for array and node allocation. Once
+no way of knowing which rebound type is used for array and node allocation. Once
 the node type is exposed it is easy to detect the type that will be used for node
 allocation for example. We require that the exposed node type support SCARY 
 initialization \cite{scary}. The following should hold
@@ -195,25 +195,22 @@ static_assert(std::is_same<node_type2, node_type3>::value, "");
 to write code that is fast and uses the minimum amount of memory.
 Many linked lists served with nodes stored in an \texttt{std::array.}
 It is not possible to write it portably in current C++.
+\newpage
 \medskip
 \begin{lstlisting}
-  // My implementation of the node allocator
-  using alloc_type = rt::node_allocator<int>;
+  using alloc_t = rt::node_allocator<int>;
 
-  // Node type. Currently unavailable in containers.
-  using node_type =
-    typename std::list<int, alloc_type>::node_type;
+  using node_type = typename std::list<int, alloc_t>::node_type;
 
   // Buffer for 100 elements. offset is a space reserved for
   // the allocator (three computer words in my implementation).
   std::size_t node_size = sizeof (node_type);
   std::array<char, offset + 100 * node_size> buffer = {{}};
 
-  // Allocator instance that will serve container instances.
-  alloc_type alloc(buffer);
+  alloc_t alloc(buffer);
 
-  std::list<int, alloc_type> l1(alloc);
-  std::list<int, alloc_type> l2(alloc);
+  std::list<int, alloc_t> l1(alloc);
+  std::list<int, alloc_t> l2(alloc);
   ...
   // Inserts elements. Allocation and deallocation implemented
   // with 6 lines of code (see below). Faster and simpler than
@@ -224,14 +221,15 @@ It is not possible to write it portably in current C++.
 
 \medskip
 \noindent
-{\bf Alternative approach}. For an alternative approaches, please see appendix \ref{alternative}.
+{\bf Alternative approach}. For an alternative approaches to support
+node allocation, please see appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
 Consider the example from last section where a programmer needs an
-\texttt{std::list} with 100 integers somewhere in the code. In current C++
-there are two ways to do this (if we want indeed to use a
-standard container). We can simply use the standard allocator
+\texttt{std::list} to store some ($\approx 100$) integers somewhere
+in the code. In current C++, there are two ways to do this (if we want
+to use a standard container). We can simply use the standard allocator
 \texttt{std::list<int>}.  This is undesirable for many reasons
 \begin{enumerate}
 \item Nodes go on the heap. For only 100 elements I would preferably
@@ -437,10 +435,10 @@ the container node type. An example implementation is provided in \cite{rtcpp}.
 
 \section{Acknowledgment}
 
-I would like thank people that give me any kind of feedback: Ville Voutilainen,
+I would like thank people that gave me any kind of feedback: Ville Voutilainen,
 Nevin Liber, Daniel Gutson, Alisdair Meredith, David Krauss. Special thanks go
 to Ion Gaztañaga for suggesting important changes in the original design and David 
-Krauss for proposing a diferent approach.
+Krauss for proposing a different approach.
 
 \begin{thebibliography}{9}
 
@@ -471,7 +469,7 @@ of.  I will list them here, so that the commitee can compare them.
 {\bf Ensure \texttt{allocate(n)} is called with $n = 1$}. This seems the easiest
 way to perform node allocation. Once the standard guarantees $n$ will be always $1$,
 there is no more need to provide array allocation for node-based containers. The
-prameter $n$ can be simply ignored. The \texttt{allocate} and\texttt{deallocate}
+parameter $n$ can be simply ignored. The \texttt{allocate} and \texttt{deallocate}
 can be implemented in terms of node-allocation-only functions, for example
 \medskip
 \begin{lstlisting}
@@ -492,18 +490,15 @@ current interface.
 
 \medskip
 \noindent
-{\bf Provide a \texttt{constexpr max\_size()} that returns 1}. This approach has one advantage
+{\bf Provide a \texttt{constexpr max\_size()} that returns 1}. This scheme
+can achieve the same goals as my main proposal and does not require any
+addition to \texttt{std::allocator\_traits}. Libraries should check if
+\texttt{max\_size()} can be evaluated at compile time and take appropriate
+action i.e. ensure \texttt{allocate(n)} is always called with $n = 1$.
+I did not adopted it due to some disadvantages I see with it
 
 \begin{enumerate}
-\item It does not require any new member functions and typedef in the
-\texttt{std::allocator\_traits}.
-\end{enumerate}
-
-The disadvantages I see however are
-
-\begin{enumerate}
-\item It sounds more like a hack of the current allocator interface to achieve
-node allocation than a full supported feature.
+\item It does not make containers implementation simpler.
 
 \item Function names should reflect that array and node allocation have
 different semantics, apart from the storage size. If memory expansion (realloc)
@@ -516,12 +511,11 @@ non-expandable.
 provide a \texttt{constexpr max\_size()} since the default is not
 \texttt{constexpr}. This is not bad but I prefer to avoid it if I can.
 
-\item Other static information like \texttt{propagate\_on\_container\_copy\_assignment}
-are provided as typedef so I would prefer to keep the harmony.
+\item Other static information like \texttt{propagate\_on\_container\_copy\_assignment}, etc,
+are provided as typedef so I prefer to keep the harmony.
 
-%\item Libraries would have to detect \texttt{constexpr}'ness and take appropriate action.
-%This is not much different than detecting if \texttt{node\_allocation\_only::value} is true or
-%false but my personal opinion is that this procedure is not elegant for standardization.
+\item It sounds more like a hack of the current allocator interface to achieve
+node allocation than a full supported feature.
 
 \end{enumerate}
 
