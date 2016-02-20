@@ -42,8 +42,8 @@ class set {
   using node_type = bst_node<T>;
   private:
   using inner_allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<node_type>;
-  using node_pointer = typename inner_allocator_type::pointer;
-  using const_node_pointer = const node_type*;
+  using node_pointer = typename std::allocator_traits<inner_allocator_type>::pointer;
+  using const_node_pointer = typename std::allocator_traits<inner_allocator_type>::const_pointer;
   mutable inner_allocator_type m_inner_alloc;
   node_pointer m_head;
   Compare m_comp;
