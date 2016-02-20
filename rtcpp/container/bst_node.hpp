@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
   /*
 
   Definition of a node for a threaded binary search tree and its fundamental
@@ -27,10 +29,12 @@ namespace detail {
   constexpr int lbit = 2;
 }
 
-template <typename T>
+template <typename T, typename Ptr>
 struct bst_node {
   typedef T value_type;
-  bst_node* link[2];
+  using node_pointer = typename std::pointer_traits<Ptr>::template rebind<bst_node<T, Ptr>>;
+  node_pointer link[2];
+
   int tag;
   value_type key;
 };
@@ -40,15 +44,15 @@ struct set_link_null;
 
 template <>
 struct set_link_null<0> {
-  template <typename T>
-  static void apply(bst_node<T>* p) noexcept
+  template <typename Ptr>
+  static void apply(Ptr p) noexcept
   { p->tag |= detail::lbit; }
 };
 
 template <>
 struct set_link_null<1> {
-  template <typename T>
-  static void apply(bst_node<T>* p) noexcept
+  template <typename Ptr>
+  static void apply(Ptr p) noexcept
   { p->tag |= detail::rbit; }
 };
 
@@ -57,15 +61,15 @@ struct unset_link_null;
 
 template <>
 struct unset_link_null<0> {
-  template <typename T>
-  static void apply(bst_node<T>* p) noexcept
+  template <typename Ptr>
+  static void apply(Ptr p) noexcept
   { p->tag &= ~detail::lbit; }
 };
 
 template <>
 struct unset_link_null<1> {
-  template <typename T>
-  static void apply(bst_node<T>* p) noexcept
+  template <typename Ptr>
+  static void apply(Ptr p) noexcept
   { p->tag &= ~detail::rbit; }
 };
 
@@ -74,43 +78,43 @@ struct has_null_link;
 
 template <>
 struct has_null_link<0> {
-  template <typename T>
-  static constexpr int apply(const bst_node<T>* p) noexcept
+  template <typename Ptr>
+  static constexpr int apply(Ptr p) noexcept
   {return p->tag & detail::lbit;}
 };
 
 template <>
 struct has_null_link<1> {
-  template <typename T>
-  static constexpr int apply(const bst_node<T>* p) noexcept
+  template <typename Ptr>
+  static constexpr int apply(Ptr p) noexcept
   {return p->tag & detail::rbit;}
 };
 
-template <std::size_t I, typename T> 
-bst_node<T>* inorder(const bst_node<T>* p) noexcept
+template <std::size_t I, typename Ptr> 
+Ptr inorder(Ptr p) noexcept
 {
   // I = 0: predecessor. I = 1: sucessor.
   const std::size_t O = index_helper<I>::other;
   if (has_null_link<I>::apply(p))
     return p->link[I];
 
-  bst_node<T>* q = p->link[I];
+  Ptr q = p->link[I];
   while (!has_null_link<O>::apply(q))
     q = q->link[O];
 
   return q;
 }
 
-template <std::size_t I, typename T> 
-const bst_node<T>* inorder_parent(const bst_node<T>* p) noexcept
+template <std::size_t I, typename Ptr> 
+Ptr inorder_parent(Ptr p) noexcept
 {
   // I = 0: predecessor. I = 1: sucessor.
   const std::size_t O = index_helper<I>::other;
   if (has_null_link<I>::apply(p))
     return p->link[I];
 
-  const bst_node<T>* pq = p;
-  const bst_node<T>* q = p->link[I];
+  Ptr pq = p;
+  Ptr q = p->link[I];
   while (!has_null_link<O>::apply(q)) {
     pq = q;
     q = q->link[O];
@@ -119,8 +123,8 @@ const bst_node<T>* inorder_parent(const bst_node<T>* p) noexcept
   return pq;
 }
 
-template <typename T>
-bst_node<T>* preorder_successor(const bst_node<T>* p) noexcept
+template <typename Ptr>
+Ptr preorder_successor(Ptr p) noexcept
 {
   if (!has_null_link<0>::apply(p))
     return p->link[0];
@@ -129,15 +133,15 @@ bst_node<T>* preorder_successor(const bst_node<T>* p) noexcept
     return p->link[1];
 
   // This is a leaf node.
-  bst_node<T>* q = p->link[1];
+  Ptr q = p->link[1];
   while (has_null_link<1>::apply(q))
     q = q->link[1];
 
   return q->link[1];
 }
 
-template <std::size_t I, typename T>
-void attach_node(bst_node<T>* p, bst_node<T>* q) noexcept
+template <std::size_t I, typename Ptr>
+void attach_node(Ptr p, Ptr q) noexcept
 {
   // Attaches node q on the left of p. Does not check if pointers are valid.
   const std::size_t O = index_helper<I>::other;
@@ -149,18 +153,18 @@ void attach_node(bst_node<T>* p, bst_node<T>* q) noexcept
   set_link_null<O>::apply(q);
 
   if (!has_null_link<I>::apply(q)) {
-    bst_node<T>* qs = inorder<I>(q);
+    Ptr qs = inorder<I>(q);
     qs->link[O] = q;
   }
 }
 
-template <std::size_t I, typename T>
-bst_node<T>* erase_node_lr_non_null(bst_node<T>** linker, bst_node<T>* q) noexcept
+template <std::size_t I, typename Ptr>
+Ptr erase_node_lr_non_null(Ptr* linker, Ptr q) noexcept
 {
   // I = 0: The inorder predecessor replaces the erased node.
   // I = 1: The inorder sucessor replaces the erased node.
   const std::size_t O = index_helper<I>::other;
-  typedef bst_node<T>* node_pointer;
+  typedef Ptr node_pointer;
   node_pointer u = const_cast<node_pointer>(inorder_parent<I>(q));
   node_pointer s = q->link[I];
   if (u != q)
@@ -181,11 +185,11 @@ bst_node<T>* erase_node_lr_non_null(bst_node<T>** linker, bst_node<T>* q) noexce
   return q;
 }
 
-template <std::size_t I, typename T>
-bst_node<T>* erase_node_one_null(bst_node<T>** linker, bst_node<T>* q) noexcept
+template <std::size_t I, typename Ptr>
+Ptr erase_node_one_null(Ptr* linker, Ptr q) noexcept
 {
   const std::size_t O = index_helper<I>::other;
-  typedef bst_node<T>* node_pointer;
+  typedef Ptr node_pointer;
   node_pointer u = const_cast<node_pointer>(inorder_parent<O>(q));
   node_pointer s = q->link[O];
   if (u != q)
@@ -203,14 +207,14 @@ bst_node<T>* erase_node_one_null(bst_node<T>** linker, bst_node<T>* q) noexcept
   return q;
 }
 
-template <std::size_t I, typename T>
-bst_node<T>* erase_node(bst_node<T>* pq, bst_node<T>* q) noexcept
+template <std::size_t I, typename Ptr>
+Ptr erase_node(Ptr pq, Ptr q) noexcept
 {
   // p is parent of q. We do not handle the case p = q
   // Returns the erased node to be released elsewhere.
   // WARNING: Still unfinished.
   const std::size_t O = index_helper<I>::other;
-  bst_node<T>** linker = &pq->link[O];
+  Ptr* linker = &pq->link[O];
   if (pq->link[I] == q)
     linker = &pq->link[I];
   if (!has_null_link<O>::apply(q) && !has_null_link<I>::apply(q))

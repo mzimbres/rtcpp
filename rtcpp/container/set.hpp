@@ -16,7 +16,7 @@
   balancing overhead.
 
   NEWS: It supports allocators that can serve only one object at a time:
-  allocator_type::allocate();
+  allocator_type::allocate_node();
 */
 
 namespace rt {
@@ -36,14 +36,21 @@ class set {
   using pointer = typename std::allocator_traits<Allocator>::pointer;
   using const_pointer = typename std::allocator_traits<Allocator>::const_pointer;
   using difference_type = std::ptrdiff_t;
-  using const_iterator = bst_iterator<T>;
-  using iterator = const_iterator;
-  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  using node_type = bst_node<T>;
   private:
-  using inner_allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<node_type>;
-  using node_pointer = typename std::allocator_traits<inner_allocator_type>::pointer;
-  using const_node_pointer = typename std::allocator_traits<inner_allocator_type>::const_pointer;
+  using alloc_traits_type = std::allocator_traits<Allocator>;
+  using void_pointer = typename alloc_traits_type::void_pointer;
+  public:
+  using node_type = bst_node<value_type, void_pointer>;
+  private:
+  using inner_allocator_type = typename alloc_traits_type::template rebind_alloc<node_type>;
+  using inner_alloc_traits_type = std::allocator_traits<inner_allocator_type>;
+  using node_pointer = typename inner_alloc_traits_type::pointer;
+  using const_node_pointer = typename inner_alloc_traits_type::const_pointer;
+  public:
+  using iterator = bst_iterator<T, node_pointer>;
+  using const_iterator = iterator;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+  private:
   mutable inner_allocator_type m_inner_alloc;
   node_pointer m_head;
   Compare m_comp;
@@ -84,9 +91,9 @@ class set {
   template<typename K>
   size_type count(const K& x) const noexcept;
   template<typename K>
-  const_iterator find(const K& x) const;
+  iterator find(const K& x) const;
   template<typename K>
-  std::pair<const_node_pointer, const_node_pointer> find_parent(const K& x) const;
+  std::pair<node_pointer, node_pointer> find_parent(const K& x) const;
   size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
   template<typename InputIt>
   void insert(InputIt begin, InputIt end) noexcept;
@@ -397,27 +404,27 @@ set<T, Compare, Allocator>::count(const K& key) const noexcept
 
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
-typename set<T, Compare, Allocator>::const_iterator
+typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::find(const K& key) const
 {
   // The function below is not the most efficient because it
   // has an additional pointer to chase the parent pointer.
   // However maintaining two functions is not desirable
   auto p = find_parent(key);
-  return const_iterator(p.first);
+  return p.first;
 }
 
 template <typename T, typename Compare, typename Allocator>
 template <typename K>
-std::pair< typename set<T, Compare, Allocator>::const_node_pointer
-         , typename set<T, Compare, Allocator>::const_node_pointer>
+std::pair< typename set<T, Compare, Allocator>::node_pointer
+         , typename set<T, Compare, Allocator>::node_pointer>
 set<T, Compare, Allocator>::find_parent(const K& key) const
 {
   if (has_null_link<0>::apply(m_head)) // The tree is empty
     return std::make_pair(m_head, m_head); // end iterator.
 
-  const_node_pointer u = m_head; // pointer to the parent pointer.
-  const_node_pointer p = m_head->link[0];
+  node_pointer u = m_head; // pointer to the parent pointer.
+  node_pointer p = m_head->link[0];
   for (;;) {
     if (m_comp(key, p->key)) {
       if (!has_null_link<0>::apply(p)) {

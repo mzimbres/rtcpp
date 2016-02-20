@@ -6,16 +6,13 @@
 
 namespace rt {
 
-template <typename T>
-class bst_iterator : public std::iterator<std::bidirectional_iterator_tag, const T> {
+template <typename T, typename Ptr>
+class bst_iterator :
+  public std::iterator<std::bidirectional_iterator_tag, const T> {
   public:
-  typedef bst_node<T> node_type;
-  typedef const node_type* node_pointer;
-  private:
-  node_pointer m_p;
-  public:
+  Ptr m_p;
   bst_iterator() noexcept : m_p(0) {}
-  bst_iterator(node_pointer root) noexcept : m_p(root) {}
+  bst_iterator(Ptr root) noexcept : m_p(root) {}
 
   bst_iterator& operator++() noexcept
   {
@@ -44,9 +41,17 @@ class bst_iterator : public std::iterator<std::bidirectional_iterator_tag, const
   }
 
   T operator*() const noexcept {return m_p->key;}
-  bool operator==(const bst_iterator& rhs) const noexcept { return m_p == rhs.m_p; }
-  bool operator!=(const bst_iterator& rhs) const noexcept { return !(*this == rhs); }
 };
+
+template <typename T, typename Ptr>
+bool operator==( const bst_iterator<T, Ptr>& rhs
+               , const bst_iterator<T, Ptr>& lhs) noexcept
+{ return lhs.m_p == rhs.m_p; }
+
+template <typename T, typename Ptr>
+bool operator!=( const bst_iterator<T, Ptr>& rhs
+               , const bst_iterator<T, Ptr>& lhs) noexcept
+{ return !(lhs == rhs); }
 
 }
 
