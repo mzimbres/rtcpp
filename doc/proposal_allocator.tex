@@ -119,12 +119,203 @@ array-oriented allocator interface. This proposal tries to fix what the author
 believes to be the root of problem: {\it The lack of distinction between array
 and node allocation}.  We propose here a complete split between these two
 allocation techniques by means of a non-breaking addition to
-\texttt{std::allocator\_traits}
+\texttt{std::allocator\_traits}.
+
+Before going into more details, let us see with a use case,
+how this proposal provides better solution over the current
+array oriented interface.
+
+\medskip
+\noindent
+{\bf Use case}. The example below uses the proposed features
+to write code that is fast, simple and uses the minimum
+amount of memory. A linked lists served with a couple of nodes
+allocated on the stack
+\medskip
+\begin{lstlisting}
+  using alloc_t = rt::node_allocator<int>;
+
+  using node_type = typename std::list<int, alloc_t>::node_type;
+
+  // Buffer for 100 elements. offset is a space reserved for
+  // the allocator (three computer words in my implementation).
+  std::size_t node_size = sizeof (node_type);
+  std::array<char, offset + 100 * node_size> buffer = {{}};
+
+  alloc_t alloc(buffer);
+
+  std::list<int, alloc_t> l1(alloc);
+  ...
+  // Inserts elements. Allocation and deallocation implemented
+  // with 6 lines of code (see below). Faster and simpler than
+  // any allocator I could find.
+  l1 = {27, 1, 60};
+  ...
+\end{lstlisting}
+
+\newpage
+Some of the features of this code are
+\begin{itemize}
+
+\item It uses the container node type, to calculate the amount of memory needed
+to support 100 elements in the list.
+
+\item The buffer is compact with the optimal size, improving
+cache locality and causing minimal fragmentation. The allocator
+knows it is doing node allocation and does not make the node size bigger to
+store bookkeeping information.
+{\it You do not pay for space you do not use}.
+\item Very simple allocator, only some pointers change. (see below)
+\item {\it It cannot be written portably in C++}.
+\end{itemize}
+
+The reasons why we cannot write this code in current C++ will
+be better explained below, but shortly said
+
+\begin{itemize}
+
+\item The container node type and therefore its size is unknown.
+
+\item The function \texttt{allocate(n)} may be called with $n \ne 1$,
+meaning that the allocator now has to implement array allocation strategies
+instead of much more simple and efficient node allocation.
+
+\item The size of the buffer is not anymore clear and depends
+on the allocation strategy/algorithm.
+\end{itemize}
+
+\medskip
+\noindent
+{\bf How simple is node allocation}.  The simplification
+of having to provide only node allocation in the allocator
+comes from the fact that  we can simply build a singly linked list
+where allocation and deallocation reduces to pushig and
+popping from the linked list
+
+\medskip
+\begin{lstlisting}
+pointer allocate(size_t /*can't handle n*/)
+{
+  pointer q = avail; // The next free node
+  if (avail)
+    avail = avail->next;
+
+  return q;
+}
+
+void deallocate(pointer p, size_t /*can't handle n*/)
+{
+  p->next = avail;
+  avail = p;
+}
+
+\end{lstlisting}
+
+\medskip
+\noindent
+{\bf Further considerations}: The influence of fragmentation on
+performance is well known on the C++ community and subject of many
+talks in conferences therefore I am not going to repeat results here
+for the sake of readability. The interested reader can refer to
+\cite{chandler, meyers} for example.
+
+For an allocator that explores the feature proposed here, please see
+the project \cite{rtcpp}. For a general
+talk on allocators and why size management is a problem
+\cite{alexandrescu}. For related proposal, please see \cite{prop1}.
+For an alternative approaches to support node allocation, please see
+appendix \ref{alternative}.
+
+\section{Motivation and scope}
+
+Consider the example from last section where a programmer needs an
+\texttt{std::list} to store some ($\approx 100$) integers somewhere
+in the code. In current C++, there are essentially two approaches to
+do this (if we want to use a standard container). We can simply use
+the standard allocator
+\texttt{std::list<int>}.  This is undesirable for many reasons
+\begin{enumerate}
+
+\item Nodes go on the heap. For only 100 elements I would preferably
+use the stack.
+
+\item The node size is small ($\approx 20$bytes), it is not recommended
+allocating them individually on the heap. Fragmentation begins to play a role
+if I have many lists (or bigger n).
+
+\item  Each heap allocation is an overhead: all the code inside malloc, plus
+system calls and allocation strategies. (I only need 20bytes of space for a
+node!). Most importantly, the standard allocator does not
+know we are doing node allocations and cannot optimize it.
+
+\item Unknown allocated size. Does it allocate more space to store information
+needed by the algorithm? How much memory I am really using?
+
+\end{enumerate}
+
+All this is overkill for a simple list with a couple of elements
+(for bigger n situation gets worser). At this point we think it is
+better to use a custom allocator but as we saw in the last secton,
+we cannot improve too much give the current array-oriented allocator
+interface.
+
+Let us see some general motivations on why support for node allocation is
+desirable.
+
+\begin{enumerate}
+
+\item Support the most natural and one of the fastest allocation
+scheme for linked data structures. In \texttt{libstd++} and
+\texttt{libc++} for example, it is already possible (by chance) to use
+this allocation technique, since $n$ is always $1$ on calls of
+\texttt{allocate(n)}.
+
+\item Node-based containers do not manage allocation sizes but
+unnecessarily demand this feature from their allocators, with a cost
+in performance and complexity.
+
+%(Unordered associative containers use
+%sized allocations in addition to node allocation, which means they
+%need the sized version of \texttt{allocate} as well, but for purposes
+%other than node allocation).
+
+\item Support hard-realtime allocation for node-based containers
+through pre-allocation and pre-linking of nodes. This is highly
+desirable to improve C++ usability in embedded systems.
+
+\item State of the art allocators like \texttt{boost::node\_allocator}
+\cite{boost} achieve great performance gains optimizing for the $n = 1$ case. 
+
+\item Avoid wasted space behind allocations. It is pretty common that
+allocators allocate more memory than requested to store information
+like the size of the allocated block.
+
+\item Keep nodes in as-compact-as-possible buffers, either on the
+stack or on the heap, improving cache locality, performance and making
+them specially useful for embedded programming.
+
+\end{enumerate}
+
+%\begin{figure}[ht]
+%    \centering
+%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_list_bench.png} }
+%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_set_bench.png} }
+%        \\
+%    \caption[Benchmarks]
+%    {Never slower than blah.}
+%    \label{fig::bench}
+%\end{figure}
+
+
+\section{Impact on the Standard} \label{impact}
+
+We require the addition of two new member function and
+a typedef in \texttt{std::allocator\_traits()} as follows
+
 \medskip
 \begin{lstlisting}
 template<class Alloc>
 struct allocator_traits {
-  ...
   // Equal to Alloc::node_allocation_only if present,
   // std::false_type otherwise.
   using node_allocation_only = std::false_type
@@ -176,7 +367,9 @@ Another situation where the node type is useful is when implementing node alloca
 for unordered containers. Usually, unordered containers rebound twice and there is
 no way of knowing which rebound type is used for array and node allocation. Once
 the node type is exposed it is easy to detect the type that will be used for node
-allocation for example. We require that the exposed node type support SCARY 
+allocation for example.
+
+We require that the exposed node type support SCARY 
 initialization \cite{scary}. The following should hold
 \medskip
 \begin{lstlisting}
@@ -189,249 +382,11 @@ static_assert(std::is_same<node_type1, node_type3>::value, "");
 static_assert(std::is_same<node_type2, node_type3>::value, "");
 \end{lstlisting}
 
-\medskip
-\noindent
-{\bf Example}. The example below uses the proposed features
-to write code that is fast and uses the minimum amount of memory.
-Many linked lists served with nodes stored in an \texttt{std::array.}
-It is not possible to write it portably in current C++.
-\newpage
-\medskip
-\begin{lstlisting}
-  using alloc_t = rt::node_allocator<int>;
-
-  using node_type = typename std::list<int, alloc_t>::node_type;
-
-  // Buffer for 100 elements. offset is a space reserved for
-  // the allocator (three computer words in my implementation).
-  std::size_t node_size = sizeof (node_type);
-  std::array<char, offset + 100 * node_size> buffer = {{}};
-
-  alloc_t alloc(buffer);
-
-  std::list<int, alloc_t> l1(alloc);
-  std::list<int, alloc_t> l2(alloc);
-  ...
-  // Inserts elements. Allocation and deallocation implemented
-  // with 6 lines of code (see below). Faster and simpler than
-  // any allocator I could find.
-  l1 = {27, 1, 60};
-  ...
-\end{lstlisting}
-
-\medskip
-\noindent
-{\bf Alternative approach}. For an alternative approaches to support
-node allocation, please see appendix \ref{alternative}.
-
-\section{Motivation and scope}
-
-Consider the example from last section where a programmer needs an
-\texttt{std::list} to store some ($\approx 100$) integers somewhere
-in the code. In current C++, there are two ways to do this (if we want
-to use a standard container). We can simply use the standard allocator
-\texttt{std::list<int>}.  This is undesirable for many reasons
-\begin{enumerate}
-\item Nodes go on the heap. For only 100 elements I would preferably
-use the stack.
-\item The node size is small ($\approx 20$bytes), it is not recommended
-allocating them individually on the heap. Fragmentation begins to play a role
-if I have many lists (or bigger n).
-\item Suboptimal allocation behind \texttt{malloc}. It does not
-know we are doing node allocations and cannot optimize it.
-\item Unknown allocated size. Does it allocate more space to store information
-needed by the algorithm? How much memory I am really using?
-%\item The \texttt{malloc} implementation is platform dependent and can lead
-%to deferent behaviours in different platforms.
-\item  Each heap allocation is an overhead: all the code inside malloc, plus
-system calls and allocation strategies. (I only need 20bytes of space for a
-node!)
-\end{enumerate}
-
-All this is overkill for a simple list with a couple of elements
-(for bigger n situation gets worser). At this point we think it is
-better to use a custom allocator like in the example from last section.
-This approach has a number of advantages
-\begin{enumerate}
-\item Nodes on the stack with optimal size. {\it You do not pay for space you do not use}.
-\item Compact buffer, improving cache locality and causing
-minimal fragmentation.
-\item No allocation overhead: I only change some pointers. (See below)
-\end{enumerate}
-
-This is however not possible in the current allocator interface
-due to the fact that \texttt{allocate(n)} may be called with $n \ne 1$,
-that means I have to add unnecessary complexity to handle the many possible
-values of n. The size of the buffer is not anymore clear and depends on the
-allocation strategy/algorithm. All the added complexity is pointless. This is
-only one use case out of many.
-
-\medskip
-\noindent
-{\bf General motivations}. Some further motivations for this proposal are listed
-below.
-\begin{enumerate}
-
-\item Support the most natural and one of the fastest allocation
-scheme for linked data structures. In \texttt{libstd++} and
-\texttt{libc++} for example, it is already possible (by chance) to use
-this allocation technique, since $n$ is always $1$ on calls of
-\texttt{allocate(n)}.
-
-\item Node-based containers do not manage allocation sizes but
-unnecessarily demand this feature from their allocators, with a cost
-in performance and complexity.
-
-%(Unordered associative containers use
-%sized allocations in addition to node allocation, which means they
-%need the sized version of \texttt{allocate} as well, but for purposes
-%other than node allocation).
-
-\item Support hard-realtime allocation for node-based containers
-through pre-allocation and pre-linking of nodes. This is highly
-desirable to improve C++ usability in embedded systems.
-
-\item State of the art allocators like \texttt{boost::node\_allocator}
-\cite{boost} achieve great performance gains optimizing for the $n = 1$ case. 
-
-\item Avoid wasted space behind allocations. It is pretty common that
-allocators allocate more memory than requested to store information
-like the size of the allocated block.
-
-\item Keep nodes in as-compact-as-possible buffers, either on the
-stack or on the heap, improving cache locality, performance and making
-them specially useful for embedded programming.
-
-\end{enumerate}
-
-%A question that naturally arises is: {\it Why not simply test
-%whether $n = 1$ and pass allocation to an appropriate
-%function internally?} For example
-%
-%\medskip
-%\begin{lstlisting}
-%pointer allocate(size_type n)
-%{
-%  if (n == 1)
-%    return foo.allocate(); // Calls node allocation.
-%  return bar.allocate(n); // Calls regular allocate.
-%}
-%\end{lstlisting}
-%
-%\noindent
-%The main reason why this is an undesirable approach is that the
-%possibility of having $n \ne 1$ means I have to handle allocations
-%with different sizes, which is exactly what I am trying to avoid for
-%reasons mentioned above i.e. reduce complexity, improve performance
-%etc. Additionally, test for the condition \texttt{if (n == 1)} is
-%pointless since it is always true on node allocation.
-
-\noindent
-{\bf Node allocation}.  The simplification we are talking about comes from the
-fact that there is no more need for an allocation algorithm or any fancy
-strategy inside the allocator. We can simply build a singly linked list were
-the nodes have the size demanded by the container, then allocation and
-deallocation reduces to push and pop from the linked list.
-
-\medskip
-\begin{lstlisting}
-pointer allocate_node()
-{
-  pointer q = avail; // The next free node
-  if (avail)
-    avail = avail->next;
-
-  return q;
-}
-
-void deallocate_node(pointer p)
-{
-  p->next = avail;
-  avail = p;
-}
-
-\end{lstlisting}
-
-\medskip
-\noindent
-{\bf Further considerations}: The influence of fragmentation on
-performance is well known on the C++ community and subject of many
-talks in conferences therefore I am not going to repeat results here
-for the sake of readability. The interested reader can refer to
-\cite{chandler, meyers} for example.
-
-For an allocator that explores the feature proposed here, please see
-the project \cite{rtcpp}. For a general
-talk on allocators and why size management is a problem
-\cite{alexandrescu}. For related proposal, please see \cite{prop1}.
-
-%\begin{figure}[ht]
-%    \centering
-%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_list_bench.png} }
-%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_set_bench.png} }
-%        \\
-%    \caption[Benchmarks]
-%    {Never slower than blah.}
-%    \label{fig::bench}
-%\end{figure}
-
-
-\section{Impact on the Standard} \label{impact}
-
-We require the addition of two new member function and
-a typedef in \texttt{std::allocator\_traits()} as follows
-
-\medskip
-\begin{lstlisting}
-template<class Alloc>
-struct allocator_traits {
-  ...
-  // Equal to Alloc::node_allocation_only if present,
-  // std::false_type otherwise.
-  using node_allocation_only = std::false_type
-
-  // Calls a.allocate_node() if present otherwise calls
-  // Alloc::allocate(1). Memory allocate with this function
-  // must be deallocated with deallocate_node.
-  pointer allocate_node(Alloc& a);
-
-  // Calls a.deallocate_node(pointer) if present otherwise
-  // calls Alloc::deallocate(p, 1). Can only be used with
-  // memory allocated with allocate_node.
-  void deallocate_node(Alloc& a, pointer p);
-};
-\end{lstlisting}
-
-The typedef \texttt{node\_allocation\_only} is to ensure that
-container do not use array allocation on this allocator.
-We also propose that all node based containers expose their node types.
-
 The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::list}, \texttt{std::set}, \texttt{std::multiset},
 \texttt{std::unordered\_set}, \texttt{std::unordered\_multiset},
 \texttt{std::map}, \texttt{std::multimap},
 \texttt{std::unordered\_map}, \texttt{std::unordered\_multimap}
-
-%\medskip
-%\noindent
-%{\bf Pure node-based}: As a result of this proposal all node based
-%containers mentioned above, with the exception of the unordered ones,
-%should support allocators that provide only the overload
-%\texttt{allocate()}.
-%
-\medskip
-\noindent
-{\bf Unordered containers}: Unordered containers have to rebind twice,
-where one type is used for node allocation and one for array allocation.
-Let us name these types \texttt{node\_alloc\_type} and \texttt{array\_alloc\_type}.
-According to this proposal, \texttt{node\_alloc\_type} is not required to
-provide the \texttt{allocate(n)} member whenever \texttt{node\_allocation\_only}
-is set to \texttt{std::true\_type()}.
-
-Implementing such allocators for node based containers is easy when we know
-the container node type. An example implementation is provided in \cite{rtcpp}.
-
-%\section{Technical Specifications}
 
 \section{Acknowledgment}
 
@@ -478,14 +433,14 @@ pointer allocate(std::size_t /* n is ignored */)
   return allocate_node();
 }
 
-void deallocate_node(pointer p, std::size_t /* n is ignored */)
+void deallocate(pointer p, std::size_t /* n is ignored */)
 {
   deallocate_node();
 }
 \end{lstlisting}
 
 The problem with this approach is that it prevents array allocation inside
-node-based containers which means it can be viewed as a narrowing of the
+node-based containers, which means it can be viewed as a narrowing of the
 current interface.
 
 \medskip
