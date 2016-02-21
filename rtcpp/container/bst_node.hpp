@@ -32,9 +32,11 @@ namespace detail {
 template <typename T, typename Ptr>
 struct bst_node {
   typedef T value_type;
-  using node_pointer = typename std::pointer_traits<Ptr>::template rebind<bst_node<T, Ptr>>;
-  node_pointer link[2];
+  using pointer = typename std::pointer_traits<Ptr>::template rebind<bst_node<T, Ptr>>;
+  template<class U, class K>
+  struct rebind { using other = bst_node<U , K>; };
 
+  pointer link[2];
   int tag;
   value_type key;
 };

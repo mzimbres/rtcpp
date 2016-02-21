@@ -7,7 +7,8 @@
 #include <exception>
 #include <type_traits>
 
-#include <rtcpp/memory/node_stack.hpp>
+#include "node_stack.hpp"
+#include "node_traits.hpp"
 
 /*
   This is the prototype allocator I have implemented for the proposal.
@@ -35,7 +36,6 @@ class node_allocator {
   using const_pointer = const T*;
   using const_reference = const T&;
   using reference = T&;
-  static constexpr std::size_t S = sizeof (NodeType);
   template<class U>
   struct rebind { using other = node_allocator<U , NodeType>; };
   public:
@@ -46,7 +46,6 @@ class node_allocator {
   node_allocator(char* data, std::size_t size)
   : m_data(data)
   , m_size(size)
-  , m_stack(m_data, m_size, S)
   {}
   template <std::size_t I>
   explicit node_allocator(std::array<char, I>& arr)
@@ -56,18 +55,23 @@ class node_allocator {
   explicit node_allocator(std::vector<char, Alloc>& arr)
   : node_allocator(&arr.front(), arr.size())
   {}
-  // Copy constructor, always tries to link the stack. If it is
-  // already linked ok. If it is linked to an incompatible size,
-  // compile time error.
-  template<typename U, typename K>
-  node_allocator(const node_allocator<U, K>& alloc)
+  // Constructor for the node type with a different pointer type.
+  template<typename U, typename K = T>
+  node_allocator( const node_allocator<U, NodeType>& alloc
+                , typename std::enable_if< is_same_node_type<K, NodeType>::value>::type p = 0)
   : m_data(alloc.m_data)
   , m_size(alloc.m_size)
-  , m_stack(m_data, m_size, S)
-  {
-    static_assert( ((sizeof (NodeType)) >= (sizeof (K)))
-                 , "node_allocator: incompatible node size.");
-  }
+  , m_stack(m_data, m_size, sizeof (T))
+  {}
+  template<typename U>
+  node_allocator(const node_allocator<U, NodeType>& alloc)
+  : m_data(alloc.m_data)
+  , m_size(alloc.m_size)
+  {}
+  node_allocator(const node_allocator& alloc)
+  : m_data(alloc.m_data)
+  , m_size(alloc.m_size)
+  {}
   // allocate_node is only enabled to if the allocator value_type
   // is equal to the node_type.
   template <typename U = T>
