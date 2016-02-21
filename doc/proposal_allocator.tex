@@ -68,10 +68,10 @@ urlcolor=blue           % color of external links
 \begin{document}
 
 \date{}
-\title{\vspace{-2cm} \bf Improving allocator interface for node-based containers}
+\title{ \bf Improving allocator interface for node-based containers}
 \maketitle
 \noindent
-\vspace{-1cm} \\
+%\vspace{-1cm} \\
 {\bf Document number}:  1 \\
 {\bf Date}:  \today \\
 {\bf Project}: Programming Language C++ \\
@@ -88,8 +88,6 @@ Two new member functions are proposed \texttt{allocate\_node} and
 \texttt{deallocate\_node}. We also propose that the container node type should
 be exposed to the user. A prototype implementation is provided.
 
-\tableofcontents
-
 \vfill
 %\newpage
 %\twocolumn
@@ -104,6 +102,10 @@ A. ALEXANDRESCU \\
 \end{flushright}
 \medskip
 
+\newpage
+\tableofcontents
+
+\newpage
 \section{Introduction}
 \textsc{The importance} of linked data structures in computer science, like
 trees and linked lists, cannot be over-emphasised, yet, in the last couple of
@@ -125,9 +127,11 @@ Before going into more details, let us see with a use case,
 how this proposal provides better solution over the current
 array oriented interface.
 
-\medskip
-\noindent
-{\bf Use case}. The example below uses the proposed features
+\subsection{Use case}
+%\medskip
+%\noindent
+%{\bf Use case}.
+The example below uses the proposed features
 to write code that is fast, simple and uses the minimum
 amount of memory. A linked lists served with a couple of nodes
 allocated on the stack
@@ -184,9 +188,11 @@ instead of much more simple and efficient node allocation.
 on the allocation strategy/algorithm.
 \end{itemize}
 
-\medskip
-\noindent
-{\bf How simple is node allocation}.  The simplification
+\subsection{How simple is node allocation}
+%\medskip
+%\noindent
+%{\bf How simple is node allocation}.
+The simplification
 of having to provide only node allocation in the allocator
 comes from the fact that  we can simply build a singly linked list
 where allocation and deallocation reduces to pushig and
@@ -211,9 +217,10 @@ void deallocate(pointer p, size_t /*can't handle n*/)
 
 \end{lstlisting}
 
-\medskip
-\noindent
-{\bf Further considerations}: The influence of fragmentation on
+\subsection{Further considerations}
+%\medskip
+%\noindent
+%{\bf Further considerations}: The influence of fragmentation on
 performance is well known on the C++ community and subject of many
 talks in conferences therefore I am not going to repeat results here
 for the sake of readability. The interested reader can refer to
@@ -227,6 +234,8 @@ For an alternative approaches to support node allocation, please see
 appendix \ref{alternative}.
 
 \section{Motivation and scope}
+
+\subsection{Is array allocation that bad}
 
 Consider the example from last section where a programmer needs an
 \texttt{std::list} to store some ($\approx 100$) integers somewhere
@@ -258,6 +267,8 @@ All this is overkill for a simple list with a couple of elements
 better to use a custom allocator but as we saw in the last secton,
 we cannot improve too much give the current array-oriented allocator
 interface.
+
+\subsection{General motivations}
 
 Let us see some general motivations on why support for node allocation is
 desirable.
@@ -309,6 +320,10 @@ them specially useful for embedded programming.
 
 \section{Impact on the Standard} \label{impact}
 
+Foolowig are the additions required in the standard.
+
+\subsection{New \texttt{std::allocator\_traits} members}
+
 We require the addition of two new member function and
 a typedef in \texttt{std::allocator\_traits()} as follows
 
@@ -354,9 +369,12 @@ and sets \texttt{node\_allocation\_only} to \texttt{std::false\_type}.
 I am unaware if this option is useful.
 \end{enumerate}
 
-\medskip
-\noindent
-{\bf Exposing the node type}. Even though the changes proposed above are enough
+\subsection{Exposing the node type}
+
+%\medskip
+%\noindent
+%{\bf Exposing the node type}.
+Even though the changes proposed above are enough
 to achieve efficient node allocation, we still have no direct means of knowing
 the allocation size i.e. the node size. This information is not available at
 compile time and at runtime only when the rebound allocator instance is
@@ -419,9 +437,12 @@ Krauss for proposing a different approach.
 There are other possible approaches to support node allocation that are worth knowing
 of.  I will list them here, so that the commitee can compare them.
 
-\medskip
-\noindent
-{\bf Ensure \texttt{allocate(n)} is called with $n = 1$}. This seems the easiest
+\subsection{\texttt{allocate(n)} with $n = 1$}
+
+%\medskip
+%\noindent
+%{\bf Ensure \texttt{allocate(n)} is called with $n = 1$}.
+This seems the easiest
 way to perform node allocation. Once the standard guarantees $n$ will be always $1$,
 there is no more need to provide array allocation for node-based containers. The
 parameter $n$ can be simply ignored. The \texttt{allocate} and \texttt{deallocate}
@@ -443,9 +464,13 @@ The problem with this approach is that it prevents array allocation inside
 node-based containers, which means it can be viewed as a narrowing of the
 current interface.
 
-\medskip
-\noindent
-{\bf Provide a \texttt{constexpr max\_size()} that returns 1}. This scheme
+\subsection{Provide a \texttt{constexpr max\_size()} that returns 1}
+
+%\medskip
+%\noindent
+%{\bf Provide a \texttt{constexpr max\_size()} that returns 1}.
+
+This scheme
 can achieve the same goals as my main proposal and does not require any
 addition to \texttt{std::allocator\_traits}. Libraries should check if
 \texttt{max\_size()} can be evaluated at compile time and take appropriate
