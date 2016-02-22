@@ -14,13 +14,6 @@
   This is the prototype allocator I have implemented for the proposal.
 
   Please, read the proposal in doc/proposal_allocator.pdf
-
-  Performs constant time allocation on a pre-allocated buffer.
-
-  Node allocation can happen only when the node size is greater than
-  or equal to the size of a pointer, otherwise it is not possible to
-  link nodes together.  Therefore this class has a specialization for
-  such types.
 */
 
 namespace rt {

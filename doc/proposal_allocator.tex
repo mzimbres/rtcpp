@@ -217,6 +217,36 @@ void deallocate(pointer p, size_t /*can't handle n*/)
 
 \end{lstlisting}
 
+\subsection{Exposing the node type}
+
+Even though the changes proposed above are enough to achieve efficient
+node allocation, we still have no direct means of knowing the
+allocation size i.e. the node size. This information is not available
+at compile time and at runtime only when the rebound allocator
+instance is constructed on container construction. It is a tricky
+operation that can be avoided if we expose the container node type.
+
+Another situation where the node type is useful is when implementing
+node allocators for unordered containers. Usually, unordered
+containers rebound twice and there is no way of knowing which rebound
+type is used for array and node allocation. Once the node type is
+exposed it is easy to detect the type that will be used for node
+allocation for example.
+
+We require that the exposed node type support SCARY 
+initialization \cite{scary}. The following should hold
+\medskip
+\begin{lstlisting}
+using node_type1 = std::set<int, C1, A1>::node_type;
+using node_type2 = std::set<int, C2, A1>::node_type;
+using node_type3 = std::set<int, C1, A2>::node_type;
+
+static_assert(std::is_same<node_type1, node_type2>::value, "");
+static_assert(std::is_same<node_type1, node_type3>::value, "");
+static_assert(std::is_same<node_type2, node_type3>::value, "");
+\end{lstlisting}
+
+
 \subsection{Further considerations}
 %\medskip
 %\noindent
@@ -369,35 +399,21 @@ and sets \texttt{node\_allocation\_only} to \texttt{std::false\_type}.
 I am unaware if this option is useful.
 \end{enumerate}
 
-\subsection{Exposing the node type}
+\subsection{The node type}
 
-%\medskip
-%\noindent
-%{\bf Exposing the node type}.
-Even though the changes proposed above are enough
-to achieve efficient node allocation, we still have no direct means of knowing
-the allocation size i.e. the node size. This information is not available at
-compile time and at runtime only when the rebound allocator instance is
-constructed on container construction. It is a tricky operation that can be
-avoided if we expose the container node type.
+We require the following node iterface on node based containers
 
-Another situation where the node type is useful is when implementing node allocators
-for unordered containers. Usually, unordered containers rebound twice and there is
-no way of knowing which rebound type is used for array and node allocation. Once
-the node type is exposed it is easy to detect the type that will be used for node
-allocation for example.
-
-We require that the exposed node type support SCARY 
-initialization \cite{scary}. The following should hold
 \medskip
 \begin{lstlisting}
-using node_type1 = std::set<int, C1, A1>::node_type;
-using node_type2 = std::set<int, C2, A1>::node_type;
-using node_type3 = std::set<int, C1, A2>::node_type;
-
-static_assert(std::is_same<node_type1, node_type2>::value, "");
-static_assert(std::is_same<node_type1, node_type3>::value, "");
-static_assert(std::is_same<node_type2, node_type3>::value, "");
+template <class T, class Ptr>
+struct node_type {
+  using value_type = T;
+  using pointer =
+    typename std::pointer_traits<Ptr>::template
+      rebind<node_type<T, Ptr>>;
+  template<class U, class K>
+  struct rebind { using other = node_type<U , K>; };
+};
 \end{lstlisting}
 
 The following containers are affected: \texttt{std::forward\_list},
