@@ -24,6 +24,7 @@ class node_allocator {
                , "node_allocator: incompatible node size.");
   public:
   static constexpr std::size_t memory_use = node_stack::memory_use;
+  using size_type = std::size_t;
   using use_node_allocation = std::true_type;
   using pointer = T*;
   using const_pointer = const T*;
@@ -35,6 +36,7 @@ class node_allocator {
   char* m_data;
   std::size_t m_size;
   node_stack m_stack;
+  std::allocator<T> std_alloc; // Used for array allocations.
   public:
   node_allocator(char* data, std::size_t size)
   : m_data(data)
@@ -77,9 +79,17 @@ class node_allocator {
     return reinterpret_cast<pointer>(p); 
   }
   template <typename U = T>
+  typename std::enable_if<!std::is_same<U, NodeType>::value, pointer>::type
+  allocate(size_type n, std::allocator<void>::const_pointer hint = 0)
+  { return std_alloc.allocate(n, hint); }
+  template <typename U = T>
   typename std::enable_if<std::is_same<U, NodeType>::value>::type
   deallocate_node(pointer p)
   { m_stack.push(reinterpret_cast<char*>(p)); }
+  template <typename U = T>
+  typename std::enable_if<!std::is_same<U, NodeType>::value>::type
+  deallocate(pointer p, size_type n)
+  { std_alloc.deallocate(p, n); }
   template<typename U>
   void destroy(U* p) {p->~U();}
   template< typename U, typename... Args>
