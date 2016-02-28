@@ -141,10 +141,8 @@ allocated on the stack
 
   using node_type = typename std::list<int, alloc_t>::node_type;
 
-  // Buffer for 100 elements. offset is a space reserved for
-  // the allocator (three computer words in my implementation).
-  std::size_t node_size = sizeof (node_type);
-  std::array<char, offset + 100 * node_size> buffer = {{}};
+  // Buffer for 100 elements.
+  std::array<char, 100 * sizeof (node_type)> buffer = {{}};
 
   alloc_t alloc(buffer);
 
@@ -169,7 +167,7 @@ cache locality and causing minimal fragmentation. The allocator
 knows it is doing node allocation and does not make the node size bigger to
 store bookkeeping information.
 {\it You do not pay for space you do not use}.
-\item Very simple allocator, only some pointers change. (see below)
+\item Very simple and fast allocator, only some pointers change. (see below)
 \item {\it It cannot be written portably in C++}.
 \end{itemize}
 
@@ -230,21 +228,23 @@ Another situation where the node type is useful is when implementing
 node allocators for unordered containers. Usually, unordered
 containers rebound twice and there is no way of knowing which rebound
 type is used for array and node allocation. Once the node type is
-exposed it is easy to detect the type that will be used for node
-allocation for example.
+exposed it is easy to detect the type used for node and array
+allocation.
 
-We require that the exposed node type support SCARY 
-initialization \cite{scary}. The following should hold
-\medskip
-\begin{lstlisting}
-using node_type1 = std::set<int, C1, A1>::node_type;
-using node_type2 = std::set<int, C2, A1>::node_type;
-using node_type3 = std::set<int, C1, A2>::node_type;
+Please, see appendix \cite{unordered} for an example.
 
-static_assert(std::is_same<node_type1, node_type2>::value, "");
-static_assert(std::is_same<node_type1, node_type3>::value, "");
-static_assert(std::is_same<node_type2, node_type3>::value, "");
-\end{lstlisting}
+%We require that the exposed node type support SCARY 
+%initialization \cite{scary}. The following should hold
+%\medskip
+%\begin{lstlisting}
+%using node_type1 = std::set<int, C1, A1>::node_type;
+%using node_type2 = std::set<int, C2, A1>::node_type;
+%using node_type3 = std::set<int, C1, A2>::node_type;
+%
+%static_assert(std::is_same<node_type1, node_type2>::value, "");
+%static_assert(std::is_same<node_type1, node_type3>::value, "");
+%static_assert(std::is_same<node_type2, node_type3>::value, "");
+%\end{lstlisting}
 
 
 \subsection{Further considerations}
@@ -265,7 +265,7 @@ appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
-\subsection{Is array allocation that bad}
+\subsection{Why avoid the standard allocator}
 
 Consider the example from last section where a programmer needs an
 \texttt{std::list} to store some ($\approx 100$) integers somewhere
@@ -416,6 +416,13 @@ struct node_type {
 };
 \end{lstlisting}
 
+We also require the node type to be independent of the container
+
+\medskip
+\begin{lstlisting}
+using blah.
+\end{lstlisting}
+
 The following containers are affected: \texttt{std::forward\_list},
 \texttt{std::list}, \texttt{std::set}, \texttt{std::multiset},
 \texttt{std::unordered\_set}, \texttt{std::unordered\_multiset},
@@ -426,8 +433,7 @@ The following containers are affected: \texttt{std::forward\_list},
 
 I would like thank people that gave me any kind of feedback: Ville Voutilainen,
 Nevin Liber, Daniel Gutson, Alisdair Meredith, David Krauss. Special thanks go
-to Ion Gaztañaga for suggesting important changes in the original design and David 
-Krauss for proposing a different approach.
+to Ion Gaztañaga for suggesting important changes in the original design.
 
 \begin{thebibliography}{9}
 
@@ -515,6 +521,58 @@ node allocation than a full supported feature.
 
 \end{enumerate}
 
+\newpage
+
+\section{Node type and safer allocator} \label{alternative}
+
+\medskip
+\begin{lstlisting}
+  // Buffer where nodes are allocated.
+  std::array<char, 1000> buffer = {{}};
+
+  // SCARY aware node type. It does not matter from which
+  // allocator it was taken since we can rebind it.
+  using node_type = rt::set<int>::node_type;
+
+  // The user node allocator type and its instance.
+  using alloc_type = rt::node_allocator<int, node_type>;
+  alloc_type alloc(buffer);
+
+  // Ok, This is not the node_type, we can perform array allcation.
+  auto a = alloc.allocate(10);
+
+  // Error, node alocation is not enabled for int.
+  //auto a = alloc.allocate_node(); // Compile time error
+
+  // The folowing lines ocurrs inside the unordered container.
+
+  // Rebinds to the unordered container internal node_type. 
+  using node_alloc_type =
+    typename alloc_type::template rebind<node_type>::other;
+
+  node_alloc_type node_alloc(alloc);
+
+  // Error, this allocator cannot perform array allocation for
+  // node_type.
+  //auto b = node_alloc.allocate(10); // Error
+
+  // Ok, The allocator was configured to perform node allocation
+  // on this type.
+  auto b = node_alloc.allocate_node(); // Ok
+
+  // Rebinds to the unordered container internal array allocation
+  // type, let us say it is double* (just an example). 
+  using array_alloc_type =
+    typename alloc_type::template rebind<double*>::other;
+
+  array_alloc_type array_alloc(alloc);
+
+  // Ok, This is not the node_type, we can perform array allcation.
+  auto c = alloc.allocate(10); // Error
+
+  // Error, node alocation is not enabled for double*.
+  //auto c = alloc.allocate_node(); // Ok
+\end{lstlisting}
 
 \end{document}
 
