@@ -123,78 +123,16 @@ and node allocation}.  We propose here a complete split between these two
 allocation techniques by means of a non-breaking addition to
 \texttt{std::allocator\_traits}.
 
-Before going into more details, let us see with a use case,
-how this proposal provides better solution over the current
-array oriented interface.
-
-\subsection{Use case}
-%\medskip
-%\noindent
-%{\bf Use case}.
-The example below uses the proposed features
-to write code that is fast, simple and uses the minimum
-amount of memory. A linked lists served with a couple of nodes
-allocated on the stack
-\medskip
-\begin{lstlisting}
-  using alloc_t = rt::node_allocator<int>;
-
-  using node_type = typename std::list<int, alloc_t>::node_type;
-
-  // Buffer for 100 elements.
-  std::array<char, 100 * sizeof (node_type)> buffer = {{}};
-
-  alloc_t alloc(buffer);
-
-  std::list<int, alloc_t> l1(alloc);
-  ...
-  // Inserts elements. Allocation and deallocation implemented
-  // with 6 lines of code (see below). Faster and simpler than
-  // any allocator I could find.
-  l1 = {27, 1, 60};
-  ...
-\end{lstlisting}
-
-\newpage
-Some of the features of this code are
-\begin{itemize}
-
-\item It uses the container node type, to calculate the amount of memory needed
-to support 100 elements in the list.
-
-\item The buffer is compact with the optimal size, improving
-cache locality and causing minimal fragmentation. The allocator
-knows it is doing node allocation and does not make the node size bigger to
-store bookkeeping information.
-{\it You do not pay for space you do not use}.
-\item Very simple and fast allocator, only some pointers change. (see below)
-\item {\it It cannot be written portably in C++}.
-\end{itemize}
-
-The reasons why we cannot write this code in current C++ will
-be better explained below, but shortly said
-
-\begin{itemize}
-
-\item The container node type and therefore its size is unknown.
-
-\item The function \texttt{allocate(n)} may be called with $n \ne 1$,
-meaning that the allocator now has to implement array allocation strategies
-instead of much more simple and efficient node allocation.
-
-\item The size of the buffer is not anymore clear and depends
-on the allocation strategy/algorithm.
-\end{itemize}
-
-\subsection{How simple is node allocation}
+\subsection{Node allocation}
 %\medskip
 %\noindent
 %{\bf How simple is node allocation}.
-The simplification
-of having to provide only node allocation in the allocator
-comes from the fact that  we can simply build a singly linked list
-where allocation and deallocation reduces to pushig and
-popping from the linked list
+Node allocation is one of the simplest allocation techniques
+we can get, but yet a very powerful one. The simplicity
+comes from the fact that allocation and deallocation reduces to pushig and
+popping from the linked list of nodes, like shown in the code below.
+It is powerful because it is very fast, perform in hard-real-time
+and cause minimal memory fragmentation.
 
 \medskip
 \begin{lstlisting}
@@ -215,23 +153,90 @@ void deallocate(pointer p, size_t /*can't handle n*/)
 
 \end{lstlisting}
 
+The reasons why this allocation technique is not fully supporte in C++ is
+related to the current {\it array} oriented interface of allocators.  The
+member function \texttt{allocate(n)} may be called with $n \ne 1$, meaning that
+the allocator now has to implement array allocation strategies instead of much
+more simple and efficient node allocation.
+
+Before going into more details, let us see with a use case,
+how this proposal provides better solution over the current
+array oriented interface.
+
+\subsection{Use case}
+%\medskip
+%\noindent
+%{\bf Use case}.
+The example below uses the allocation technique from the previous section to
+write code that is fast, simple and uses the minimum amount of memory. A linked
+lists served with a couple of nodes allocated on the stack
+\medskip
+\begin{lstlisting}
+  using alloc_t = rt::node_allocator<int>;
+
+  using node_type = typename std::list<int, alloc_t>::node_type;
+
+  // Buffer for 100 elements.
+  std::array<char, 100 * sizeof (node_type)> buffer = {{}};
+
+  alloc_t alloc(buffer);
+
+  std::list<int, alloc_t> l1(alloc);
+  ...
+  // Inserts elements. Allocation and deallocation implemented
+  // with 6 lines of code (see below). Faster and simpler than
+  // any allocator I could find.
+  l1 = {27, 1, 60};
+  ...
+\end{lstlisting}
+
+Some of the features of this code are
+\begin{itemize}
+
+\item It uses the container node type, to calculate the minimum amount of
+memory to support 100 elements in the list. As a consequence The buffer is
+compact, improving cache locality and causing minimal fragmentation.
+
+\item The allocator knows it is doing node allocation and does not make the
+node size bigger to store bookkeeping information. {\it You do not pay for
+space you do not use}.
+
+\item Very simple and fast allocator where allocation and deallocation
+translates into only a couple of pointers assignments.
+%\item {\it It cannot be written portably in C++}.
+\end{itemize}
+
+The reasons why we cannot write this code in current C++ will
+be better explained below, but shortly said
+
+\begin{itemize}
+
+\item The allocator {\it has to} provide array allocation since 
+\texttt{allocate(n)} may be called with $n \ne 1$, as a result
+the allocator gets unnecessarily complicated and the size of the
+buffer to support 100 elements is not anymore clear since it depends
+on the array allocation strategy/algorithm.
+
+\item The container node type and therefore its size is unknown.
+
+\end{itemize}
+
 \subsection{Exposing the node type}
 
-Even though the changes proposed above are enough to achieve efficient
-node allocation, we still have no direct means of knowing the
-allocation size i.e. the node size. This information is not available
-at compile time and at runtime only when the rebound allocator
-instance is constructed on container construction. It is a tricky
-operation that can be avoided if we expose the container node type.
+The size of the nodes that the allocator will serve in node-based containers is
+not available. At runtime it is known only when the rebound allocator instance
+is constructed which occurs when the container is constructed. It is a tricky
+to use this information. As shown in the example above the user may want to use
+this information to pre-allocate space for a certain number of elements.
 
-Another situation where the node type is useful is when implementing
-node allocators for unordered containers. Usually, unordered
-containers rebound twice and there is no way of knowing which rebound
-type is used for array and node allocation. Once the node type is
-exposed it is easy to detect the type used for node and array
-allocation.
+Another situation where the node type is useful is when implementing node
+allocators for unordered containers. Usually, unordered containers rebound
+twice and there is no way of knowing which rebound type is used for array and
+node allocation. Once the node type is exposed the allocator can be specialized
+for the desired type, offering node allocation functions accordingly.
 
-Please, see appendix \cite{unordered} for an example.
+Please, see appendix \ref{saferalloc} for an example of how we can write a safe
+allocator interface once the node type is exposed.
 
 %We require that the exposed node type support SCARY 
 %initialization \cite{scary}. The following should hold
@@ -248,31 +253,30 @@ Please, see appendix \cite{unordered} for an example.
 
 
 \subsection{Further considerations}
-%\medskip
-%\noindent
-%{\bf Further considerations}: The influence of fragmentation on
-performance is well known on the C++ community and subject of many
-talks in conferences therefore I am not going to repeat results here
-for the sake of readability. The interested reader can refer to
-\cite{chandler, meyers} for example.
+The influence of fragmentation on performance is well known on the C++
+community and subject of many talks in conferences therefore I am not going to
+repeat results here for the sake of readability. The interested reader can
+refer to \cite{chandler, meyers} for example.
 
-For an allocator that explores the feature proposed here, please see
-the project \cite{rtcpp}. For a general
-talk on allocators and why size management is a problem
-\cite{alexandrescu}. For related proposal, please see \cite{prop1}.
-For an alternative approaches to support node allocation, please see
-appendix \ref{alternative}.
+The split between array and node allocation has been successfully implemented
+in the Boost.Container library, but the mechanism is based on C++03 instead of
+\texttt{std::allocator\_traits}.
+
+For an allocator that explores the feature proposed here, please see the
+project \cite{rtcpp}. For a general talk on allocators and why size management
+is a problem \cite{alexandrescu}. For related proposal, please see
+\cite{prop1}.  For an alternative approaches to support node allocation, please
+see appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
+Given the popularity of the standard allocator, it is important to give reasons
+why it should be avoided as a first option for node allocations. I will focus
+on the use case shown above, where we want to serve an
+\texttt{std::list<int>} with a certain number of nodes.
+
 \subsection{Why avoid the standard allocator}
 
-Consider the example from last section where a programmer needs an
-\texttt{std::list} to store some ($\approx 100$) integers somewhere
-in the code. In current C++, there are essentially two approaches to
-do this (if we want to use a standard container). We can simply use
-the standard allocator
-\texttt{std::list<int>}.  This is undesirable for many reasons
 \begin{enumerate}
 
 \item Nodes go on the heap. For only 100 elements I would preferably
@@ -350,7 +354,7 @@ them specially useful for embedded programming.
 
 \section{Impact on the Standard} \label{impact}
 
-Foolowig are the additions required in the standard.
+The Following additions are required in the standard.
 
 \subsection{New \texttt{std::allocator\_traits} members}
 
@@ -362,7 +366,8 @@ a typedef in \texttt{std::allocator\_traits()} as follows
 template<class Alloc>
 struct allocator_traits {
   // Equal to Alloc::node_allocation_only if present,
-  // std::false_type otherwise.
+  // std::false_type otherwise. Array allocation with
+  // allocate(n) is ruled out if it is std::true_type.
   using node_allocation_only = std::false_type
 
   // Calls a.allocate_node() if present otherwise calls
@@ -408,9 +413,7 @@ We require the following node iterface on node based containers
 template <class T, class Ptr>
 struct node_type {
   using value_type = T;
-  using pointer =
-    typename std::pointer_traits<Ptr>::template
-      rebind<node_type<T, Ptr>>;
+  using pointer = // Usually taken from std::pointer_traits<Ptr>
   template<class U, class K>
   struct rebind { using other = node_type<U , K>; };
 };
@@ -523,7 +526,7 @@ node allocation than a full supported feature.
 
 \newpage
 
-\section{Node type and safer allocator} \label{alternative}
+\section{Node type and safer allocator} \label{saferalloc}
 
 \medskip
 \begin{lstlisting}
@@ -538,40 +541,38 @@ node allocation than a full supported feature.
   using alloc_type = rt::node_allocator<int, node_type>;
   alloc_type alloc(buffer);
 
-  // Ok, This is not the node_type, we can perform array allcation.
+  // Ok, Perform array allocation on int's
   auto a = alloc.allocate(10);
 
-  // Error, node alocation is not enabled for int.
-  //auto a = alloc.allocate_node(); // Compile time error
+  // Error, node allocation only for node_type
+  auto a = alloc.allocate_node(); // Compile time error
 
-  // The folowing lines ocurrs inside the unordered container.
-
-  // Rebinds to the unordered container internal node_type. 
+  // The folowing lines occurs inside the unordered container.
+  // Rebinds to the unordered container internal node_type2.
+  // It is equal to node_type except that it may have a
+  // different pointer type.
   using node_alloc_type =
-    typename alloc_type::template rebind<node_type>::other;
+    typename alloc_type::template rebind<node_type2>::other;
 
   node_alloc_type node_alloc(alloc);
 
-  // Error, this allocator cannot perform array allocation for
-  // node_type.
-  //auto b = node_alloc.allocate(10); // Error
+  // Error, array allocation disable for node_type.
+  auto b = node_alloc.allocate(10); // Error
 
-  // Ok, The allocator was configured to perform node allocation
-  // on this type.
+  // Ok, Perform node allocation on the node type
   auto b = node_alloc.allocate_node(); // Ok
 
-  // Rebinds to the unordered container internal array allocation
-  // type, let us say it is double* (just an example). 
+  // Rebinds to the unordered container internal array
+  // allocation type, let us say it is double* (just an example). 
   using array_alloc_type =
     typename alloc_type::template rebind<double*>::other;
-
   array_alloc_type array_alloc(alloc);
 
-  // Ok, This is not the node_type, we can perform array allcation.
-  auto c = alloc.allocate(10); // Error
+  // Ok, array allocation enable. This is not the node type.
+  auto c = alloc.allocate(10); // Ok
 
   // Error, node alocation is not enabled for double*.
-  //auto c = alloc.allocate_node(); // Ok
+  auto c = alloc.allocate_node(); // Error
 \end{lstlisting}
 
 \end{document}
