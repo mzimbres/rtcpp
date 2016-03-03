@@ -184,8 +184,8 @@ lists served with a couple of nodes allocated on the stack
   std::list<int, alloc_t> l1(alloc);
   ...
   // Inserts elements. Allocation and deallocation implemented
-  // with 6 lines of code (see below). Faster and simpler than
-  // any allocator I could find.
+  // with 6 lines of code. Faster and simpler than any allocator
+  // I could find.
   l1 = {27, 1, 60};
   ...
 \end{lstlisting}
@@ -194,15 +194,16 @@ Some of the features of this code are
 \begin{itemize}
 
 \item It uses the container node type, to calculate the minimum amount of
-memory to support 100 elements in the list. As a consequence The buffer is
+memory to support 100 elements in the list. As a consequence the buffer is
 compact, improving cache locality and causing minimal fragmentation.
 
 \item The allocator knows it is doing node allocation and does not make the
 node size bigger to store bookkeeping information. {\it You do not pay for
-space you do not use}.
+space you do not use}. 
 
 \item Very simple and fast allocator where allocation and deallocation
-translates into only a couple of pointers assignments.
+translates into only a couple of pointers assignments. No array allocation
+strategy had to be implemented.
 %\item {\it It cannot be written portably in C++}.
 \end{itemize}
 
@@ -223,11 +224,12 @@ on the array allocation strategy/algorithm.
 
 \subsection{Exposing the node type}
 
-The size of the nodes that the allocator will serve in node-based containers is
-not available. At runtime it is known only when the rebound allocator instance
-is constructed which occurs when the container is constructed. It is a tricky
-to use this information. As shown in the example above the user may want to use
-this information to pre-allocate space for a certain number of elements.
+In current C++, there is no straightforward way of knowing the size of the node
+the allocator will serve.  At runtime it is known only when the rebound
+allocator instance is constructed, which occurs when the container is
+constructed. It is a tricky to use this information. As shown in the example
+above the user may want to use it to pre-allocate space for a
+certain number of elements.
 
 Another situation where the node type is useful is when implementing node
 allocators for unordered containers. Usually, unordered containers rebound
@@ -420,10 +422,19 @@ struct node_type {
 \end{lstlisting}
 
 We also require the node type to be independent of the container
+and of the compare type. The following code should compile.
 
 \medskip
 \begin{lstlisting}
-using blah.
+  using set_type1 = rt::set<T, C1, A1>;
+  using set_type2 = rt::set<T, C2, A2>;
+
+  using pointer = // Arbitray pointer type.
+  using node_type1 =
+    typename set_type1::node_type::template rebind<T, pointer>;
+  using node_type2 = typename
+    set_type2::node_type::template rebind<T, pointer>;
+  static_assert(std::is_same<node_type1, node_type2>::value,"");
 \end{lstlisting}
 
 The following containers are affected: \texttt{std::forward\_list},
