@@ -53,24 +53,19 @@ class node_allocator {
   // Constructor for the node type with a different pointer type.
   template<typename U, typename K = T>
   node_allocator( const node_allocator<U, NodeType>& alloc
-                , typename std::enable_if< is_same_node_type<K, NodeType>::value>::type p = 0)
+                , typename std::enable_if<is_same_node_type<K, NodeType>::value, void*>::type p = 0)
   : m_data(alloc.m_data)
   , m_size(alloc.m_size)
   , m_stack(m_data, m_size, sizeof (T))
   {}
-  template<typename U>
-  node_allocator(const node_allocator<U, NodeType>& alloc)
+  template<typename U, typename K = T>
+  node_allocator( const node_allocator<U, NodeType>& alloc
+                , typename std::enable_if<!is_same_node_type<K, NodeType>::value, void*>::type p = 0)
   : m_data(alloc.m_data)
   , m_size(alloc.m_size)
   {}
-  node_allocator(const node_allocator& alloc)
-  : m_data(alloc.m_data)
-  , m_size(alloc.m_size)
-  {}
-  // allocate_node is only enabled to if the allocator value_type
-  // is equal to the node_type.
   template <typename U = T>
-  typename std::enable_if<std::is_same<U, NodeType>::value, pointer>::type
+  typename std::enable_if<is_same_node_type<U, NodeType>::value, pointer>::type
   allocate_node()
   {
     char* p = m_stack.pop(); 
@@ -79,7 +74,7 @@ class node_allocator {
     return reinterpret_cast<pointer>(p); 
   }
   template <typename U = T>
-  typename std::enable_if<!std::is_same<U, NodeType>::value, pointer>::type
+  typename std::enable_if<!is_same_node_type<U, NodeType>::value, pointer>::type
   allocate(size_type n, std::allocator<void>::const_pointer hint = 0)
   { return std_alloc.allocate(n, hint); }
   template <typename U = T>
