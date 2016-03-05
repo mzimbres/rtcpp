@@ -68,7 +68,7 @@ urlcolor=blue           % color of external links
 \begin{document}
 
 \date{}
-\title{ \bf Improving allocator interface for node-based containers}
+\title{\bf Splitting node and array allocation in allocators}
 \maketitle
 \noindent
 %\vspace{-1cm} \\
@@ -129,7 +129,7 @@ allocation techniques by means of a non-breaking addition to
 %{\bf How simple is node allocation}.
 Node allocation is one of the simplest allocation techniques
 available, but yet a very powerful one. The simplicity
-comes from the fact that allocation and deallocation reduces to pushig and
+comes from the fact that allocation and deallocation reduces to pushing and
 popping from the linked list of nodes, like shown in the code below.
 It is powerful because it is very fast, perform in hard-real-time
 and cause minimal memory fragmentation.
@@ -153,7 +153,7 @@ void deallocate(pointer p, size_t /*can't handle n*/)
 
 \end{lstlisting}
 
-The reasons why this allocation technique is not fully supporte in C++ is
+The reasons why this allocation technique is not fully supported in C++ is
 related to the current {\it array} oriented interface of allocators.  The
 member function \texttt{allocate(n)} may be called with $n \ne 1$, meaning that
 the allocator now has to implement array allocation strategies instead of much
@@ -233,7 +233,7 @@ certain number of elements.
 
 Another situation where the node type is useful is when implementing node
 allocators for unordered containers. Usually, unordered containers rebind
-twice and there is no way of knowing which rebound type is used for array and
+twice and there is no way of knowing which rebound type is used for array or
 node allocation. Once the node type is exposed the allocator can be specialized
 for the desired type, offering node allocation functions accordingly.
 
@@ -300,7 +300,7 @@ needed by the algorithm? How much memory I am really using?
 
 All this is overkill for a simple list with a couple of elements
 (for bigger n situation gets worser). At this point we think it is
-better to use a custom allocator but as we saw in the last secton,
+better to use a custom allocator but as we saw in the last section,
 we cannot improve too much given the current restrictive array-oriented
 allocator interface.
 
@@ -408,7 +408,7 @@ I am unaware if this option is useful.
 
 \subsection{The node type}
 
-We require the following node iterface on node based containers
+We require the following node interface on node based containers
 
 \begin{lstlisting}
 template <class T, class Ptr>
@@ -470,7 +470,7 @@ to Ion Gaztañaga for suggesting important changes in the original design.
 \section{Alternative approaches} \label{alternative}
 
 There are other possible approaches to support node allocation that are worth knowing
-of.  I will describe them here, so that the commitee can compare them.
+of.  I will describe them here, so that the committee can compare them.
 
 \subsection{\texttt{allocate(n)} with $n = 1$}
 
@@ -519,7 +519,7 @@ I did not adopted it due to some disadvantages I see with it
 different semantics, apart from the storage size. If memory expansion (realloc)
 is added in the future, it should only work with storage allocated with
 \texttt{allocate(n)} but not with storage allocated for nodes. This allows node
-allocations to avoid extra bookeeping data to mark the storage as
+allocations to avoid extra bookkeeping data to mark the storage as
 non-expandable.
 
 \item It requires the user to specialize \texttt{std::allocator\_traits} to
@@ -562,10 +562,10 @@ node allocation than a full supported feature.
   // Not node_type2, array allocation is fine.
   auto a = alloc.allocate(10); // Ok
 
-  // Error, node alocation not enabled for int.
+  // Error, node allocation not enabled for int.
   auto b = alloc.allocate_node(); // Compile time error
 
-  // The folowing lines ocurrs inside the unordered container.
+  // The following lines occurs inside the unordered container.
 
   // Rebinds to get an allocator for node_type2.
   using node_alloc_type =
@@ -589,7 +589,7 @@ node allocation than a full supported feature.
   // Ok, Not the node type, array allocation enabled.
   auto e = alloc.allocate(10); // Ok
 
-  // Error, node alocation is not enabled for float*.
+  // Error, node allocation is not enabled for float*.
   auto f = alloc.allocate_node(); // Compile time error.
 \end{lstlisting}
 
