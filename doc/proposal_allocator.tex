@@ -304,6 +304,33 @@ better to use a custom allocator but as we saw in the last section,
 we cannot improve too much given the current restrictive array-oriented
 allocator interface.
 
+\subsection{Benchmarks}
+
+In the previous section we gave some motivation on why one should avoid
+the standard allocator and even though performance is not the main motivation
+to use node allocators, benchmarks I have made on my non-optimized
+node allocator implementation were never slower than any other allocator
+I could test.  The graph below shows some results.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=1]{fig/node_alloc_bench.pdf}
+    \caption[Benchmark]
+    {Source code can be found in \cite{rtcpp}.}
+    \label{fig::bench}
+\end{figure}
+
+%\begin{figure}[ht]
+%    \centering
+%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_list_bench.png} }
+%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_set_bench.png} }
+%        \\
+%    \caption[Benchmarks]
+%    {Never slower than blah.}
+%    \label{fig::bench}
+%\end{figure}
+
+
 \subsection{General motivations}
 
 Let us see some general motivations on why support for node allocation is
@@ -342,17 +369,6 @@ stack or on the heap, improving cache locality, performance and making
 them specially useful for embedded programming.
 
 \end{enumerate}
-
-%\begin{figure}[ht]
-%    \centering
-%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_list_bench.png} }
-%    \subfloat[]{ \includegraphics[scale=0.5]{fig/std_set_bench.png} }
-%        \\
-%    \caption[Benchmarks]
-%    {Never slower than blah.}
-%    \label{fig::bench}
-%\end{figure}
-
 
 \section{Impact on the Standard} \label{impact}
 
