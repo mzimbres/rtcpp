@@ -75,7 +75,8 @@ urlcolor=blue           % color of external links
 {\bf Document number}:  1 \\
 {\bf Date}:  \today \\
 {\bf Project}: Programming Language C++ \\
-{\bf Author}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
+{\bf Audience}: Library Evolution Working Group \\
+{\bf Reply to}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
 
 \vspace{1cm}
 
@@ -229,16 +230,36 @@ the allocator will serve.  At runtime it is known only when the rebound
 allocator instance is constructed, which occurs when the container is
 constructed. It is a tricky to use this information. As shown in the example
 above the user may want to use it to pre-allocate space for a
-certain number of elements.
+certain number of elements in the container.
 
 Another situation where the node type is useful is when implementing node
 allocators for unordered containers. Usually, unordered containers rebind
 twice and there is no way of knowing which rebound type is used for array or
 node allocation. Once the node type is exposed the allocator can be specialized
 for the desired type, offering node allocation functions accordingly.
-
 Please, see appendix \ref{saferalloc} for an example of how we can write a safe
 allocator interface once the node type is exposed.
+
+The difficult in exposing the node type is the recursiveness of the problem.  We
+cannot get the container node type before defining the container type, that
+depends on the allocator type. On the other hand, the allocator cannot be
+specialized before the node type is known.
+
+At a first glance we may quite naturally want to demand the node type to be independent
+of the container and of the allocator, however, due to the support for fancy pointers
+in c++, the following cannot be implemented in general
+\begin{lstlisting}
+// Cannot always hold for general A1 nd A2.
+static_assert( std::is_same< std::list<T, A1>::node_type
+                           , std::list<T, A2>::node_type>, "");
+};
+\end{lstlisting}
+
+The solution we propose here is to offer a rebind structure in the node type,
+so that the specialization can get rid of the allocator pointer type, that
+the node type happened to be defined with.  In other words, we can get the
+node type from a container defined with any allocator and rebind to a node
+with a different pointer type. Recursiveness is bypassed this way.
 
 %We require that the exposed node type support SCARY 
 %initialization \cite{scary}. The following should hold
