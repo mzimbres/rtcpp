@@ -240,12 +240,12 @@ for the desired type, offering node allocation functions accordingly.
 Please, see appendix \ref{saferalloc} for an example of how we can write a safe
 allocator interface once the node type is exposed.
 
-The difficult in exposing the node type is the recursiveness of the problem.  We
-cannot get the container node type before defining the container type, that
-depends on the allocator type. On the other hand, the allocator cannot be
+The difficult in exposing the node type is the recursiveness of the problem.
+The node type is not known until the container type is known, which in turn depends
+on the allocator type to be defined. The allocator cannot be
 specialized before the node type is known.
 
-At a first glance we may quite naturally want to demand the node type to be independent
+At a first glance we may quite naturally demand the node type to be independent
 of the container and of the allocator, however, due to the support for fancy pointers
 in c++, the following cannot be implemented in general
 \begin{lstlisting}
@@ -302,15 +302,15 @@ on the use case given above, where we want to serve an
 
 \begin{enumerate}
 
-\item Nodes go on the heap. For only 100 elements I would preferably
+\item Nodes go necessarily on the heap. For only 100 elements I would preferably
 use the stack.
 
 \item The node size is small ($\approx 20$bytes), it is not recommended
 allocating them individually on the heap. Fragmentation begins to play a role
-if I have many lists (or bigger n).
+if I have many lists or bigger $n$ (see benchmarks below).
 
 \item  Each heap allocation is an overhead: all the code inside malloc, plus
-system calls and allocation strategies. (I only need 20bytes of space for a
+system calls and allocation strategies. (I only need 20 bytes of space for a
 node!). Most importantly, the standard allocator does not
 know we are doing node allocations and cannot optimize it.
 
@@ -319,19 +319,19 @@ needed by the algorithm? How much memory I am really using?
 
 \end{enumerate}
 
-All this is overkill for a simple list with a couple of elements
-(for bigger n situation gets worser). At this point we think it is
-better to use a custom allocator but as we saw in the last section,
-we cannot improve too much given the current restrictive array-oriented
-allocator interface.
+All this is overkill for a simple list with a couple of elements. When the number
+of elements gets bigger and the nodes go to the heap, the situation gets much
+worser for standard allocator or any custom allocator that implements array allocation
+strategies. This is the topic of the next section.
 
 \subsection{Benchmarks}
 
 In the previous section we gave some motivation on why one should avoid
-the standard allocator and even though performance is not the main motivation
-to use node allocators, benchmarks I have made on my non-optimized
-node allocator implementation were never slower than any other allocator
-I could test.  The graph below shows some results.
+the standard allocator, but what about a custom allocator? To test how much
+improvement we can get with custom allocators I tested my own non-optimized
+implementation of a node allocator against allocators shipped with GCC.
+The graphs can be seem below. The node allocator has never been slower,
+in fact, it was most of the time faster than the other fine-tuned allocators.
 
 \begin{figure}[ht]
     \centering
@@ -400,6 +400,7 @@ The following additions are required in the standard.
 We require the addition of two new member functions and
 a typedef in \texttt{std::allocator\_traits()} as follows
 
+\newpage
 \medskip
 \begin{lstlisting}
 template<class Alloc>
@@ -447,6 +448,7 @@ I am unaware if this option is useful.
 
 We require the following node interface on node based containers
 
+\newpage
 \begin{lstlisting}
 template <class T, class Ptr>
 struct node_type {
@@ -482,8 +484,9 @@ All node-based containers are affected: \texttt{std::forward\_list},
 \section{Acknowledgment}
 
 I would like thank people that gave me any kind of feedback: Ville Voutilainen,
-Nevin Liber, Daniel Gutson, Alisdair Meredith, David Krauss. Special thanks go
-to Ion Gaztañaga for suggesting important changes in the original design.
+Nevin Liber, Daniel Gutson, Alisdair Meredith. Special thanks go
+to Ion Gaztañaga for suggesting important changes in the original design and
+David Krauss for suggesting other approaches.
 
 \begin{thebibliography}{9}
 
