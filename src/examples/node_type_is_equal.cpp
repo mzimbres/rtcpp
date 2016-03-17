@@ -2,25 +2,22 @@
 #include <functional>
 
 #include <rtcpp/container/set.hpp>
-#include <rtcpp/memory/node_allocator_lazy.hpp>
+#include <rtcpp/utility/print.hpp>
+#include <rtcpp/memory/node_allocator.hpp>
 
 int main()
 {
-  using T = int;
-  using C1 = std::less<T>;
-  using C2 = std::greater<T>;
-  using A1 = std::allocator<T>;
-  using A2 = rt::node_allocator_lazy<T>;
+  using node_type = typename rt::set<int>::node_type;
+  using alloc_type = rt::node_allocator<int, node_type>;
+  using set_type = rt::set<int, std::less<int>, alloc_type>;
+  const auto r = alloc_type::reserved();
 
-  using set_type1 = rt::set<T, C1, A1>;
-  using set_type2 = rt::set<T, C2, A2>;
+  std::array<char, r + 10 * sizeof (set_type::node_type)> buffer = {{}};
+  alloc_type alloc(buffer);
 
-  using pointer = double*; // Arbitray pointer type.
-  using node_type1 = typename set_type1::node_type::template rebind<T, pointer>;
-  using node_type2 = typename set_type2::node_type::template rebind<T, pointer>;
-  static_assert(std::is_same<node_type1, node_type2>::value, "Not same");
-
-  std::cout << std::is_same<node_type1, node_type2>::value << std::endl;
+  set_type t1(alloc);
+  t1 = {5, 3, 7, 20, 1, 44, 10, 22, 8};
+  print(t1);
   return 0;
 }
 
