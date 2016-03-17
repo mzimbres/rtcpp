@@ -68,7 +68,7 @@ urlcolor=blue           % color of external links
 \begin{document}
 
 \date{}
-\title{\bf Splitting node and array allocation in allocators}
+\title{\bf Splitting {\it node} and {\it array} allocation in allocators}
 \maketitle
 \noindent
 %\vspace{-1cm} \\
@@ -85,7 +85,7 @@ urlcolor=blue           % color of external links
 to reduce allocator complexity, support realtime allocation and improve
 performance of node-based containers by making a clear distinction between {\it node}
 and {\it array} allocation in the \texttt{std::allocator\_traits} interface.
-Two new member functions are proposed \texttt{allocate\_node} and
+Two new member functions are proposed, \texttt{allocate\_node} and
 \texttt{deallocate\_node}. We also propose that the container node type should
 be exposed to the user. A prototype implementation is provided.
 
@@ -185,8 +185,7 @@ list served with a couple of nodes allocated on the stack
   std::list<int, alloc_t> l1(alloc);
   ...
   // Inserts elements. Allocation and deallocation implemented
-  // with 6 lines of code. Faster and simpler than any allocator
-  // I could find.
+  // with 6 lines of code.
   l1 = {27, 1, 60};
   ...
 \end{lstlisting}
@@ -242,8 +241,8 @@ allocator interface once the node type is exposed.
 
 The difficult in exposing the node type is the recursiveness of the problem.
 The node type is not known until the container type is known, which in turn depends
-on the allocator type to be defined. The allocator cannot be
-specialized before the node type is known.
+on the allocator type to be defined and the allocator type cannot be
+defined before the node type is known.
 
 At a first glance we may quite naturally demand the node type to be independent
 of the container and of the allocator, however, due to the support for fancy pointers
@@ -252,7 +251,6 @@ in c++, the following cannot be implemented in general
 // Cannot always hold for general A1 nd A2.
 static_assert( std::is_same< std::list<T, A1>::node_type
                            , std::list<T, A2>::node_type>, "");
-};
 \end{lstlisting}
 
 The solution we propose here is to offer a rebind structure in the node type,
@@ -293,7 +291,7 @@ see appendix \ref{alternative}.
 
 \section{Motivation and scope}
 
-Given the popularity of the standard allocator, it is important to give reasons
+\textsc{Given the} popularity of the standard allocator, it is important to give reasons
 why it should be avoided as a first option for node allocations. I will focus
 on the use case given above, where we want to serve an
 \texttt{std::list<int>} with a certain number of nodes.
@@ -331,7 +329,8 @@ the standard allocator, but what about a custom allocator? To test how much
 improvement we can get with custom allocators I tested my own non-optimized
 implementation of a node allocator against allocators shipped with GCC.
 The graphs can be seem below. The node allocator has never been slower,
-in fact, it was most of the time faster than the other fine-tuned allocators.
+in fact, it was most of the time faster than any other fine-tuned allocator.
+The performance gain compared to the standard allocator in remarkable.
 
 \begin{figure}[ht]
     \centering
@@ -393,12 +392,12 @@ them specially useful for embedded programming.
 
 \section{Impact on the Standard} \label{impact}
 
-The following additions are required in the standard.
+\textsc{The following} additions are required in the standard.
 
 \subsection{New \texttt{std::allocator\_traits} members}
 
 We require the addition of two new member functions and
-a typedef in \texttt{std::allocator\_traits()} as follows
+a typedef in \texttt{std::allocator\_traits} as follows
 
 \newpage
 \medskip
@@ -428,11 +427,10 @@ containers
 \item {\bf Array allocation only}.
 This is the {\it status quo}. Libraries can continue to call
 \texttt{allocate(n)} if they want, but since the majority of implementations
-use $n = 1$, they may simply be implemented in terms of
+use $n = 1$, they may simply be implemented with
 \texttt{allocate\_node()}, regardless of whether the allocator provides this
-function or not. The implementation of \texttt{allocate\_node()} in
-\texttt{std::allocator\_traits} should fall back to \texttt{allocate(1)} 
-when the allocator does not provide one.
+function or not. The implementation of \texttt{allocate\_node()} 
+falls back to \texttt{allocate(1)} when the allocator does not provide one.
 
 \item {\bf Node allocation only}.
 In this case, the user is required to set the typedef \texttt{node\_allocation\_only}
@@ -470,8 +468,8 @@ and of the compare type. The following code should compile.
   using pointer = // Arbitray pointer type.
   using node_type1 =
     typename set_type1::node_type::template rebind<T, pointer>;
-  using node_type2 = typename
-    set_type2::node_type::template rebind<T, pointer>;
+  using node_type2 = 
+    typename set_type2::node_type::template rebind<T, pointer>;
   static_assert(std::is_same<node_type1, node_type2>::value,"");
 \end{lstlisting}
 
@@ -483,7 +481,7 @@ All node-based containers are affected: \texttt{std::forward\_list},
 
 \section{Acknowledgment}
 
-I would like thank people that gave me any kind of feedback: Ville Voutilainen,
+\textsc{I would} like thank people that gave me any kind of feedback: Ville Voutilainen,
 Nevin Liber, Daniel Gutson, Alisdair Meredith. Special thanks go
 to Ion Gaztañaga for suggesting important changes in the original design and
 David Krauss for suggesting other approaches.
@@ -509,7 +507,7 @@ David Krauss for suggesting other approaches.
 
 \section{Alternative approaches} \label{alternative}
 
-There are other possible approaches to support node allocation that are worth knowing
+\textsc{There are} other possible approaches to support node allocation that are worth knowing
 of.  I will describe them here, so that the committee can compare them.
 
 \subsection{\texttt{allocate(n)} with $n = 1$}
@@ -580,9 +578,9 @@ node allocation than a full supported feature.
 
 \medskip
 \begin{lstlisting}
-  // Simulates the container node type taken from an arbitrary
-  // allocator. For example std::unordered_set<int>::node_type.
-  // I am using an arbitrary pointer type as an example.
+  // Simulates the container node type. For example
+  // std::unordered_set<int>::node_type. I am using
+  // an arbitrary pointer type as an example.
   using node_type1 = node<int, char*>;
 
   // User node allocator configured for node_type1.
@@ -590,8 +588,9 @@ node allocation than a full supported feature.
 
   // Container specific node type. Known to the user only after
   // the container type itself is known. For example
-  // std::unordered_set<int, alloc_type>::node_type. It is equal
-  // to node_type1 except (possibly) by the pointer type.
+  // std::unordered_set<int, ... , alloc_type>::node_type.
+  // It is equal to node_type1 except (possibly) by the pointer
+  // type.
   using node_type2 = node<int, double*>;
 
   // Buffer for 100 elements
