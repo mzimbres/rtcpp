@@ -72,8 +72,8 @@ urlcolor=blue           % color of external links
 \maketitle
 \noindent
 %\vspace{-1cm} \\
-{\bf Document number}:  1 \\
-{\bf Date}:  \today \\
+{\bf Document number}:  P0310R0 \\
+{\bf Date}:  2016-03-19\\ % \today 
 {\bf Project}: Programming Language C++ \\
 {\bf Audience}: Library Evolution Working Group \\
 {\bf Reply to}: Marcelo Zimbres (\href{mailto:mzimbres@gmail.com}{mzimbres@gmail.com}) 
@@ -119,8 +119,8 @@ fragmentation and unpredictable performance loss.
 We believe in fact, that the ``{\it Don't pay for what you don't use}" premise
 is not being met on node-based containers due to the restrictive
 array-oriented allocator interface. This proposal tries to fix what the author
-believes to be the root of problem: {\it The lack of distinction between array
-and node allocation}.  We propose here a complete split between these two
+believes to be the root of problem: {\it The lack of distinction between node
+and array allocation}.  We propose here a complete split between these two
 allocation techniques by means of a non-breaking addition to
 \texttt{std::allocator\_traits}.
 
@@ -133,11 +133,9 @@ available, but yet a very powerful one. The simplicity
 comes from the fact that allocation and deallocation reduces to pushing and
 popping from the linked list of nodes, like shown in the code below.
 It is powerful because it is very fast, perform in hard-real-time
-and cause minimal memory fragmentation.
-
-\medskip
+and causes minimal memory fragmentation.
 \begin{lstlisting}
-pointer allocate(size_t /*can't handle n*/)
+pointer allocate(std::size_t /*can't handle n*/)
 {
   pointer q = avail; // The next free node
   if (avail)
@@ -146,7 +144,7 @@ pointer allocate(size_t /*can't handle n*/)
   return q;
 }
 
-void deallocate(pointer p, size_t /*can't handle n*/)
+void deallocate(pointer p, std::size_t /*can't handle n*/)
 {
   p->next = avail;
   avail = p;
@@ -171,19 +169,16 @@ array oriented interface.
 The example below uses the allocation technique from the previous section to
 write code that is fast, simple and uses the minimum amount of memory. A linked
 list served with a couple of nodes allocated on the stack
-\medskip
+%\medskip
 \begin{lstlisting}
   using alloc_t = rt::node_allocator<int>;
-
   using node_type = typename std::list<int, alloc_t>::node_type;
 
   // Buffer for 100 elements.
   std::array<char, 100 * sizeof (node_type)> buffer = {{}};
-
   alloc_t alloc(buffer);
 
   std::list<int, alloc_t> l1(alloc);
-  ...
   // Inserts elements. Allocation and deallocation implemented
   // with 6 lines of code.
   l1 = {27, 1, 60};
@@ -229,15 +224,14 @@ the allocator will serve.  At runtime it is known only when the rebound
 allocator instance is constructed, which occurs when the container is
 constructed. It is a tricky to use this information. As shown in the example
 above the user may want to use it to pre-allocate space for a
-certain number of elements in the container.
+certain number of elements.
 
 Another situation where the node type is useful is when implementing node
 allocators for unordered containers. Usually, unordered containers rebind
 twice and there is no way of knowing which rebound type is used for array or
 node allocation. Once the node type is exposed the allocator can be specialized
 for the desired type, offering node allocation functions accordingly.
-Please, see appendix \ref{saferalloc} for an example of how we can write a safe
-allocator interface once the node type is exposed.
+%(see appendix \ref{saferalloc}).
 
 The difficult in exposing the node type is the recursiveness of the problem.
 The node type is not known until the container type is known, which in turn depends
@@ -276,10 +270,10 @@ with a different pointer type. Recursiveness is bypassed this way.
 \subsection{Further considerations}
 The influence of fragmentation on performance is well known on the C++
 community and subject of many talks in conferences, therefore I am not going to
-repeat results here for the sake of readability. The interested reader can
+repeat results here. The interested reader can
 refer to \cite{chandler, meyers} for example.
 
-The split between array and node allocation has been successfully implemented
+The split between node and array allocation has been successfully implemented
 in the Boost.Container library, but the mechanism is based on C++03 instead of
 \texttt{std::allocator\_traits}.
 
@@ -330,7 +324,6 @@ improvement we can get with custom allocators I tested my own non-optimized
 implementation of a node allocator against allocators shipped with GCC.
 The graphs can be seem below. The node allocator has never been slower,
 in fact, it was most of the time faster than any other fine-tuned allocator.
-The performance gain compared to the standard allocator in remarkable.
 
 \begin{figure}[ht]
     \centering
@@ -366,7 +359,7 @@ this allocation technique, since $n$ is always $1$ on calls of
 
 \item Node-based containers do not manage allocation sizes but
 unnecessarily demand this feature from their allocators, with a cost
-in performance and complexity.
+in performance and overall allocator complexity.
 
 %(Unordered associative containers use
 %sized allocations in addition to node allocation, which means they
@@ -399,8 +392,8 @@ them specially useful for embedded programming.
 We require the addition of two new member functions and
 a typedef in \texttt{std::allocator\_traits} as follows
 
-\newpage
-\medskip
+%\newpage
+%\medskip
 \begin{lstlisting}
 template<class Alloc>
 struct allocator_traits {
@@ -408,12 +401,10 @@ struct allocator_traits {
   // std::false_type otherwise. Array allocation with
   // allocate(n) is ruled out if it is std::true_type.
   using node_allocation_only = std::false_type
-
   // Calls a.allocate_node() if present otherwise calls
   // Alloc::allocate(1). Memory allocate with this function
   // must be deallocated with deallocate_node.
   pointer allocate_node(Alloc& a);
-
   // Calls a.deallocate_node(pointer) if present otherwise
   // calls Alloc::deallocate(p, 1). Can only be used with
   // memory allocated with allocate_node.
@@ -427,10 +418,11 @@ containers
 \item {\bf Array allocation only}.
 This is the {\it status quo}. Libraries can continue to call
 \texttt{allocate(n)} if they want, but since the majority of implementations
-use $n = 1$, they may simply be implemented with
+use $n = 1$, they may be simply implemented with
 \texttt{allocate\_node()}, regardless of whether the allocator provides this
-function or not. The implementation of \texttt{allocate\_node()} 
-falls back to \texttt{allocate(1)} when the allocator does not provide one.
+function or not. The implementation of \texttt{allocate\_node()} in the\\
+\texttt{std::allocator\_traits} falls back to \texttt{allocate(1)} when the
+allocator does not provide one.
 
 \item {\bf Node allocation only}.
 In this case, the user is required to set the typedef \texttt{node\_allocation\_only}
@@ -446,7 +438,7 @@ I am unaware if this option is useful.
 
 We require the following node interface on node based containers
 
-\newpage
+%\newpage
 \begin{lstlisting}
 template <class T, class Ptr>
 struct node_type {
@@ -459,8 +451,9 @@ struct node_type {
 \end{lstlisting}
 
 We also require the node type to be independent of the container
-and of the compare type. The following code should compile.
+with the exception of the allocator type, for example, the following code should compile.
 
+\newpage
 \begin{lstlisting}
   using set_type1 = rt::set<T, C1, A1>;
   using set_type2 = rt::set<T, C2, A2>;
@@ -574,63 +567,63 @@ node allocation than a full supported feature.
 
 \newpage
 
-\section{Node type and safer allocator} \label{saferalloc}
-
-\medskip
-\begin{lstlisting}
-  // Simulates the container node type. For example
-  // std::unordered_set<int>::node_type. I am using
-  // an arbitrary pointer type as an example.
-  using node_type1 = node<int, char*>;
-
-  // User node allocator configured for node_type1.
-  using alloc_type = rt::node_allocator<int, node_type1>;
-
-  // Container specific node type. Known to the user only after
-  // the container type itself is known. For example
-  // std::unordered_set<int, ... , alloc_type>::node_type.
-  // It is equal to node_type1 except (possibly) by the pointer
-  // type.
-  using node_type2 = node<int, double*>;
-
-  // Buffer for 100 elements
-  std::array<char, 100 * sizeof (node_type2)> buffer = {{}};
-
-  alloc_type alloc(buffer); // User allocator instance.
-
-  // Not node_type2, array allocation is fine.
-  auto a = alloc.allocate(10); // Ok
-
-  // Error, node allocation not enabled for int.
-  auto b = alloc.allocate_node(); // Compile time error
-
-  // The following lines occurs inside the unordered container.
-
-  // Rebinds to get an allocator for node_type2.
-  using node_alloc_type =
-    typename alloc_type::template rebind<node_type2>::other;
-
-  node_alloc_type node_alloc(alloc);
-
-  // Error, array allocation not available for node_type.
-  auto c = node_alloc.allocate(10); // Compile time error
-
-  // Ok, node allocation enabled.
-  auto d = node_alloc.allocate_node(); // Ok
-
-  // Rebinds to the unordered container internal array
-  // allocation type. 
-  using array_alloc_type =
-    typename alloc_type::template rebind<float*>::other;
-
-  array_alloc_type array_alloc(alloc);
-
-  // Ok, Not the node type, array allocation enabled.
-  auto e = alloc.allocate(10); // Ok
-
-  // Error, node allocation is not enabled for float*.
-  auto f = alloc.allocate_node(); // Compile time error.
-\end{lstlisting}
+%\section{Node type and safer allocators} \label{saferalloc}
+%
+%\medskip
+%\begin{lstlisting}
+%  // Simulates the container node type. For example
+%  // std::unordered_set<int>::node_type. I am using
+%  // an arbitrary pointer type as an example.
+%  using node_type1 = node<int, char*>;
+%
+%  // User node allocator configured for node_type1.
+%  using alloc_type = rt::node_allocator<int, node_type1>;
+%
+%  // Container specific node type. Known to the user only after
+%  // the container type itself is known. For example
+%  // std::unordered_set<int, ... , alloc_type>::node_type.
+%  // It is equal to node_type1 except (possibly) by the pointer
+%  // type.
+%  using node_type2 = node<int, double*>;
+%
+%  // Buffer for 100 elements
+%  std::array<char, 100 * sizeof (node_type2)> buffer = {{}};
+%
+%  alloc_type alloc(buffer); // User allocator instance.
+%
+%  // Not node_type2, array allocation is fine.
+%  auto a = alloc.allocate(10); // Ok
+%
+%  // Error, node allocation not enabled for int.
+%  auto b = alloc.allocate_node(); // Compile time error
+%
+%  // The following lines occurs inside the unordered container.
+%
+%  // Rebinds to get an allocator for node_type2.
+%  using node_alloc_type =
+%    typename alloc_type::template rebind<node_type2>::other;
+%
+%  node_alloc_type node_alloc(alloc);
+%
+%  // Error, array allocation not available for node_type.
+%  auto c = node_alloc.allocate(10); // Compile time error
+%
+%  // Ok, node allocation enabled.
+%  auto d = node_alloc.allocate_node(); // Ok
+%
+%  // Rebinds to the unordered container internal array
+%  // allocation type. 
+%  using array_alloc_type =
+%    typename alloc_type::template rebind<float*>::other;
+%
+%  array_alloc_type array_alloc(alloc);
+%
+%  // Ok, Not the node type, array allocation enabled.
+%  auto e = alloc.allocate(10); // Ok
+%
+%  // Error, node allocation is not enabled for float*.
+%  auto f = alloc.allocate_node(); // Compile time error.
+%\end{lstlisting}
 
 \end{document}
 
