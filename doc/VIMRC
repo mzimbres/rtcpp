@@ -1,0 +1,47 @@
+imap jj <ESC>
+syntax on
+set autoindent
+set shiftwidth=2
+set ignorecase
+set expandtab
+set noswapfile
+nnoremap <F5> :buffers<CR>:buffer<Space>
+set hidden
+set smartindent
+map <F2> :Explore <Enter>
+map <F6> :split <Enter>
+map <F7> :vsplit <Enter>
+map <F8> :w <Enter>
+map <F9> :nohlsearch <Enter>
+map <F12> :make <Enter>
+"map <F11> :bprevious <Enter>
+"map <F12> :bnext <Enter>
+set foldmethod=marker
+set hlsearch
+set nowrap
+
+"compiler msvc
+"set makeprg=cmake\ --build\ .
+"nmap <C-N><C-N> :set invnumber<CR>
+
+set path=.,**,,
+" start of line
+:cnoremap <C-A>		<Home>
+" back one character
+:cnoremap <C-B>		<Left>
+" delete character under cursor
+:cnoremap <C-D>		<Del>
+" end of line
+:cnoremap <C-E>		<End>
+" forward one character
+:cnoremap <C-F>		<Right>
+" recall newer command-line
+:cnoremap <C-N>		<Down>
+" recall previous (older) command-line
+:cnoremap <C-P>		<Up>
+" back one word
+:cnoremap <Esc><C-B>	<S-Left>
+" forward one word
+:cnoremap <Esc><C-F>	<S-Right>
+
+

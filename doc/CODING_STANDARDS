@@ -1,0 +1,262 @@
+
+Some motivation for the coding standards
+
+Simplicity
+======================================================================
+
+* Simplicity is the ultimate sophistication.
+  (Leonardo da Vinci)
+
+* Simplicity is prerequisite for reliability.
+  (Dijkstra)
+
+* The unavoidable price of reliability is simplicity.
+  (Hoare)
+
+* The computing scientist’s main challenge is not to get
+  confused by the complexities of his own making.
+  (Dijkstra)
+
+* Controlling complexity is the essence of computer
+  programming.
+  (Brian Kernighan)
+
+* The central enemy of reliability is complexity.
+  (Geer et al.)
+
+* Simplicity carried to the extreme becomes elegance.
+  (Jon Franklin)
+
+* Complexity has nothing to do with intelligence, simplicity
+  does.  
+  (Larry Bossidy)
+
+* Increasingly, people seem to misinterpret complexity as
+  sophistication, which is baffling — the incomprehensible should
+  cause suspicion rather than admiration.  
+  (Niklaus Wirth)
+
+Object oientation
+======================================================================
+
+* Object-oriented design is the roman numerals of computing.
+  (Rob Pike)
+
+* Object-oriented programming is an exceptionally bad idea which could
+  only have originated in California.
+  (Edsger Dijkstra)
+
+* The phrase "object-oriented” means a lot of things. Half are
+  obvious, and the other half are mistakes.
+  (Paul Graham)
+
+* Sometimes, the elegant implementation is just a function. Not a
+  method. Not a class. Not a framework. Just a function.
+  (John Carmack)
+
+* And, at least in it’s most popular forms, it can be extremely
+  harmful and dramatically increase complexity.
+
+* State is the root of all evil. In particular functions with side
+  effects should be avoided.
+  (Joe Armstrong)
+
+* The object-oriented model makes it easy to build up programs
+  by accretion. What this often means, in practice, is that it
+  provides a structured way to write spaghetti code.
+  (Paul Graham)
+
+* I will, in fact, claim that the difference between a bad
+  programmer and a good one is whether he considers his code or
+  his data structures more important. Bad programmers worry about
+  the code. Good programmers worry about data structures and
+  their relationships.
+  (Linus Torvalds)
+
+Coding Standards
+======================================================================
+
+* Use spaces for indentation. Tabs are not allowed.
+* Do not end a line with spaces.
+* Limit line length to 79 characters.
+* Use standard c++ naming convention.
+* Keep names short.
+* Write stateless code as much as possible.
+* Use unsigned types ONLY for bitwise operations.
+* Again, avoid unsigned.
+
+Some further cosmetic guidelines
+
+Classes
+======================================================================
+  
+Braces
+
+  class foo { // Open braces in the same line you declare the class.
+  ...
+  };
+
+  class foo {
+  private: // put the private here, do not omit it.
+    int a;
+  };
+
+Initializer list.
+======================================================================
+
+ - Indentation is done this way:
+   
+     foo::foo(int a, int b, int c)
+     : data1(a)
+     , data1(b)
+     , data2(c)
+     {}
+
+Functions
+======================================================================
+
+Different from classes, we do not open braces in the same line.
+
+  void function()
+  {
+    // code
+  }
+
+There is no space between function names and ():
+
+  function(); // <=== rigth
+  function (); // <=== wrong
+
+Mind the spaces between arguments
+
+  foo(a, b, c, e); // Right.
+  foo(a,b,c,e); // Wrong.
+
+The same reasoning applies to templates
+
+  std::pair<double, double> foo; // Right.
+  std::pair<double,double> foo; // Wrong.
+
+if - else
+======================================================================
+
+One line if's do not get braces:
+
+  if (condition)
+    do_something();
+  else
+    another_thing();
+
+There is a space between if and ():
+
+  if (condition) // right
+  if(condition) // wrong
+
+Return as early as possible from a function.
+
+  void foo()
+  {
+    if (ready1)
+      return;
+
+    if (ready2)
+      return;
+
+    // Do further stuff.
+  }
+
+for, while, do - while 
+======================================================================
+
+  for (condition) // right
+  for(condition)  // wrong
+
+  for (condition) { // right
+  }
+
+  for (condition) // wrong
+  {
+  }
+
+The same reasoning above applies for while loops.  If you need an
+infinite loop, use
+
+  for (;;) { // right
+  }
+
+  while (1) { // wrong
+  }
+
+Pointers
+======================================================================
+
+  int* a = nullptr;
+
+  if (!a) // right
+
+  if (a == nullptr) // wrong
+
+  if (a == NULL) // wrong
+
+But if a is not a pointer or a boolean variable prefer
+
+  if (a == value) // It makes sense for the reader to know the value.
+
+Equations:
+======================================================================
+
+Use space with "*" "/" etc:
+
+  const double a = b * c / std::pow(d, e); // Right
+  const double a = b*c/std::pow(d,e); // Wrong
+
+From the kernel coding style
+======================================================================
+
+  Encoding the type of a function into the name (so-called Hungarian
+  notation) is brain damaged - the compiler knows the types anyway and
+  can check those, and it only confuses the programmer.
+
+  LOCAL variable names should be short, and to the point.  If you have
+  some random integer loop counter, it should probably be called "i".
+  Calling it "loop_counter" is non-productive, if there is no chance
+  of it being mis-understood.  Similarly, "tmp" can be just about any
+  type of variable that is used to hold a temporary value.
+
+From fftw coding style:
+======================================================================
+
+  " NAMES: keep them short.  Shorter than you think.  The Bible was
+  written without vowels.  Don't outsmart the Bible. 
+
+Getters and Setters:
+======================================================================
+
+Getters and setters are sometimes a (big) waste of time and can also
+hide bad program design.  For example:
+
+  class foo {
+  private:
+    int m_a;
+  public:
+    void set(int a) {m_a = a;}
+    int get() const {return m_a;}
+  };
+
+is generaly not better than
+
+  struct foo {
+    int a;
+  };
+
+The advantages of the later are:
+1 - It uses 3 lines of code instead of 7.
+2 - It does not pretend variable a is encapsulated.
+
+Now some people would argue that it is easier to add code to check
+inside setter, but fail to say that such changes can break the
+contract assumed by the programmer when he used it and the code has to
+be reviewed anyway.  The lesson is to make variables private if they
+are really encapsulated.  Otherwise, make it public and evolve the
+design.
+
